@@ -4,6 +4,8 @@
 
 AnimalBox is a smartphone-first portrait 2D idle garden game. The first version is free-to-play without paid gacha. Players earn coins passively and by tapping degus, then spend earned coins/tickets on island decor, degu colors, outfits, and free gacha banners.
 
+The product target is closer to a cozy avatar garden app than a pure idle clicker. Background themes, island decor, wardrobe parts, and companion state should be separate runtime assets so the player can customize the scene over time.
+
 ## Recommended Stack
 
 - Runtime: React + Vite + TypeScript + Phaser 4.
@@ -123,6 +125,30 @@ Rules:
 - Mobile UX is tap-select then tap-place first; drag is optional polish.
 - Save only logical placements, not pixels.
 
+## Background Theme Implementation
+
+V0 uses full-screen ImageGen background themes. Each theme is a runtime PNG with provenance and a saved `selectedBackgroundId`.
+
+Data contract:
+
+```ts
+interface BackgroundTheme {
+  id: string;
+  label: string;
+  src: string;
+  swatch: string;
+  mood: 'day' | 'morning' | 'night';
+  unlockSource: 'starter' | 'free_gift' | 'event';
+}
+```
+
+Rules:
+
+- Do not bake placed decor, HUD, gacha UI, or the degu into a background.
+- Keep backgrounds UI-free and character-free.
+- V1 should split theme composition into `sky`, `islandGround`, `foregroundFrame`, and `ambientFx` parts so the player can mix and match more like room/garden customization apps.
+- Save selected theme ids, not image URLs, so future asset migrations can remap them.
+
 ## Free Gacha Implementation
 
 No paid currency. The gacha consumes earned coins or earned tickets only.
@@ -158,6 +184,8 @@ For UX, call it a "cloud capsule" or "sky gift" rather than emphasizing gambling
 ## ImageGen Production Plan
 
 Generate concept/mock assets separately from runtime assets. Do not slice runtime sprites from UI mockups.
+
+Current prototype rule: runtime screens should use ImageGen part assets under `public/images/runtime/`; mockups under `public/images/mockups/` are visual references only.
 
 ### Current Mock Batch
 

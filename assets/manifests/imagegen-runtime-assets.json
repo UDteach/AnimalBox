@@ -1,0 +1,177 @@
+{
+  "generatedAt": "2026-06-11",
+  "assets": [
+    {
+      "id": "hay-bed",
+      "src": "/images/runtime/decor/hay-bed.png",
+      "size": [
+        260,
+        217
+      ],
+      "source": "assets/source/imagegen/decor-packs/decor-pack-001__source.png"
+    },
+    {
+      "id": "water-bowl",
+      "src": "/images/runtime/decor/water-bowl.png",
+      "size": [
+        260,
+        199
+      ],
+      "source": "assets/source/imagegen/decor-packs/decor-pack-001__source.png"
+    },
+    {
+      "id": "clover-patch",
+      "src": "/images/runtime/decor/clover-patch.png",
+      "size": [
+        260,
+        227
+      ],
+      "source": "assets/source/imagegen/decor-packs/decor-pack-001__source.png"
+    },
+    {
+      "id": "cloud-lamp",
+      "src": "/images/runtime/decor/cloud-lamp.png",
+      "size": [
+        222,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-packs/decor-pack-001__source.png"
+    },
+    {
+      "id": "angel-fountain",
+      "src": "/images/runtime/decor/angel-fountain.png",
+      "size": [
+        260,
+        258
+      ],
+      "source": "assets/source/imagegen/decor-packs/decor-pack-001__source.png"
+    },
+    {
+      "id": "windmill",
+      "src": "/images/runtime/decor/windmill.png",
+      "size": [
+        235,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-packs/decor-pack-001__source.png"
+    },
+    {
+      "id": "coin",
+      "src": "/images/runtime/ui/coin.png",
+      "size": [
+        159,
+        160
+      ],
+      "source": "assets/source/imagegen/decor-packs/decor-pack-001__source.png"
+    },
+    {
+      "id": "sky-ticket",
+      "src": "/images/runtime/ui/sky-ticket.png",
+      "size": [
+        160,
+        136
+      ],
+      "source": "assets/source/imagegen/decor-packs/decor-pack-001__source.png"
+    },
+    {
+      "id": "straw-hat",
+      "src": "/images/runtime/wardrobe/straw-hat.png",
+      "size": [
+        220,
+        149
+      ],
+      "source": "assets/source/imagegen/wardrobe-packs/wardrobe-pack-001__source.png"
+    },
+    {
+      "id": "flower-crown",
+      "src": "/images/runtime/wardrobe/flower-crown.png",
+      "size": [
+        220,
+        128
+      ],
+      "source": "assets/source/imagegen/wardrobe-packs/wardrobe-pack-001__source.png"
+    },
+    {
+      "id": "pastel-ribbon",
+      "src": "/images/runtime/wardrobe/pastel-ribbon.png",
+      "size": [
+        220,
+        210
+      ],
+      "source": "assets/source/imagegen/wardrobe-packs/wardrobe-pack-001__source.png"
+    },
+    {
+      "id": "celestial-cape",
+      "src": "/images/runtime/wardrobe/celestial-cape.png",
+      "size": [
+        220,
+        196
+      ],
+      "source": "assets/source/imagegen/wardrobe-packs/wardrobe-pack-001__source.png"
+    },
+    {
+      "id": "angel-halo-wings",
+      "src": "/images/runtime/wardrobe/angel-halo-wings.png",
+      "size": [
+        220,
+        163
+      ],
+      "source": "assets/source/imagegen/wardrobe-packs/wardrobe-pack-001__source.png"
+    },
+    {
+      "id": "round-glasses",
+      "src": "/images/runtime/wardrobe/round-glasses.png",
+      "size": [
+        220,
+        133
+      ],
+      "source": "assets/source/imagegen/wardrobe-packs/wardrobe-pack-001__source.png"
+    },
+    {
+      "id": "sky-gift-machine",
+      "src": "/images/runtime/machines/sky-gift-machine.png",
+      "size": [
+        237,
+        420
+      ],
+      "source": "assets/source/imagegen/machines/sky-gift-machine__source.png"
+    },
+    {
+      "id": "floating-island",
+      "src": "/images/runtime/backgrounds/floating-island.png",
+      "size": [
+        853,
+        1844
+      ],
+      "source": "assets/source/imagegen/backgrounds/floating-island-ui-free__source.png"
+    },
+    {
+      "id": "morning-pasture",
+      "src": "/images/runtime/backgrounds/floating-island-morning-pasture.png",
+      "size": [
+        887,
+        1774
+      ],
+      "source": "assets/source/imagegen/backgrounds/floating-island-morning-pasture__source.png"
+    },
+    {
+      "id": "starlight-night",
+      "src": "/images/runtime/backgrounds/floating-island-starlight-night.png",
+      "size": [
+        853,
+        1844
+      ],
+      "source": "assets/source/imagegen/backgrounds/floating-island-starlight-night__source.png"
+    },
+    {
+      "id": "degu-candidate-a",
+      "src": "/images/runtime/ui/degu-candidate-a.png",
+      "size": [
+        391,
+        420
+      ],
+      "source": "assets/source/imagegen/characters/degu-candidates/degu-candidate-a__source.png",
+      "status": "candidate-not-final"
+    }
+  ]
+}

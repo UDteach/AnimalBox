@@ -39,3 +39,11 @@ Decide the initial direction for AnimalBox: a smartphone-first 2D idle boxed-gar
 - Decide whether the first playable prototype should prioritize placement editing or gacha/wardrobe.
 - Verify Phaser 4 vs Phaser 3.90 before scaffold if implementation starts.
 - If real-money currency is ever reconsidered, treat it as a new product decision and run a separate policy/legal pass first.
+
+## 2026-06-11 Avatar Garden Update
+
+- User clarified the closest product direction is Pokecolo, with Ameba Pigg/Pigg Party as room/social references.
+- Added requirements artifact: `docs/animalbox-avatar-garden-requirements.md`.
+- Current implementation slice: keep the degu candidate placeholder, but implement changeable ImageGen background themes and runtime part placement first.
+- MVP requirement added: player can switch between starter sky pasture, morning meadow, and starlight night backgrounds; the selected theme is persisted in save data.
+- Non-goal reaffirmed: no paid gacha and no final degu design lock until the user chooses from candidate designs.

@@ -23,6 +23,7 @@ export function canPlaceDecor(
   cellY: number,
   footprint: Footprint
 ): boolean {
+  if (footprint.w <= 0 || footprint.h <= 0) return false;
   if (cellX < 0 || cellY < 0) return false;
   if (cellX + footprint.w > grid.width) return false;
   if (cellY + footprint.h > grid.height) return false;

@@ -23,4 +23,10 @@ describe('placement validation', () => {
   it('accepts empty valid cells', () => {
     expect(canPlaceDecor({ width: 6, height: 6 }, placed, 0, 0, { w: 1, h: 1 })).toBe(true);
   });
+
+  it('rejects non-positive footprints', () => {
+    expect(canPlaceDecor({ width: 6, height: 6 }, placed, 0, 0, { w: 0, h: 1 })).toBe(false);
+    expect(canPlaceDecor({ width: 6, height: 6 }, placed, 0, 0, { w: -1, h: 2 })).toBe(false);
+    expect(canPlaceDecor({ width: 6, height: 6 }, placed, 0, 0, { w: 1, h: -1 })).toBe(false);
+  });
 });

@@ -15,6 +15,15 @@ These are UI direction mockups only. Runtime sprites, tiles, and icons must be g
 
 ## Runtime Batch 1 Summary
 
+Current prototype runtime assets are a smaller Batch 0.5, already promoted under `public/images/runtime/` with provenance in `assets/manifests/imagegen-runtime-assets.json`:
+
+- 3 full-screen background themes: starter sky pasture, morning meadow, starlight night.
+- 6 decor parts: hay bed, water bowl, clover patch, cloud lamp, angel fountain, windmill.
+- 6 wardrobe parts: straw hat, flower crown, pastel ribbon, celestial cape, halo wings, round glasses.
+- 1 Sky Gift machine.
+- 2 UI currency icons: coin and sky ticket.
+- 1 degu candidate placeholder, explicitly not final.
+
 Batch 1 target: 92 ImageGen source images.
 
 | Asset group | Count | Runtime target |
@@ -114,6 +123,18 @@ Generate 12 first-playable island pieces:
 12. soft shadow blob
 
 For v0, terrain pieces can be decorative overlays rather than a full map editor. The playable placement system uses logical cells.
+
+## Background Themes
+
+Backgrounds are full-screen runtime PNGs in V0 and must remain UI-free, character-free, and decor-free except for fixed environmental framing.
+
+Current themes:
+
+1. `floating-island`: starter sky pasture.
+2. `morning-pasture`: bright morning meadow.
+3. `starlight-night`: night island with stars and lanterns.
+
+V1 should split each theme into swappable `sky`, `islandGround`, `foregroundFrame`, and `ambientFx` layers. That will allow Pokecolo-like mix-and-match customization without regenerating one complete background for every combination.
 
 ## UI Icons
 
