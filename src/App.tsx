@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   backgroundThemes,
   decorItems,
   deguVariants,
   navOrder,
   outfits,
+  pixelDeguShots,
   runtimeAssets,
   screens,
+  isRewardOwned,
   type BackgroundTheme,
   type DecorItem,
   type OutfitItem,
@@ -14,8 +16,22 @@ import {
 } from './game/content';
 import { addIdleIncome, formatNumber, tapForCoins, type EconomyState } from './game/economy';
 import { browserRandom, runPulls, skyGiftBanner } from './game/gacha';
+import { PixelDeguStage } from './game/pixel/PixelDeguStage';
 import { canPlaceDecor, type PlacedDecor } from './game/placement';
+import {
+  applyIdleProgress,
+  applyTapProgress,
+  claimTickets,
+  deriveGameStats,
+  getNextUpgrade,
+  purchaseUpgrade,
+  upgradeCatalog,
+  type GameStats,
+  type ProgressionState,
+  type UpgradeDefinition
+} from './game/progression';
 import { loadSave, savePrototype, type PrototypeSave } from './game/storage';
+import { toggleOutfitForSlot } from './game/wardrobe';
 
 interface Burst {
   id: number;
@@ -37,12 +53,13 @@ function coerceScreen(value: string): ScreenId {
   return screenSet.has(value as ScreenId) ? (value as ScreenId) : 'home';
 }
 
+function getInitialScreen(): ScreenId {
+  const urlScreen = new URLSearchParams(window.location.search).get('screen');
+  return urlScreen ? coerceScreen(urlScreen) : coerceScreen(loadSave().screen);
+}
+
 function nextSave(updater: (save: PrototypeSave) => PrototypeSave) {
-  return (current: PrototypeSave) => {
-    const updated = updater(current);
-    savePrototype(updated);
-    return updated;
-  };
+  return updater;
 }
 
 function assetStyle(x: number, y: number, w: number): React.CSSProperties {
@@ -63,9 +80,10 @@ function gridToScene(cell: Cell, decor: DecorItem) {
 
 export function App() {
   const [save, setSave] = useState<PrototypeSave>(() => loadSave());
-  const [screen, setScreenState] = useState<ScreenId>(() => coerceScreen(loadSave().screen));
+  const saveRef = useRef(save);
+  const [screen, setScreenState] = useState<ScreenId>(() => getInitialScreen());
   const [bursts, setBursts] = useState<Burst[]>([]);
-  const [selectedDecorId, setSelectedDecorId] = useState('cloud-lamp');
+  const [selectedDecorId, setSelectedDecorId] = useState('hay-bed');
   const [selectedCell, setSelectedCell] = useState<Cell>(firstOpenCell);
   const [rotation, setRotation] = useState(0);
   const [status, setStatus] = useState('Runtime parts prototype');
@@ -73,10 +91,20 @@ export function App() {
 
   const current = screens[screen];
   const economy = save.economy;
+  const gameStats = deriveGameStats(economy.incomePerSecond, save.progression);
+  const nextUpgrade = getNextUpgrade(save.progression);
+  const selectedBackgroundId = isRewardOwned(save.ownedRewardIds, save.selectedBackgroundId)
+    ? save.selectedBackgroundId
+    : 'floating-island';
+  const selectedVariantId = isRewardOwned(save.ownedRewardIds, save.selectedVariantId)
+    ? save.selectedVariantId
+    : 'agouti';
+  const selectedOutfitIds = save.selectedOutfitIds.filter((id) =>
+    isRewardOwned(save.ownedRewardIds, id)
+  );
   const selectedDecor = decorItems.find((item) => item.id === selectedDecorId) ?? decorItems[0];
-  const selectedOutfits = outfits.filter((item) => save.selectedOutfitIds.includes(item.id));
   const activeTheme =
-    backgroundThemes.find((theme) => theme.id === save.selectedBackgroundId) ?? backgroundThemes[0];
+    backgroundThemes.find((theme) => theme.id === selectedBackgroundId) ?? backgroundThemes[0];
 
   const allAssetPaths = useMemo(
     () => [
@@ -84,10 +112,16 @@ export function App() {
       ...Object.values(screens).map((item) => item.image),
       ...decorItems.map((item) => item.src),
       ...outfits.map((item) => item.src),
+      ...pixelDeguShots.map((item) => item.src),
       ...Object.values(runtimeAssets)
     ],
     []
   );
+
+  useEffect(() => {
+    saveRef.current = save;
+    savePrototype(save);
+  }, [save]);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,10 +147,20 @@ export function App() {
   useEffect(() => {
     const timer = window.setInterval(() => {
       setSave(
-        nextSave((currentSave) => ({
-          ...currentSave,
-          economy: addIdleIncome(currentSave.economy, 1000)
-        }))
+        nextSave((currentSave) => {
+          const stats = deriveGameStats(
+            currentSave.economy.incomePerSecond,
+            currentSave.progression
+          );
+          const economyAfterIdle = addIdleIncome(currentSave.economy, 1000, stats.idleIncomePerSecond);
+          const earned = economyAfterIdle.coins - currentSave.economy.coins;
+
+          return {
+            ...currentSave,
+            economy: economyAfterIdle,
+            progression: applyIdleProgress(currentSave.progression, earned, 1000)
+          };
+        })
       );
     }, 1000);
 
@@ -135,41 +179,113 @@ export function App() {
     setStatus(`${screens[next].label} screen`);
   }
 
-  function updateEconomy(updater: (economy: EconomyState) => EconomyState) {
-    setSave(nextSave((currentSave) => ({ ...currentSave, economy: updater(currentSave.economy) })));
-  }
-
   function tapDegu() {
-    updateEconomy((currentEconomy) => tapForCoins(currentEconomy));
+    const stats = deriveGameStats(save.economy.incomePerSecond, save.progression);
+    setSave(
+      nextSave((currentSave) => {
+        const currentStats = deriveGameStats(
+          currentSave.economy.incomePerSecond,
+          currentSave.progression
+        );
+
+        return {
+          ...currentSave,
+          economy: tapForCoins(currentSave.economy, currentStats.tapPower),
+          progression: applyTapProgress(currentSave.progression, currentStats)
+        };
+      })
+    );
     setBursts((items) => [
       ...items,
-      { id: Date.now(), label: '+25', x: 52 + Math.random() * 4, y: 49 + Math.random() * 4 }
+      { id: Date.now(), label: `+${stats.tapPower}`, x: 52 + Math.random() * 4, y: 49 + Math.random() * 4 }
     ]);
-    setStatus('Degu tap +25 coins');
+    setStatus(`Degu tap +${stats.tapPower} coins`);
+  }
+
+  function buyUpgrade(upgradeId: string) {
+    const optimistic = purchaseUpgrade(
+      saveRef.current.economy,
+      saveRef.current.progression,
+      upgradeId
+    );
+    setSave(
+      nextSave((currentSave) => {
+        const result = purchaseUpgrade(currentSave.economy, currentSave.progression, upgradeId);
+        if (!result) return currentSave;
+
+        return {
+          ...currentSave,
+          economy: result.economy,
+          progression: result.progression
+        };
+      })
+    );
+    setStatus(optimistic ? `Upgrade: ${optimistic.upgrade.label}` : 'Need coins or shards');
+  }
+
+  function claimEarnedTickets() {
+    const optimistic = claimTickets(saveRef.current.economy, saveRef.current.progression);
+    setSave(
+      nextSave((currentSave) => {
+        const result = claimTickets(currentSave.economy, currentSave.progression);
+        if (result.claimed <= 0) return currentSave;
+
+        return {
+          ...currentSave,
+          economy: result.economy,
+          progression: result.progression
+        };
+      })
+    );
+    setStatus(
+      optimistic.claimed > 0
+        ? `Claimed ${optimistic.claimed} ticket${optimistic.claimed === 1 ? '' : 's'}`
+        : 'Ticket meter charging'
+    );
   }
 
   function selectBackground(themeId: string) {
     const theme = backgroundThemes.find((item) => item.id === themeId);
     if (!theme) return;
+    if (!isRewardOwned(save.ownedRewardIds, theme.id)) {
+      setStatus(`${theme.label} locked`);
+      return;
+    }
 
     setSave(nextSave((currentSave) => ({ ...currentSave, selectedBackgroundId: theme.id })));
     setStatus(`Theme: ${theme.label}`);
   }
 
   function selectVariant(variantId: string) {
+    const variant = deguVariants.find((item) => item.id === variantId);
+    if (!variant) return;
+    if (!isRewardOwned(save.ownedRewardIds, variant.id)) {
+      setStatus(`${variant.label} locked`);
+      return;
+    }
+
     setSave(nextSave((currentSave) => ({ ...currentSave, selectedVariantId: variantId })));
     setStatus(`Variant: ${variantId}`);
   }
 
+  function selectDeguShot(shotId: string) {
+    setSave(nextSave((currentSave) => ({ ...currentSave, selectedDeguShotId: shotId })));
+    setStatus(`Degu shot: ${shotId}`);
+  }
+
   function toggleOutfit(outfitId: string) {
+    const outfit = outfits.find((item) => item.id === outfitId);
+    if (!outfit) return;
+    if (!isRewardOwned(save.ownedRewardIds, outfit.id)) {
+      setStatus(`${outfit.label} locked`);
+      return;
+    }
+
     setSave(
       nextSave((currentSave) => {
-        const active = currentSave.selectedOutfitIds.includes(outfitId);
         return {
           ...currentSave,
-          selectedOutfitIds: active
-            ? currentSave.selectedOutfitIds.filter((id) => id !== outfitId)
-            : [...currentSave.selectedOutfitIds, outfitId]
+          selectedOutfitIds: toggleOutfitForSlot(currentSave.selectedOutfitIds, outfitId)
         };
       })
     );
@@ -177,6 +293,11 @@ export function App() {
   }
 
   function placeSelectedDecor() {
+    if (!isRewardOwned(save.ownedRewardIds, selectedDecor.id)) {
+      setStatus(`${selectedDecor.label} locked`);
+      return;
+    }
+
     const candidate: PlacedDecor = {
       instanceId: `${selectedDecor.id}-${Date.now()}`,
       itemId: selectedDecor.id,
@@ -204,28 +325,33 @@ export function App() {
   }
 
   function runGacha(count: 1 | 10) {
-    const result = runPulls(skyGiftBanner, count, save.economy, {
-      ownedRewardIds: new Set(save.ownedRewardIds),
-      pullsSinceRare: save.pullsSinceRare,
+    const optimistic = runPulls(skyGiftBanner, count, saveRef.current.economy, {
+      ownedRewardIds: new Set(saveRef.current.ownedRewardIds),
+      pullsSinceRare: saveRef.current.pullsSinceRare,
       random: browserRandom
     });
 
-    if (!result) {
-      setStatus('Need earned tickets');
-      return;
-    }
-
-    const rewardIds = result.results.map((pull) => pull.entry.rewardId);
     setSave(
-      nextSave((currentSave) => ({
-        ...currentSave,
-        economy: result.economy,
-        pullsSinceRare: result.pullsSinceRare,
-        ownedRewardIds: Array.from(new Set([...currentSave.ownedRewardIds, ...rewardIds])),
-        gachaHistory: [...rewardIds, ...currentSave.gachaHistory].slice(0, 24)
-      }))
+      nextSave((currentSave) => {
+        const result = runPulls(skyGiftBanner, count, currentSave.economy, {
+          ownedRewardIds: new Set(currentSave.ownedRewardIds),
+          pullsSinceRare: currentSave.pullsSinceRare,
+          random: browserRandom
+        });
+
+        if (!result) return currentSave;
+
+        const rewardIds = result.results.map((pull) => pull.entry.rewardId);
+        return {
+          ...currentSave,
+          economy: result.economy,
+          pullsSinceRare: result.pullsSinceRare,
+          ownedRewardIds: Array.from(new Set([...currentSave.ownedRewardIds, ...rewardIds])),
+          gachaHistory: [...rewardIds, ...currentSave.gachaHistory].slice(0, 24)
+        };
+      })
     );
-    setStatus(`${count} sky gift${count === 1 ? '' : 's'} opened`);
+    setStatus(optimistic ? `${count} sky gift${count === 1 ? '' : 's'} opened` : 'Need earned tickets');
   }
 
   const style = useMemo(
@@ -244,7 +370,13 @@ export function App() {
         <img className="scene-background" src={activeTheme.src} alt="" draggable={false} />
         <div className="sky-vignette" />
 
-        <Hud economy={economy} status={status} activeTheme={activeTheme} missingAssets={missingAssets} />
+        <Hud
+          economy={economy}
+          stats={gameStats}
+          status={status}
+          activeTheme={activeTheme}
+          missingAssets={missingAssets}
+        />
 
         {(screen === 'home' || screen === 'placement' || screen === 'storage') && (
           <IslandScene
@@ -252,6 +384,9 @@ export function App() {
             selectedDecor={selectedDecor}
             selectedCell={selectedCell}
             screen={screen}
+            selectedDeguShotId={save.selectedDeguShotId}
+            selectedVariantId={selectedVariantId}
+            selectedOutfitIds={selectedOutfitIds}
             onTapDegu={tapDegu}
             onSelectCell={setSelectedCell}
           />
@@ -262,6 +397,7 @@ export function App() {
             selectedDecorId={selectedDecorId}
             selectedCell={selectedCell}
             rotation={rotation}
+            ownedRewardIds={save.ownedRewardIds}
             onSelectDecor={setSelectedDecorId}
             onRotate={() => {
               setRotation((value) => (value + 90) % 360);
@@ -272,12 +408,25 @@ export function App() {
           />
         )}
 
+        {screen === 'home' && (
+          <GameLoopPanel
+            economy={economy}
+            progression={save.progression}
+            stats={gameStats}
+            nextUpgrade={nextUpgrade}
+            onBuyUpgrade={buyUpgrade}
+            onClaimTickets={claimEarnedTickets}
+          />
+        )}
+
         {screen === 'wardrobe' && (
           <WardrobeScreen
-            selectedVariantId={save.selectedVariantId}
-            selectedOutfits={selectedOutfits}
-            selectedOutfitIds={save.selectedOutfitIds}
+            selectedVariantId={selectedVariantId}
+            selectedDeguShotId={save.selectedDeguShotId}
+            selectedOutfitIds={selectedOutfitIds}
+            ownedRewardIds={save.ownedRewardIds}
             onSelectVariant={selectVariant}
+            onSelectDeguShot={selectDeguShot}
             onToggleOutfit={toggleOutfit}
             onApply={() => setStatus('Wardrobe applied')}
           />
@@ -296,7 +445,9 @@ export function App() {
           <StorageOverlay
             save={save}
             activeTheme={activeTheme}
-            selectedBackgroundId={save.selectedBackgroundId}
+            stats={gameStats}
+            ownedRewardIds={save.ownedRewardIds}
+            selectedBackgroundId={selectedBackgroundId}
             onSelectBackground={selectBackground}
           />
         )}
@@ -319,11 +470,13 @@ export function App() {
 
 function Hud({
   economy,
+  stats,
   status,
   activeTheme,
   missingAssets
 }: {
   economy: EconomyState;
+  stats: GameStats;
   status: string;
   activeTheme: BackgroundTheme;
   missingAssets: string[];
@@ -332,12 +485,16 @@ function Hud({
     <header className="hud">
       <div className="resource coin-resource">
         <img src={runtimeAssets.coin} alt="" />
-        <strong>{formatNumber(economy.coins)}</strong>
-        <span>+{economy.incomePerSecond}/s</span>
+        <strong>{formatHudNumber(economy.coins)}</strong>
+        <span>+{stats.idleIncomePerSecond}/s</span>
       </div>
       <div className="resource ticket-resource">
         <img src={runtimeAssets.ticket} alt="" />
-        <strong>{formatNumber(economy.tickets)}</strong>
+        <strong>{formatHudNumber(economy.tickets)}</strong>
+      </div>
+      <div className="resource shard-resource">
+        <img src={runtimeAssets.shard} alt="" />
+        <strong>{formatHudNumber(economy.shards)}</strong>
       </div>
       <div className="theme-chip" aria-label={`Current theme ${activeTheme.label}`}>
         <span style={{ backgroundColor: activeTheme.swatch }} />
@@ -353,11 +510,118 @@ function Hud({
   );
 }
 
+function formatHudNumber(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}m`;
+  if (value >= 10_000) return `${(value / 1_000).toFixed(1)}k`;
+  return formatNumber(value);
+}
+
+function GameLoopPanel({
+  economy,
+  progression,
+  stats,
+  nextUpgrade,
+  onBuyUpgrade,
+  onClaimTickets
+}: {
+  economy: EconomyState;
+  progression: ProgressionState;
+  stats: GameStats;
+  nextUpgrade: UpgradeDefinition | null;
+  onBuyUpgrade: (id: string) => void;
+  onClaimTickets: () => void;
+}) {
+  const xpPct = Math.min(100, Math.round((stats.xpIntoLevel / stats.xpForNextLevel) * 100));
+  const ticketPct = Math.min(
+    100,
+    Math.round(((progression.ticketProgress % stats.ticketGoal) / stats.ticketGoal) * 100)
+  );
+  const claimLabel = stats.claimableTickets > 0 ? `Claim x${stats.claimableTickets}` : 'Charging';
+
+  return (
+    <section className="game-loop-panel" aria-label="Progression">
+      <div className="loop-head">
+        <div>
+          <strong>Lv {stats.level}</strong>
+          <span>{stats.xpIntoLevel}/{stats.xpForNextLevel}</span>
+        </div>
+        <div>
+          <strong>Tap +{stats.tapPower}</strong>
+          <span>{upgradeCatalog.length - progression.ownedUpgradeIds.length} upgrades</span>
+        </div>
+      </div>
+      <div className="meter-row">
+        <span className="meter-track" aria-label="XP progress">
+          <span style={{ width: `${xpPct}%` }} />
+        </span>
+        <span className="meter-track ticket-meter" aria-label="Ticket progress">
+          <span style={{ width: `${ticketPct}%` }} />
+        </span>
+      </div>
+      <div className="loop-actions">
+        <button
+          className="claim-button"
+          type="button"
+          data-ready={stats.claimableTickets > 0}
+          onClick={onClaimTickets}
+          aria-label="Claim earned tickets"
+        >
+          <img src={runtimeAssets.ticket} alt="" />
+          {claimLabel}
+        </button>
+        {nextUpgrade ? (
+          <button
+            className="next-upgrade-button"
+            type="button"
+            data-affordable={economy[nextUpgrade.cost.currency] >= nextUpgrade.cost.amount}
+            onClick={() => onBuyUpgrade(nextUpgrade.id)}
+            aria-label={`Buy ${nextUpgrade.label}`}
+          >
+            <span>{nextUpgrade.label}</span>
+            <strong>
+              {nextUpgrade.cost.currency === 'shards' ? 'Shards' : 'Coins'} {formatNumber(nextUpgrade.cost.amount)}
+            </strong>
+          </button>
+        ) : (
+          <button className="next-upgrade-button" type="button" disabled>
+            <span>Upgrades</span>
+            <strong>Complete</strong>
+          </button>
+        )}
+      </div>
+      <div className="upgrade-strip" aria-label="Upgrade list">
+        {upgradeCatalog.map((upgrade) => {
+          const owned = progression.ownedUpgradeIds.includes(upgrade.id);
+          const affordable = economy[upgrade.cost.currency] >= upgrade.cost.amount;
+          return (
+            <button
+              key={upgrade.id}
+              className="upgrade-chip"
+              type="button"
+              data-owned={owned}
+              data-affordable={affordable}
+              disabled={owned}
+              onClick={() => onBuyUpgrade(upgrade.id)}
+              aria-label={`${owned ? 'Owned' : 'Buy'} ${upgrade.label}`}
+            >
+              <span>{upgrade.label}</span>
+              <strong>{owned ? 'Owned' : formatNumber(upgrade.cost.amount)}</strong>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function IslandScene({
   save,
   selectedDecor,
   selectedCell,
   screen,
+  selectedDeguShotId,
+  selectedVariantId,
+  selectedOutfitIds,
   onTapDegu,
   onSelectCell
 }: {
@@ -365,6 +629,9 @@ function IslandScene({
   selectedDecor: DecorItem;
   selectedCell: Cell;
   screen: ScreenId;
+  selectedDeguShotId: string;
+  selectedVariantId: string;
+  selectedOutfitIds: string[];
   onTapDegu: () => void;
   onSelectCell: (cell: Cell) => void;
 }) {
@@ -418,13 +685,12 @@ function IslandScene({
       )}
 
       <button className="degu-button" type="button" aria-label="Tap degu for coins" onClick={onTapDegu}>
-        <img
-          className="degu-sprite"
-          src={runtimeAssets.deguCandidate}
-          alt="Temporary degu candidate A"
-          draggable={false}
+        <PixelDeguStage
+          mode="island"
+          selectedShotId={selectedDeguShotId}
+          selectedVariantId={selectedVariantId}
+          selectedOutfitIds={selectedOutfitIds}
         />
-        <span className="candidate-badge">candidate</span>
       </button>
     </div>
   );
@@ -434,6 +700,7 @@ function PlacementPanel({
   selectedDecorId,
   selectedCell,
   rotation,
+  ownedRewardIds,
   onSelectDecor,
   onRotate,
   onConfirm,
@@ -442,6 +709,7 @@ function PlacementPanel({
   selectedDecorId: string;
   selectedCell: Cell;
   rotation: number;
+  ownedRewardIds: string[];
   onSelectDecor: (id: string) => void;
   onRotate: () => void;
   onConfirm: () => void;
@@ -457,19 +725,23 @@ function PlacementPanel({
         </span>
       </div>
       <div className="decor-tray">
-        {decorItems.map((decor) => (
-          <button
-            key={decor.id}
-            className="asset-card"
-            type="button"
-            data-active={selectedDecorId === decor.id}
-            aria-label={`Select ${decor.label}`}
-            onClick={() => onSelectDecor(decor.id)}
-          >
-            <img src={decor.src} alt="" draggable={false} />
-            <span>+{decor.bonusPerSecond}/s</span>
-          </button>
-        ))}
+        {decorItems.map((decor) => {
+          const owned = isRewardOwned(ownedRewardIds, decor.id);
+          return (
+            <button
+              key={decor.id}
+              className="asset-card"
+              type="button"
+              data-active={selectedDecorId === decor.id}
+              data-locked={!owned}
+              aria-label={`${owned ? 'Select' : 'Locked'} ${decor.label}`}
+              onClick={() => onSelectDecor(decor.id)}
+            >
+              <img src={decor.src} alt="" draggable={false} />
+              <span>{owned ? `+${decor.bonusPerSecond}/s` : 'Locked'}</span>
+            </button>
+          );
+        })}
       </div>
       <div className="action-row">
         <button className="action danger" type="button" onClick={onCancel} aria-label="Cancel placement">
@@ -488,60 +760,81 @@ function PlacementPanel({
 
 function WardrobeScreen({
   selectedVariantId,
-  selectedOutfits,
+  selectedDeguShotId,
   selectedOutfitIds,
+  ownedRewardIds,
   onSelectVariant,
+  onSelectDeguShot,
   onToggleOutfit,
   onApply
 }: {
   selectedVariantId: string;
-  selectedOutfits: OutfitItem[];
+  selectedDeguShotId: string;
   selectedOutfitIds: string[];
+  ownedRewardIds: string[];
   onSelectVariant: (id: string) => void;
+  onSelectDeguShot: (id: string) => void;
   onToggleOutfit: (id: string) => void;
   onApply: () => void;
 }) {
   return (
     <section className="wardrobe-screen" aria-label="Wardrobe">
-      <div className="wardrobe-stage">
-        <img className="wardrobe-degu" src={runtimeAssets.deguCandidate} alt="Temporary degu candidate A" draggable={false} />
-        {selectedOutfits.map((outfit) => (
-          <img
-            key={outfit.id}
-            className={`outfit-preview outfit-${outfit.slot}`}
-            src={outfit.src}
-            alt=""
-            draggable={false}
-          />
-        ))}
-        <span className="candidate-badge wardrobe-candidate">design pending</span>
-      </div>
-      <div className="variant-row">
-        {deguVariants.map((variant) => (
+      <PixelDeguStage
+        mode="wardrobe"
+        selectedShotId={selectedDeguShotId}
+        selectedVariantId={selectedVariantId}
+        selectedOutfitIds={selectedOutfitIds}
+      />
+      <div className="shot-row" aria-label="Degu shot choices">
+        {pixelDeguShots.map((shot) => (
           <button
-            key={variant.id}
-            className="variant-button"
+            key={shot.id}
+            className="shot-button"
             type="button"
-            style={{ '--swatch': variant.swatch } as React.CSSProperties}
-            data-active={variant.id === selectedVariantId}
-            onClick={() => onSelectVariant(variant.id)}
-            aria-label={`Select ${variant.label}`}
-          />
-        ))}
-      </div>
-      <div className="wardrobe-grid">
-        {outfits.map((outfit) => (
-          <button
-            key={outfit.id}
-            className="asset-card outfit-card-ui"
-            type="button"
-            data-active={selectedOutfitIds.includes(outfit.id)}
-            onClick={() => onToggleOutfit(outfit.id)}
-            aria-label={`Toggle ${outfit.label}`}
+            data-active={shot.id === selectedDeguShotId}
+            onClick={() => onSelectDeguShot(shot.id)}
+            aria-label={`Select degu shot ${shot.id}`}
           >
-            <img src={outfit.src} alt="" draggable={false} />
+            <img src={shot.src} alt="" draggable={false} />
+            <span>{shot.id}</span>
           </button>
         ))}
+      </div>
+      <div className="variant-row">
+        {deguVariants.map((variant) => {
+          const owned = isRewardOwned(ownedRewardIds, variant.id);
+          return (
+            <button
+              key={variant.id}
+              className="variant-button"
+              type="button"
+              style={{ '--swatch': variant.swatch } as React.CSSProperties}
+              data-active={variant.id === selectedVariantId}
+              data-locked={!owned}
+              onClick={() => onSelectVariant(variant.id)}
+              aria-label={`${owned ? 'Select' : 'Locked'} ${variant.label}`}
+            />
+          );
+        })}
+      </div>
+      <div className="wardrobe-grid">
+        {outfits.map((outfit) => {
+          const owned = isRewardOwned(ownedRewardIds, outfit.id);
+          return (
+            <button
+              key={outfit.id}
+              className="asset-card outfit-card-ui"
+              type="button"
+              data-active={selectedOutfitIds.includes(outfit.id)}
+              data-locked={!owned}
+              onClick={() => onToggleOutfit(outfit.id)}
+              aria-label={`${owned ? 'Toggle' : 'Locked'} ${outfit.label}`}
+            >
+              <img src={outfit.src} alt="" draggable={false} />
+              {!owned && <span>Locked</span>}
+            </button>
+          );
+        })}
       </div>
       <button className="apply-button" type="button" onClick={onApply} aria-label="Apply wardrobe">
         Apply
@@ -563,10 +856,20 @@ function GachaScreen({
 }) {
   const rewards = [
     decorItems.find((item) => item.id === 'cloud-lamp'),
+    backgroundThemes.find((item) => item.id === 'morning-pasture'),
+    backgroundThemes.find((item) => item.id === 'sunset-clover-isle'),
+    backgroundThemes.find((item) => item.id === 'flower-cloud-terrace'),
     outfits.find((item) => item.id === 'flower-crown'),
+    outfits.find((item) => item.id === 'acorn-beret'),
+    outfits.find((item) => item.id === 'mint-scarf'),
+    outfits.find((item) => item.id === 'explorer-goggles'),
+    decorItems.find((item) => item.id === 'timothy-hay-rack'),
+    decorItems.find((item) => item.id === 'sand-bath-bowl'),
+    decorItems.find((item) => item.id === 'wood-tunnel'),
+    decorItems.find((item) => item.id === 'ceramic-hideout'),
     decorItems.find((item) => item.id === 'angel-fountain'),
     outfits.find((item) => item.id === 'celestial-cape')
-  ].filter(Boolean) as Array<DecorItem | OutfitItem>;
+  ].filter(Boolean) as Array<DecorItem | OutfitItem | BackgroundTheme>;
 
   return (
     <section className="gacha-screen" aria-label="Free sky gift">
@@ -595,11 +898,15 @@ function GachaScreen({
 function StorageOverlay({
   save,
   activeTheme,
+  stats,
+  ownedRewardIds,
   selectedBackgroundId,
   onSelectBackground
 }: {
   save: PrototypeSave;
   activeTheme: BackgroundTheme;
+  stats: GameStats;
+  ownedRewardIds: string[];
   selectedBackgroundId: string;
   onSelectBackground: (themeId: string) => void;
 }) {
@@ -610,6 +917,8 @@ function StorageOverlay({
         <span>{save.ownedRewardIds.length} rewards</span>
       </div>
       <div className="storage-stats">
+        <span>Lv {stats.level}</span>
+        <span>+{stats.idleIncomePerSecond}/s</span>
         <span>{save.placedDecor.length} decor</span>
         <span>{save.gachaHistory.length} pulls</span>
       </div>
@@ -619,19 +928,24 @@ function StorageOverlay({
           <span>{activeTheme.label}</span>
         </div>
         <div className="theme-tray">
-          {backgroundThemes.map((theme) => (
-            <button
-              key={theme.id}
-              className="theme-card"
-              type="button"
-              data-active={selectedBackgroundId === theme.id}
-              onClick={() => onSelectBackground(theme.id)}
-              aria-label={`Switch background to ${theme.label}`}
-            >
-              <img src={theme.src} alt="" draggable={false} />
-              <span style={{ backgroundColor: theme.swatch }} />
-            </button>
-          ))}
+          {backgroundThemes.map((theme) => {
+            const owned = isRewardOwned(ownedRewardIds, theme.id);
+            return (
+              <button
+                key={theme.id}
+                className="theme-card"
+                type="button"
+                data-active={selectedBackgroundId === theme.id}
+                data-locked={!owned}
+                onClick={() => onSelectBackground(theme.id)}
+                aria-label={`${owned ? 'Switch background to' : 'Locked'} ${theme.label}`}
+              >
+                <img src={theme.src} alt="" draggable={false} />
+                <span style={{ backgroundColor: theme.swatch }} />
+                {!owned && <strong>Locked</strong>}
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>

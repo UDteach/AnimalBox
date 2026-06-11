@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { backgroundThemes, decorItems, deguVariants, outfits } from './content';
 import { initialEconomy } from './economy';
 import { runPulls, seededRandom, skyGiftBanner } from './gacha';
 
@@ -39,5 +40,16 @@ describe('free gacha', () => {
     expect(result?.economy.tickets).toBe(initialEconomy.tickets - 10);
     expect(result?.results.filter((pull) => pull.duplicate).length).toBeGreaterThan(0);
     expect(result?.economy.shards).toBeGreaterThan(initialEconomy.shards);
+  });
+
+  it('only references reward ids that exist in customization content', () => {
+    const rewardIds = new Set([
+      ...decorItems.map((item) => item.id),
+      ...outfits.map((item) => item.id),
+      ...deguVariants.map((item) => item.id),
+      ...backgroundThemes.map((item) => item.id)
+    ]);
+
+    expect(skyGiftBanner.entries.filter((entry) => !rewardIds.has(entry.rewardId))).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 import { spendCurrency, type EconomyState } from './economy';
 
-export type RewardType = 'decor' | 'outfit' | 'degu_variant' | 'currency';
+export type RewardType = 'decor' | 'outfit' | 'degu_variant' | 'background' | 'currency';
 export type Rarity = 'common' | 'rare' | 'special';
 
 export interface GachaEntry {
@@ -35,12 +35,32 @@ export const skyGiftBanner: GachaBanner = {
   cost: { currency: 'tickets', amount: 1 },
   guaranteedRareEvery: 10,
   entries: [
-    { rewardId: 'cloud-lamp', rewardType: 'decor', rarity: 'common', weight: 36, duplicateShardValue: 2 },
+    { rewardId: 'cloud-lamp', rewardType: 'decor', rarity: 'common', weight: 24, duplicateShardValue: 2 },
+    { rewardId: 'timothy-hay-rack', rewardType: 'decor', rarity: 'common', weight: 20, duplicateShardValue: 2 },
+    { rewardId: 'sand-bath-bowl', rewardType: 'decor', rarity: 'common', weight: 18, duplicateShardValue: 2 },
+    { rewardId: 'wood-tunnel', rewardType: 'decor', rarity: 'common', weight: 16, duplicateShardValue: 2 },
+    { rewardId: 'seed-sprout-pot', rewardType: 'decor', rarity: 'common', weight: 18, duplicateShardValue: 2 },
+    { rewardId: 'acorn-beret', rewardType: 'outfit', rarity: 'common', weight: 16, duplicateShardValue: 2 },
+    { rewardId: 'mint-scarf', rewardType: 'outfit', rarity: 'common', weight: 16, duplicateShardValue: 2 },
+    { rewardId: 'sky-satchel', rewardType: 'outfit', rarity: 'common', weight: 14, duplicateShardValue: 2 },
+    { rewardId: 'daisy-ear-clip', rewardType: 'outfit', rarity: 'common', weight: 14, duplicateShardValue: 2 },
     { rewardId: 'flower-crown', rewardType: 'outfit', rarity: 'rare', weight: 14, duplicateShardValue: 8 },
     { rewardId: 'blue-gray', rewardType: 'degu_variant', rarity: 'rare', weight: 12, duplicateShardValue: 8 },
+    { rewardId: 'morning-pasture', rewardType: 'background', rarity: 'rare', weight: 8, duplicateShardValue: 8 },
+    { rewardId: 'sunset-clover-isle', rewardType: 'background', rarity: 'rare', weight: 8, duplicateShardValue: 8 },
+    { rewardId: 'rainy-glass-garden', rewardType: 'background', rarity: 'rare', weight: 8, duplicateShardValue: 8 },
+    { rewardId: 'flower-cloud-terrace', rewardType: 'background', rarity: 'rare', weight: 8, duplicateShardValue: 8 },
+    { rewardId: 'ceramic-hideout', rewardType: 'decor', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
+    { rewardId: 'cloud-bridge', rewardType: 'decor', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
+    { rewardId: 'bellflower-planter', rewardType: 'decor', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
+    { rewardId: 'leaf-cape', rewardType: 'outfit', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
+    { rewardId: 'star-hairpin', rewardType: 'outfit', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
+    { rewardId: 'explorer-goggles', rewardType: 'outfit', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
     { rewardId: 'angel-fountain', rewardType: 'decor', rarity: 'special', weight: 5, duplicateShardValue: 20 },
     { rewardId: 'celestial-cape', rewardType: 'outfit', rarity: 'special', weight: 4, duplicateShardValue: 20 },
-    { rewardId: 'hay-bed', rewardType: 'decor', rarity: 'common', weight: 29, duplicateShardValue: 2 }
+    { rewardId: 'cozy-poncho', rewardType: 'outfit', rarity: 'special', weight: 4, duplicateShardValue: 20 },
+    { rewardId: 'moonlit-hay-field', rewardType: 'background', rarity: 'special', weight: 3, duplicateShardValue: 20 },
+    { rewardId: 'hay-bed', rewardType: 'decor', rarity: 'common', weight: 18, duplicateShardValue: 2 }
   ]
 };
 

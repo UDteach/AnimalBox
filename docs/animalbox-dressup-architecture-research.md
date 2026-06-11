@@ -92,6 +92,33 @@ Once the degu design is chosen, replace the simple stage anchors with a real com
 
 ### Best Fit For AnimalBox Web/PWA
 
+### Current Prototype Spike
+
+The current repo now includes a small PixiJS + DragonBones runtime spike in the wardrobe screen. Rig v2 uses an ImageGen-generated technical parts sheet plus the ImageGen wardrobe pack, converted into DragonBones-style runtime files: `degu-v2_ske.json`, `degu-v2_tex.json`, and `degu-v2_tex.png`. The provisional armature exposes `body`, `head`, `ears`, `tail`, `paws`, `feet`, `headwear`, `face`, `neck`, `cape`, `halo`, and wing slots.
+
+This spike is intentionally not the final degu design. Its job is to test the implementation path that makes headwear follow head rotation, face items follow the head/face anchor, and back/neck items follow body motion, instead of staying as fixed DOM image layers.
+
+The first visual polish pass also proved that one wardrobe item may need multiple rig attachments. `angel-halo-wings` is treated as separate halo, left-wing, and right-wing attachments so the wings can sit behind the head while the halo stays above it.
+
+Current prototype stack:
+
+```text
+React + Vite + TypeScript
+PixiJS 8
+pixi-dragonbones-runtime 8
+ImageGen parts sheet + wardrobe pack -> chroma-key alpha PNGs -> DragonBones ske/tex JSON + atlas PNG
+```
+
+Adoption gate before using this for production wardrobe:
+
+- final degu design must be split into approved body/head/ear/tail/paw parts
+- item art must be authored per slot, not as whole-character baked PNGs
+- atlas and skeleton generation should become a checked-in script once the final degu design is selected
+- mobile bundle cost and first-render time need measurement
+- DragonBones maintenance risk should be compared once against Spine before locking the stack
+
+### Longer-Term Stack Decision
+
 Use Spine as the character rig format, rendered by either:
 
 - `spine-phaser` if AnimalBox keeps Phaser as the game scene renderer.

@@ -8,17 +8,20 @@ The product target is closer to a cozy avatar garden app than a pure idle clicke
 
 ## Recommended Stack
 
-- Runtime: React + Vite + TypeScript + Phaser 4.
-- Game/UI split: Phaser renders the island, animals, placement preview, coin bursts, and sprite animation. React renders top/bottom HUD, bottom sheets, wardrobe, inventory, settings, and gacha screens.
+- Runtime: React + Vite + TypeScript.
+- Current rig spike: PixiJS 8 + `pixi-dragonbones-runtime` 8 in the wardrobe screen to validate bone-following outfits.
+- Game/UI split: React renders top/bottom HUD, bottom sheets, wardrobe, inventory, settings, and gacha screens. The animal/island renderer can be PixiJS + DragonBones if the spike holds up, or Phaser if broader scene/game primitives become more important.
 - Mobile delivery: PWA first with `vite-plugin-pwa`; add Capacitor later only for app-store packaging, haptics, notifications, or native share features.
 - State: plain TypeScript domain modules for economy/gacha/placement; Zustand for React-to-game state bridge.
 - Persistence: localStorage only for a tiny prototype; Dexie/IndexedDB for real save data, inventory, placement records, gacha history, and migrations.
-- Assets: ImageGen sources, local cleanup, sprite atlas packing, then Phaser atlas/spritesheet import. Use Free Texture Packer or a local max-rects packer for early atlas generation.
+- Assets: ImageGen sources, local cleanup, sprite atlas packing, then DragonBones/Pixi or Phaser atlas import. Use Free Texture Packer or a local max-rects packer for early atlas generation.
 - Testing: Vitest for gacha weights, pity/stamp behavior, duplicate conversion, placement overlap, offline income, save migration, and deterministic seeded simulations.
 
-## Why Phaser 4 First
+## Renderer Direction
 
-Phaser 4.1.0 is the current official line as of 2026-06-11, and the official React TypeScript template already gives a React/Phaser bridge with Vite. Phaser also has the exact primitives AnimalBox needs:
+The original plan favored Phaser because it has scene, input, depth sorting, atlas, and animation primitives. The DragonBones spike tests a narrower but important question first: whether AnimalBox can make wardrobe items follow a degu rig naturally in a web/PWA build.
+
+Phaser remains a good option for broader island gameplay:
 
 - `Container` for one degu actor composed from layered sprites.
 - `Layer` and depth sorting for placed objects on the island.
@@ -27,11 +30,11 @@ Phaser 4.1.0 is the current official line as of 2026-06-11, and the official Rea
 - `ScaleManager` for portrait canvas scaling.
 - texture atlas and spritesheet support for mobile draw-call control.
 
-Fallback: if a Phaser 4 API/plugin issue blocks early implementation, pin to Phaser 3.90.0 and keep the same architecture. Avoid depending on niche plugins until the first playable prototype is stable.
+PixiJS + DragonBones is the better near-term candidate for the avatar renderer if the wardrobe workflow matters more than general game-scene features. Avoid depending on niche plugins until the first playable prototype is stable.
 
 ## Dress-Up Implementation
 
-Use layered composition, not pre-rendered combinations.
+Use rig or layered composition, not pre-rendered combinations. The current wardrobe prototype uses PixiJS + DragonBones rig v2 with separated body/head/ear/tail/paw/foot parts and DragonBones-style `ske/tex` JSON files. The Phaser container contract below remains the fallback/general game-scene shape if the project moves away from DragonBones.
 
 `DeguActor` is a Phaser `Container` with fixed child order:
 

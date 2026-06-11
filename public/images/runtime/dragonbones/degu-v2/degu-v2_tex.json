@@ -1,0 +1,135 @@
+{
+  "name": "animalbox-degu-rig-v2",
+  "imagePath": "degu-v2_tex.png",
+  "width": 1536,
+  "height": 1024,
+  "scale": 1,
+  "SubTexture": [
+    {
+      "name": "body",
+      "x": 8,
+      "y": 8,
+      "width": 369,
+      "height": 387
+    },
+    {
+      "name": "head",
+      "x": 385,
+      "y": 8,
+      "width": 352,
+      "height": 277
+    },
+    {
+      "name": "left-ear",
+      "x": 745,
+      "y": 8,
+      "width": 125,
+      "height": 178
+    },
+    {
+      "name": "right-ear",
+      "x": 878,
+      "y": 8,
+      "width": 124,
+      "height": 179
+    },
+    {
+      "name": "tail",
+      "x": 1010,
+      "y": 8,
+      "width": 142,
+      "height": 325
+    },
+    {
+      "name": "left-paw",
+      "x": 1160,
+      "y": 8,
+      "width": 87,
+      "height": 173
+    },
+    {
+      "name": "right-paw",
+      "x": 1255,
+      "y": 8,
+      "width": 91,
+      "height": 174
+    },
+    {
+      "name": "left-foot",
+      "x": 1354,
+      "y": 8,
+      "width": 123,
+      "height": 136
+    },
+    {
+      "name": "right-foot",
+      "x": 8,
+      "y": 403,
+      "width": 110,
+      "height": 140
+    },
+    {
+      "name": "shadow",
+      "x": 126,
+      "y": 403,
+      "width": 258,
+      "height": 68
+    },
+    {
+      "name": "straw-hat",
+      "x": 392,
+      "y": 403,
+      "width": 208,
+      "height": 137
+    },
+    {
+      "name": "flower-crown",
+      "x": 608,
+      "y": 403,
+      "width": 210,
+      "height": 118
+    },
+    {
+      "name": "pastel-ribbon",
+      "x": 826,
+      "y": 403,
+      "width": 204,
+      "height": 194
+    },
+    {
+      "name": "celestial-cape",
+      "x": 1038,
+      "y": 403,
+      "width": 208,
+      "height": 183
+    },
+    {
+      "name": "round-glasses",
+      "x": 1254,
+      "y": 403,
+      "width": 208,
+      "height": 121
+    },
+    {
+      "name": "angel-halo",
+      "x": 8,
+      "y": 605,
+      "width": 134,
+      "height": 64
+    },
+    {
+      "name": "angel-left-wing",
+      "x": 150,
+      "y": 605,
+      "width": 79,
+      "height": 97
+    },
+    {
+      "name": "angel-right-wing",
+      "x": 237,
+      "y": 605,
+      "width": 88,
+      "height": 99
+    }
+  ]
+}

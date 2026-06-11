@@ -1,0 +1,789 @@
+{
+  "version": "5.6",
+  "name": "animalbox-degu-rig-v2",
+  "frameRate": 24,
+  "armature": [
+    {
+      "name": "degu-rig",
+      "frameRate": 24,
+      "type": "Armature",
+      "aabb": {
+        "x": -260,
+        "y": -330,
+        "width": 520,
+        "height": 650
+      },
+      "bone": [
+        {
+          "name": "root",
+          "transform": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "name": "shadow",
+          "parent": "root",
+          "length": 1,
+          "transform": {
+            "x": 0,
+            "y": 226
+          }
+        },
+        {
+          "name": "body",
+          "parent": "root",
+          "length": 132,
+          "transform": {
+            "x": 0,
+            "y": 52
+          }
+        },
+        {
+          "name": "tail",
+          "parent": "body",
+          "length": 120,
+          "transform": {
+            "x": -138,
+            "y": 68,
+            "rotate": -22
+          }
+        },
+        {
+          "name": "head",
+          "parent": "body",
+          "length": 105,
+          "transform": {
+            "x": 0,
+            "y": -166
+          }
+        },
+        {
+          "name": "left-ear",
+          "parent": "head",
+          "length": 82,
+          "transform": {
+            "x": -84,
+            "y": -112,
+            "rotate": -12
+          }
+        },
+        {
+          "name": "right-ear",
+          "parent": "head",
+          "length": 82,
+          "transform": {
+            "x": 84,
+            "y": -112,
+            "rotate": 12
+          }
+        },
+        {
+          "name": "left-paw",
+          "parent": "body",
+          "length": 56,
+          "transform": {
+            "x": -72,
+            "y": 44,
+            "rotate": -7
+          }
+        },
+        {
+          "name": "right-paw",
+          "parent": "body",
+          "length": 56,
+          "transform": {
+            "x": 72,
+            "y": 44,
+            "rotate": 7
+          }
+        },
+        {
+          "name": "left-foot",
+          "parent": "body",
+          "length": 60,
+          "transform": {
+            "x": -82,
+            "y": 166,
+            "rotate": -5
+          }
+        },
+        {
+          "name": "right-foot",
+          "parent": "body",
+          "length": 60,
+          "transform": {
+            "x": 82,
+            "y": 166,
+            "rotate": 5
+          }
+        },
+        {
+          "name": "left-wing",
+          "parent": "head",
+          "length": 54,
+          "transform": {
+            "x": -128,
+            "y": -58,
+            "rotate": -13
+          }
+        },
+        {
+          "name": "right-wing",
+          "parent": "head",
+          "length": 54,
+          "transform": {
+            "x": 128,
+            "y": -58,
+            "rotate": 13
+          }
+        },
+        {
+          "name": "headwear",
+          "parent": "head",
+          "length": 92,
+          "transform": {
+            "x": -4,
+            "y": -130,
+            "rotate": -2
+          }
+        },
+        {
+          "name": "halo",
+          "parent": "head",
+          "length": 92,
+          "transform": {
+            "x": 0,
+            "y": -154,
+            "rotate": -2
+          }
+        },
+        {
+          "name": "face",
+          "parent": "head",
+          "length": 70,
+          "transform": {
+            "x": 0,
+            "y": 18
+          }
+        },
+        {
+          "name": "neck",
+          "parent": "body",
+          "length": 72,
+          "transform": {
+            "x": 0,
+            "y": -78
+          }
+        },
+        {
+          "name": "cape",
+          "parent": "body",
+          "length": 96,
+          "transform": {
+            "x": 52,
+            "y": 64,
+            "rotate": 3
+          }
+        }
+      ],
+      "slot": [
+        {
+          "name": "shadow",
+          "parent": "shadow",
+          "displayIndex": 0
+        },
+        {
+          "name": "tail",
+          "parent": "tail",
+          "displayIndex": 0
+        },
+        {
+          "name": "cape",
+          "parent": "cape",
+          "displayIndex": -1
+        },
+        {
+          "name": "body",
+          "parent": "body",
+          "displayIndex": 0
+        },
+        {
+          "name": "left-foot",
+          "parent": "left-foot",
+          "displayIndex": 0
+        },
+        {
+          "name": "right-foot",
+          "parent": "right-foot",
+          "displayIndex": 0
+        },
+        {
+          "name": "left-wing",
+          "parent": "left-wing",
+          "displayIndex": -1
+        },
+        {
+          "name": "right-wing",
+          "parent": "right-wing",
+          "displayIndex": -1
+        },
+        {
+          "name": "left-ear",
+          "parent": "left-ear",
+          "displayIndex": 0
+        },
+        {
+          "name": "right-ear",
+          "parent": "right-ear",
+          "displayIndex": 0
+        },
+        {
+          "name": "head",
+          "parent": "head",
+          "displayIndex": 0
+        },
+        {
+          "name": "left-paw",
+          "parent": "left-paw",
+          "displayIndex": 0
+        },
+        {
+          "name": "right-paw",
+          "parent": "right-paw",
+          "displayIndex": 0
+        },
+        {
+          "name": "neck",
+          "parent": "neck",
+          "displayIndex": -1
+        },
+        {
+          "name": "face",
+          "parent": "face",
+          "displayIndex": -1
+        },
+        {
+          "name": "headwear",
+          "parent": "headwear",
+          "displayIndex": -1
+        },
+        {
+          "name": "halo",
+          "parent": "halo",
+          "displayIndex": -1
+        }
+      ],
+      "skin": [
+        {
+          "name": "default",
+          "slot": [
+            {
+              "name": "shadow",
+              "display": [
+                {
+                  "name": "shadow",
+                  "path": "shadow",
+                  "transform": {
+                    "scX": 0.88,
+                    "scY": 0.88
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "tail",
+              "display": [
+                {
+                  "name": "tail",
+                  "path": "tail",
+                  "transform": {
+                    "x": 8,
+                    "y": -4,
+                    "scX": 0.82,
+                    "scY": 0.82
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "cape",
+              "display": [
+                {
+                  "name": "celestial-cape",
+                  "path": "celestial-cape",
+                  "transform": {
+                    "x": 8,
+                    "y": 12,
+                    "scX": 0.84,
+                    "scY": 0.84
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "body",
+              "display": [
+                {
+                  "name": "body",
+                  "path": "body",
+                  "transform": {
+                    "scX": 0.78,
+                    "scY": 0.78
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "left-foot",
+              "display": [
+                {
+                  "name": "left-foot",
+                  "path": "left-foot",
+                  "transform": {
+                    "scX": 0.72,
+                    "scY": 0.72
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "right-foot",
+              "display": [
+                {
+                  "name": "right-foot",
+                  "path": "right-foot",
+                  "transform": {
+                    "scX": 0.72,
+                    "scY": 0.72
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "left-wing",
+              "display": [
+                {
+                  "name": "angel-left-wing",
+                  "path": "angel-left-wing",
+                  "transform": {
+                    "scX": 0.86,
+                    "scY": 0.86
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "right-wing",
+              "display": [
+                {
+                  "name": "angel-right-wing",
+                  "path": "angel-right-wing",
+                  "transform": {
+                    "scX": 0.86,
+                    "scY": 0.86
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "left-ear",
+              "display": [
+                {
+                  "name": "left-ear",
+                  "path": "left-ear",
+                  "transform": {
+                    "scX": 0.76,
+                    "scY": 0.76
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "right-ear",
+              "display": [
+                {
+                  "name": "right-ear",
+                  "path": "right-ear",
+                  "transform": {
+                    "scX": 0.76,
+                    "scY": 0.76
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "head",
+              "display": [
+                {
+                  "name": "head",
+                  "path": "head",
+                  "transform": {
+                    "scX": 0.72,
+                    "scY": 0.72
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "left-paw",
+              "display": [
+                {
+                  "name": "left-paw",
+                  "path": "left-paw",
+                  "transform": {
+                    "scX": 0.64,
+                    "scY": 0.64
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "right-paw",
+              "display": [
+                {
+                  "name": "right-paw",
+                  "path": "right-paw",
+                  "transform": {
+                    "scX": 0.64,
+                    "scY": 0.64
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "neck",
+              "display": [
+                {
+                  "name": "pastel-ribbon",
+                  "path": "pastel-ribbon",
+                  "transform": {
+                    "y": 8,
+                    "scX": 0.34,
+                    "scY": 0.34
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "face",
+              "display": [
+                {
+                  "name": "round-glasses",
+                  "path": "round-glasses",
+                  "transform": {
+                    "y": 0,
+                    "scX": 0.56,
+                    "scY": 0.56
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "headwear",
+              "display": [
+                {
+                  "name": "straw-hat",
+                  "path": "straw-hat",
+                  "transform": {
+                    "y": 8,
+                    "rotate": -1,
+                    "scX": 0.62,
+                    "scY": 0.62
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                },
+                {
+                  "name": "flower-crown",
+                  "path": "flower-crown",
+                  "transform": {
+                    "y": 18,
+                    "scX": 0.66,
+                    "scY": 0.66
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "name": "halo",
+              "display": [
+                {
+                  "name": "angel-halo",
+                  "path": "angel-halo",
+                  "transform": {
+                    "scX": 0.9,
+                    "scY": 0.9
+                  },
+                  "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "animation": [
+        {
+          "name": "idle",
+          "duration": 48,
+          "playTimes": 0,
+          "bone": [
+            {
+              "name": "body",
+              "translateFrame": [
+                {
+                  "duration": 12,
+                  "x": 0,
+                  "y": 0,
+                  "tweenEasing": 0.35
+                },
+                {
+                  "duration": 12,
+                  "x": 0,
+                  "y": -7,
+                  "tweenEasing": 0.35
+                },
+                {
+                  "duration": 12,
+                  "x": 0,
+                  "y": 0,
+                  "tweenEasing": 0.35
+                },
+                {
+                  "duration": 12,
+                  "x": 0,
+                  "y": 4,
+                  "tweenEasing": 0.35
+                }
+              ]
+            },
+            {
+              "name": "head",
+              "rotateFrame": [
+                {
+                  "duration": 16,
+                  "rotate": -2.6,
+                  "tweenEasing": 0.2
+                },
+                {
+                  "duration": 16,
+                  "rotate": 2.4,
+                  "tweenEasing": 0.2
+                },
+                {
+                  "duration": 16,
+                  "rotate": 0,
+                  "tweenEasing": 0.2
+                }
+              ]
+            },
+            {
+              "name": "tail",
+              "rotateFrame": [
+                {
+                  "duration": 12,
+                  "rotate": -8,
+                  "tweenEasing": 0.2
+                },
+                {
+                  "duration": 12,
+                  "rotate": 8,
+                  "tweenEasing": 0.2
+                },
+                {
+                  "duration": 12,
+                  "rotate": -5,
+                  "tweenEasing": 0.2
+                },
+                {
+                  "duration": 12,
+                  "rotate": 6,
+                  "tweenEasing": 0.2
+                }
+              ]
+            },
+            {
+              "name": "left-ear",
+              "rotateFrame": [
+                {
+                  "duration": 24,
+                  "rotate": -5,
+                  "tweenEasing": 0.4
+                },
+                {
+                  "duration": 24,
+                  "rotate": 5,
+                  "tweenEasing": 0.4
+                }
+              ]
+            },
+            {
+              "name": "right-ear",
+              "rotateFrame": [
+                {
+                  "duration": 24,
+                  "rotate": 5,
+                  "tweenEasing": 0.4
+                },
+                {
+                  "duration": 24,
+                  "rotate": -5,
+                  "tweenEasing": 0.4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "tap-happy",
+          "duration": 18,
+          "playTimes": 1,
+          "bone": [
+            {
+              "name": "body",
+              "translateFrame": [
+                {
+                  "duration": 5,
+                  "x": 0,
+                  "y": -18,
+                  "tweenEasing": 0.35
+                },
+                {
+                  "duration": 5,
+                  "x": 0,
+                  "y": 4,
+                  "tweenEasing": 0.35
+                },
+                {
+                  "duration": 8,
+                  "x": 0,
+                  "y": 0,
+                  "tweenEasing": 0.35
+                }
+              ]
+            },
+            {
+              "name": "head",
+              "rotateFrame": [
+                {
+                  "duration": 5,
+                  "rotate": -8,
+                  "tweenEasing": 0.2
+                },
+                {
+                  "duration": 5,
+                  "rotate": 8,
+                  "tweenEasing": 0.2
+                },
+                {
+                  "duration": 8,
+                  "rotate": 0,
+                  "tweenEasing": 0.2
+                }
+              ]
+            },
+            {
+              "name": "tail",
+              "rotateFrame": [
+                {
+                  "duration": 3,
+                  "rotate": -16,
+                  "tweenEasing": 0.1
+                },
+                {
+                  "duration": 3,
+                  "rotate": 18,
+                  "tweenEasing": 0.1
+                },
+                {
+                  "duration": 3,
+                  "rotate": -14,
+                  "tweenEasing": 0.1
+                },
+                {
+                  "duration": 9,
+                  "rotate": 0,
+                  "tweenEasing": 0.2
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "defaultActions": [
+        {
+          "gotoAndPlay": "idle"
+        }
+      ]
+    }
+  ]
+}

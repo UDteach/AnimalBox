@@ -12,8 +12,12 @@ export const initialEconomy: EconomyState = {
   incomePerSecond: 85
 };
 
-export function addIdleIncome(state: EconomyState, elapsedMs: number): EconomyState {
-  const earned = Math.floor((state.incomePerSecond * elapsedMs) / 1000);
+export function addIdleIncome(
+  state: EconomyState,
+  elapsedMs: number,
+  incomePerSecond = state.incomePerSecond
+): EconomyState {
+  const earned = Math.floor((incomePerSecond * elapsedMs) / 1000);
   if (earned <= 0) return state;
   return { ...state, coins: state.coins + earned };
 }
@@ -24,7 +28,7 @@ export function tapForCoins(state: EconomyState, amount = 25): EconomyState {
 
 export function spendCurrency(
   state: EconomyState,
-  currency: 'coins' | 'tickets',
+  currency: keyof Pick<EconomyState, 'coins' | 'tickets' | 'shards'>,
   amount: number
 ): EconomyState | null {
   if (amount < 0) {

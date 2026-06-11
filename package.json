@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.2",
+    "pixi-dragonbones-runtime": "^8.0.3",
+    "pixi.js": "^8.19.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "vite": "^7.2.7"

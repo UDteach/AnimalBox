@@ -18,16 +18,37 @@ describe('prototype save data', () => {
 
   it('round-trips the current prototype save shape', () => {
     const storage = memoryStorage();
-    const next = { ...defaultSave, selectedVariantId: 'blue-gray', selectedBackgroundId: 'starlight-night' };
+    const next = {
+      ...defaultSave,
+      selectedVariantId: 'blue-gray',
+      selectedDeguShotId: '08',
+      selectedBackgroundId: 'starlight-night',
+      progression: {
+        ...defaultSave.progression,
+        ownedUpgradeIds: ['seed-snack'],
+        ticketProgress: 240
+      }
+    };
     savePrototype(next, storage);
     expect(loadSave(storage).selectedVariantId).toBe('blue-gray');
+    expect(loadSave(storage).selectedDeguShotId).toBe('08');
     expect(loadSave(storage).selectedBackgroundId).toBe('starlight-night');
+    expect(loadSave(storage).progression.ownedUpgradeIds).toEqual(['seed-snack']);
   });
 
   it('falls back to the starter background for unknown theme ids', () => {
     const storage = memoryStorage(JSON.stringify({ ...defaultSave, selectedBackgroundId: 'unknown' }));
 
     expect(loadSave(storage).selectedBackgroundId).toBe(defaultSave.selectedBackgroundId);
+  });
+
+  it('migrates older saves without progression or pixel degu shot fields', () => {
+    const { progression, selectedDeguShotId, ...legacySave } = defaultSave;
+    const storage = memoryStorage(JSON.stringify(legacySave));
+    const migrated = loadSave(storage);
+
+    expect(migrated.selectedDeguShotId).toBe(defaultSave.selectedDeguShotId);
+    expect(migrated.progression).toEqual(defaultSave.progression);
   });
 
   it('sanitizes invalid saved decor placements', () => {
@@ -82,6 +103,12 @@ describe('prototype save data', () => {
           incomePerSecond: Infinity
         },
         selectedVariantId: 'unknown-variant',
+        selectedDeguShotId: 'unknown-shot',
+        progression: {
+          xp: Infinity,
+          ticketProgress: -1,
+          ownedUpgradeIds: ['cloud-feeder', 'fake-upgrade']
+        },
         ownedRewardIds: ['hay-bed', 'secret-token-123'],
         gachaHistory: ['cloud-lamp', 'secret-token-123']
       })
@@ -91,6 +118,11 @@ describe('prototype save data', () => {
 
     expect(save.economy).toEqual(defaultSave.economy);
     expect(save.selectedVariantId).toBe(defaultSave.selectedVariantId);
+    expect(save.selectedDeguShotId).toBe(defaultSave.selectedDeguShotId);
+    expect(save.progression).toEqual({
+      ...defaultSave.progression,
+      ownedUpgradeIds: ['cloud-feeder']
+    });
     expect(save.ownedRewardIds).toEqual(['hay-bed']);
     expect(save.gachaHistory).toEqual(['cloud-lamp']);
   });

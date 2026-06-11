@@ -1,13 +1,25 @@
-import { backgroundThemes, decorItems, deguVariants, navOrder, outfits } from './content';
+import {
+  backgroundThemes,
+  decorItems,
+  deguVariants,
+  navOrder,
+  outfits,
+  pixelDeguShots,
+  starterRewardIds
+} from './content';
 import { initialEconomy, type EconomyState } from './economy';
 import { canPlaceDecor, type PlacedDecor } from './placement';
+import { defaultProgression, sanitizeProgression, type ProgressionState } from './progression';
 
 const STORAGE_KEY = 'animalbox.prototype.v1';
 const grid = { width: 6, height: 6 };
 const rewardIds = [
+  ...backgroundThemes.map((item) => item.id),
   ...decorItems.map((item) => item.id),
   ...outfits.map((item) => item.id),
-  ...deguVariants.map((item) => item.id)
+  ...deguVariants.map((item) => item.id),
+  ...pixelDeguShots.map((item) => item.id),
+  ...starterRewardIds
 ];
 
 export interface PrototypeSave {
@@ -15,11 +27,13 @@ export interface PrototypeSave {
   screen: string;
   selectedBackgroundId: string;
   selectedVariantId: string;
+  selectedDeguShotId: string;
   selectedOutfitIds: string[];
   placedDecor: PlacedDecor[];
   ownedRewardIds: string[];
   gachaHistory: string[];
   pullsSinceRare: number;
+  progression: ProgressionState;
 }
 
 export const defaultSave: PrototypeSave = {
@@ -27,6 +41,7 @@ export const defaultSave: PrototypeSave = {
   screen: 'home',
   selectedBackgroundId: 'floating-island',
   selectedVariantId: 'agouti',
+  selectedDeguShotId: '04',
   selectedOutfitIds: ['straw-hat'],
   placedDecor: [
     {
@@ -37,9 +52,10 @@ export const defaultSave: PrototypeSave = {
       footprint: { w: 1, h: 1 }
     }
   ],
-  ownedRewardIds: ['hay-bed', 'straw-hat'],
+  ownedRewardIds: starterRewardIds,
   gachaHistory: [],
-  pullsSinceRare: 0
+  pullsSinceRare: 0,
+  progression: defaultProgression
 };
 
 export function loadSave(storage: Pick<Storage, 'getItem'> = localStorage): PrototypeSave {
@@ -64,6 +80,11 @@ export function loadSave(storage: Pick<Storage, 'getItem'> = localStorage): Prot
         deguVariants.map((variant) => variant.id),
         defaultSave.selectedVariantId
       ),
+      selectedDeguShotId: sanitizeId(
+        parsed.selectedDeguShotId,
+        pixelDeguShots.map((shot) => shot.id),
+        defaultSave.selectedDeguShotId
+      ),
       selectedOutfitIds: sanitizeIdList(
         parsed.selectedOutfitIds,
         outfits.map((item) => item.id),
@@ -75,7 +96,8 @@ export function loadSave(storage: Pick<Storage, 'getItem'> = localStorage): Prot
       pullsSinceRare:
         typeof parsed.pullsSinceRare === 'number' && parsed.pullsSinceRare >= 0
           ? Math.floor(parsed.pullsSinceRare)
-          : defaultSave.pullsSinceRare
+          : defaultSave.pullsSinceRare,
+      progression: sanitizeProgression(parsed.progression)
     };
   } catch {
     return defaultSave;

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11",
+  "generatedAt": "2026-06-12",
   "assets": [
     {
       "id": "hay-bed",
@@ -172,6 +172,386 @@
       ],
       "source": "assets/source/imagegen/characters/degu-candidates/degu-candidate-a__source.png",
       "status": "candidate-not-final"
+    },
+    {
+      "id": "pixel-degu-v5-01",
+      "src": "/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-01.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-01.png",
+      "status": "active-pixel-swap-candidate"
+    },
+    {
+      "id": "pixel-degu-v5-02",
+      "src": "/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-02.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-02.png",
+      "status": "active-pixel-swap-candidate"
+    },
+    {
+      "id": "pixel-degu-v5-03",
+      "src": "/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-03.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-03.png",
+      "status": "active-pixel-swap-candidate"
+    },
+    {
+      "id": "pixel-degu-v5-04",
+      "src": "/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-04.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-04.png",
+      "status": "active-pixel-swap-default"
+    },
+    {
+      "id": "pixel-degu-v5-05",
+      "src": "/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-05.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-05.png",
+      "status": "active-pixel-swap-candidate"
+    },
+    {
+      "id": "pixel-degu-v5-06",
+      "src": "/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-06.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-06.png",
+      "status": "active-pixel-swap-candidate"
+    },
+    {
+      "id": "pixel-degu-v5-07",
+      "src": "/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-07.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-07.png",
+      "status": "active-pixel-swap-candidate"
+    },
+    {
+      "id": "pixel-degu-v5-08",
+      "src": "/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-08.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-08.png",
+      "status": "active-pixel-swap-candidate"
+    },
+    {
+      "id": "pixel-degu-v5-09",
+      "src": "/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-09.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-09.png",
+      "status": "active-pixel-swap-candidate"
+    },
+    {
+      "id": "pixel-degu-v5-10",
+      "src": "/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-10.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-10.png",
+      "status": "active-pixel-swap-candidate"
+    },
+    {
+      "id": "degu-dragonbones-rig-atlas",
+      "src": "/images/runtime/dragonbones/degu-rig-atlas.png",
+      "size": [
+        1536,
+        1536
+      ],
+      "source": "assets/source/imagegen/dragonbones-prototype/degu-rig-parts-sheet__source.png",
+      "additionalSources": [
+        "assets/source/imagegen/wardrobe-packs/wardrobe-pack-001__source.png"
+      ],
+      "status": "technical-prototype-not-final-character"
+    },
+    {
+      "id": "degu-dragonbones-rig-v2-atlas",
+      "src": "/images/runtime/dragonbones/degu-v2/degu-v2_tex.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "source": "assets/source/imagegen/dragonbones-rig-v2/degu-rig-v2-parts-sheet__source.png",
+      "additionalSources": [
+        "assets/source/imagegen/wardrobe-packs/wardrobe-pack-001__source.png"
+      ],
+      "dragonBones": {
+        "skeleton": "/images/runtime/dragonbones/degu-v2/degu-v2_ske.json",
+        "textureAtlas": "/images/runtime/dragonbones/degu-v2/degu-v2_tex.json"
+      },
+      "status": "technical-rig-v2-not-final-character"
+    },
+    {
+      "id": "degu-dragonbones-rig-v2-complete-reference",
+      "src": "/images/runtime/dragonbones/degu-v2-reference/degu-v2-complete-reference.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "source": "assets/source/imagegen/dragonbones-rig-v2/degu-v2-complete-reference__source.png",
+      "status": "visual-reference-for-rig-redraw-not-final-character"
+    },
+    {
+      "id": "sunset-clover-isle",
+      "src": "/images/runtime/backgrounds/floating-island-sunset-clover-isle.png",
+      "size": [
+        853,
+        1844
+      ],
+      "source": "assets/source/imagegen/backgrounds/floating-island-sunset-clover-isle__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "rainy-glass-garden",
+      "src": "/images/runtime/backgrounds/floating-island-rainy-glass-garden.png",
+      "size": [
+        853,
+        1844
+      ],
+      "source": "assets/source/imagegen/backgrounds/floating-island-rainy-glass-garden__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "flower-cloud-terrace",
+      "src": "/images/runtime/backgrounds/floating-island-flower-cloud-terrace.png",
+      "size": [
+        853,
+        1844
+      ],
+      "source": "assets/source/imagegen/backgrounds/floating-island-flower-cloud-terrace__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "moonlit-hay-field",
+      "src": "/images/runtime/backgrounds/floating-island-moonlit-hay-field.png",
+      "size": [
+        853,
+        1844
+      ],
+      "source": "assets/source/imagegen/backgrounds/floating-island-moonlit-hay-field__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "timothy-hay-rack",
+      "src": "/images/runtime/decor/timothy-hay-rack.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-002/timothy-hay-rack__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "sand-bath-bowl",
+      "src": "/images/runtime/decor/sand-bath-bowl.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-002/sand-bath-bowl__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "wood-tunnel",
+      "src": "/images/runtime/decor/wood-tunnel.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-002/wood-tunnel__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "ceramic-hideout",
+      "src": "/images/runtime/decor/ceramic-hideout.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-002/ceramic-hideout__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "seed-sprout-pot",
+      "src": "/images/runtime/decor/seed-sprout-pot.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-002/seed-sprout-pot__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "cloud-bridge",
+      "src": "/images/runtime/decor/cloud-bridge.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-002/cloud-bridge__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "sky-mailbox",
+      "src": "/images/runtime/decor/sky-mailbox.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-002/sky-mailbox__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "bellflower-planter",
+      "src": "/images/runtime/decor/bellflower-planter.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-002/bellflower-planter__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "acorn-beret",
+      "src": "/images/runtime/wardrobe/acorn-beret.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-002/acorn-beret__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "mint-scarf",
+      "src": "/images/runtime/wardrobe/mint-scarf.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-002/mint-scarf__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "leaf-cape",
+      "src": "/images/runtime/wardrobe/leaf-cape.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-002/leaf-cape__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "star-hairpin",
+      "src": "/images/runtime/wardrobe/star-hairpin.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-002/star-hairpin__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "explorer-goggles",
+      "src": "/images/runtime/wardrobe/explorer-goggles.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-002/explorer-goggles__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "cozy-poncho",
+      "src": "/images/runtime/wardrobe/cozy-poncho.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-002/cozy-poncho__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "sky-satchel",
+      "src": "/images/runtime/wardrobe/sky-satchel.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-002/sky-satchel__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "daisy-ear-clip",
+      "src": "/images/runtime/wardrobe/daisy-ear-clip.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-002/daisy-ear-clip__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "dream-shard",
+      "src": "/images/runtime/ui/dream-shard.png",
+      "size": [
+        160,
+        160
+      ],
+      "source": "assets/source/imagegen/ui-batch-002/dream-shard__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "xp-star",
+      "src": "/images/runtime/ui/xp-star.png",
+      "size": [
+        160,
+        160
+      ],
+      "source": "assets/source/imagegen/ui-batch-002/xp-star__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "care-brush",
+      "src": "/images/runtime/ui/care-brush.png",
+      "size": [
+        160,
+        160
+      ],
+      "source": "assets/source/imagegen/ui-batch-002/care-brush__source.png",
+      "status": "imagegen-batch-002"
+    },
+    {
+      "id": "seed-pouch",
+      "src": "/images/runtime/ui/seed-pouch.png",
+      "size": [
+        160,
+        160
+      ],
+      "source": "assets/source/imagegen/ui-batch-002/seed-pouch__source.png",
+      "status": "imagegen-batch-002"
     }
   ]
 }
