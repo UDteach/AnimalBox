@@ -59,8 +59,8 @@ describe('prototype save data', () => {
           {
             instanceId: 'valid',
             itemId: 'clover-patch',
-            cellX: 2,
-            cellY: 2,
+            cellX: 0,
+            cellY: 3,
             footprint: { w: 1, h: 1 }
           },
           {
@@ -85,8 +85,49 @@ describe('prototype save data', () => {
       {
         instanceId: 'valid',
         itemId: 'clover-patch',
-        cellX: 2,
-        cellY: 2,
+        cellX: 0,
+        cellY: 3,
+        footprint: { w: 1, h: 1 }
+      }
+    ]);
+  });
+
+  it('drops saved decor that is grid-valid but outside the visual scene-safe band', () => {
+    const storage = memoryStorage(
+      JSON.stringify({
+        ...defaultSave,
+        placedDecor: [
+          {
+            instanceId: 'valid',
+            itemId: 'clover-patch',
+            cellX: 0,
+            cellY: 3,
+            footprint: { w: 1, h: 1 }
+          },
+          {
+            instanceId: 'too-high',
+            itemId: 'hay-bed',
+            cellX: 0,
+            cellY: 0,
+            footprint: { w: 2, h: 1 }
+          },
+          {
+            instanceId: 'too-low',
+            itemId: 'hay-bed',
+            cellX: 0,
+            cellY: 5,
+            footprint: { w: 2, h: 1 }
+          }
+        ]
+      })
+    );
+
+    expect(loadSave(storage).placedDecor).toEqual([
+      {
+        instanceId: 'valid',
+        itemId: 'clover-patch',
+        cellX: 0,
+        cellY: 3,
         footprint: { w: 1, h: 1 }
       }
     ]);

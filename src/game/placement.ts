@@ -8,6 +8,11 @@ export interface Footprint {
   h: number;
 }
 
+export interface Cell {
+  x: number;
+  y: number;
+}
+
 export interface PlacedDecor {
   instanceId: string;
   itemId: string;

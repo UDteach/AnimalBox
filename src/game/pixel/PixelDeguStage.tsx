@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 
 import { deguVariants, outfits, pixelDeguShots } from '../content';
+import { outfitAnchorStyle } from './outfitAnchors';
 
 interface PixelDeguStageProps {
   selectedShotId: string;
@@ -38,6 +39,7 @@ export function PixelDeguStage({
         <img
           key={outfit.id}
           className={`pixel-degu-outfit pixel-degu-outfit--${outfit.id}`}
+          style={outfitAnchorStyle(outfit.id)}
           src={outfit.src}
           alt=""
           draggable={false}
@@ -48,6 +50,7 @@ export function PixelDeguStage({
         <img
           key={outfit.id}
           className={`pixel-degu-outfit pixel-degu-outfit--${outfit.id}`}
+          style={outfitAnchorStyle(outfit.id)}
           src={outfit.src}
           alt=""
           draggable={false}

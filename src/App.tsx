@@ -17,7 +17,8 @@ import {
 import { addIdleIncome, formatNumber, tapForCoins, type EconomyState } from './game/economy';
 import { browserRandom, runPulls, skyGiftBanner } from './game/gacha';
 import { PixelDeguStage } from './game/pixel/PixelDeguStage';
-import { canPlaceDecor, type PlacedDecor } from './game/placement';
+import { type Cell, type PlacedDecor } from './game/placement';
+import { assetStyle, canPlaceDecorInScene, gridCellAnchor, gridToScene } from './game/sceneLayout';
 import {
   applyIdleProgress,
   applyTapProgress,
@@ -40,14 +41,9 @@ interface Burst {
   y: number;
 }
 
-interface Cell {
-  x: number;
-  y: number;
-}
-
 const screenSet = new Set<ScreenId>(navOrder);
 const grid = { width: 6, height: 6 };
-const firstOpenCell: Cell = { x: 3, y: 3 };
+const firstOpenCell: Cell = { x: 0, y: 2 };
 
 function coerceScreen(value: string): ScreenId {
   return screenSet.has(value as ScreenId) ? (value as ScreenId) : 'home';
@@ -60,22 +56,6 @@ function getInitialScreen(): ScreenId {
 
 function nextSave(updater: (save: PrototypeSave) => PrototypeSave) {
   return updater;
-}
-
-function assetStyle(x: number, y: number, w: number): React.CSSProperties {
-  return {
-    left: `${x}%`,
-    top: `${y}%`,
-    width: `${w}%`
-  };
-}
-
-function gridToScene(cell: Cell, decor: DecorItem) {
-  return {
-    x: 26 + cell.x * 7.2,
-    y: 39 + cell.y * 5.4,
-    w: Math.max(12, decor.scene.w * 0.72)
-  };
 }
 
 export function App() {
@@ -122,6 +102,15 @@ export function App() {
     saveRef.current = save;
     savePrototype(save);
   }, [save]);
+
+  useEffect(() => {
+    if (canPlaceDecorInScene(grid, save.placedDecor, selectedCell.x, selectedCell.y, selectedDecor)) {
+      return;
+    }
+
+    const nextCell = findFirstSceneSafeCell(selectedDecor, save.placedDecor);
+    if (nextCell) setSelectedCell(nextCell);
+  }, [save.placedDecor, selectedCell.x, selectedCell.y, selectedDecor]);
 
   useEffect(() => {
     let cancelled = false;
@@ -273,6 +262,16 @@ export function App() {
     setStatus(`Degu shot: ${shotId}`);
   }
 
+  function selectDecor(decorId: string) {
+    const decor = decorItems.find((item) => item.id === decorId);
+    if (!decor) return;
+    setSelectedDecorId(decorId);
+
+    const nextCell = findFirstSceneSafeCell(decor, saveRef.current.placedDecor);
+    if (nextCell) setSelectedCell(nextCell);
+    setStatus(`Decor: ${decor.label}`);
+  }
+
   function toggleOutfit(outfitId: string) {
     const outfit = outfits.find((item) => item.id === outfitId);
     if (!outfit) return;
@@ -306,7 +305,7 @@ export function App() {
       footprint: selectedDecor.footprint
     };
 
-    if (!canPlaceDecor(grid, save.placedDecor, candidate.cellX, candidate.cellY, candidate.footprint)) {
+    if (!canPlaceDecorInScene(grid, save.placedDecor, candidate.cellX, candidate.cellY, selectedDecor)) {
       setStatus('That cell is blocked');
       return;
     }
@@ -398,7 +397,7 @@ export function App() {
             selectedCell={selectedCell}
             rotation={rotation}
             ownedRewardIds={save.ownedRewardIds}
-            onSelectDecor={setSelectedDecorId}
+            onSelectDecor={selectDecor}
             onRotate={() => {
               setRotation((value) => (value + 90) % 360);
               setStatus('Rotated placement ghost');
@@ -466,6 +465,18 @@ export function App() {
       </section>
     </main>
   );
+}
+
+function findFirstSceneSafeCell(decor: DecorItem, placedDecor: PlacedDecor[]): Cell | null {
+  for (let y = 0; y < grid.height; y += 1) {
+    for (let x = 0; x < grid.width; x += 1) {
+      if (canPlaceDecorInScene(grid, placedDecor, x, y, decor)) {
+        return { x, y };
+      }
+    }
+  }
+
+  return null;
 }
 
 function Hud({
@@ -647,10 +658,13 @@ function IslandScene({
           <img
             key={placed.instanceId}
             className="runtime-decor placed-decor"
+            data-decor-id={decor.id}
+            data-cell-x={placed.cellX}
+            data-cell-y={placed.cellY}
             src={decor.src}
             alt=""
             draggable={false}
-            style={{ ...assetStyle(scene.x, scene.y, scene.w), zIndex: 20 + placed.cellY }}
+            style={{ ...assetStyle(scene.x, scene.y, scene.w), zIndex: 20 + placed.cellY + decor.footprint.h }}
           />
         );
       })}
@@ -660,7 +674,8 @@ function IslandScene({
           {Array.from({ length: grid.width * grid.height }).map((_, index) => {
             const x = index % grid.width;
             const y = Math.floor(index / grid.width);
-            const valid = canPlaceDecor(grid, save.placedDecor, x, y, selectedDecor.footprint);
+            const anchor = gridCellAnchor({ x, y });
+            const valid = canPlaceDecorInScene(grid, save.placedDecor, x, y, selectedDecor);
             return (
               <button
                 key={`${x}:${y}`}
@@ -668,7 +683,9 @@ function IslandScene({
                 type="button"
                 data-selected={x === selectedCell.x && y === selectedCell.y}
                 data-valid={valid}
-                style={{ left: `${25 + x * 7.2}%`, top: `${39 + y * 5.4}%` }}
+                data-cell-x={x}
+                data-cell-y={y}
+                style={{ left: `${anchor.x}%`, top: `${anchor.y}%` }}
                 aria-label={`Select cell ${x + 1}, ${y + 1}`}
                 onClick={() => onSelectCell({ x, y })}
               />
@@ -676,6 +693,9 @@ function IslandScene({
           })}
           <img
             className="runtime-decor placement-ghost"
+            data-decor-id={selectedDecor.id}
+            data-cell-x={selectedCell.x}
+            data-cell-y={selectedCell.y}
             src={selectedDecor.src}
             alt=""
             draggable={false}

@@ -8,8 +8,9 @@ import {
   starterRewardIds
 } from './content';
 import { initialEconomy, type EconomyState } from './economy';
-import { canPlaceDecor, type PlacedDecor } from './placement';
+import { type PlacedDecor } from './placement';
 import { defaultProgression, sanitizeProgression, type ProgressionState } from './progression';
+import { canPlaceDecorInScene } from './sceneLayout';
 
 const STORAGE_KEY = 'animalbox.prototype.v1';
 const grid = { width: 6, height: 6 };
@@ -47,7 +48,7 @@ export const defaultSave: PrototypeSave = {
     {
       instanceId: 'starter-clover-1',
       itemId: 'clover-patch',
-      cellX: 2,
+      cellX: 0,
       cellY: 3,
       footprint: { w: 1, h: 1 }
     }
@@ -164,7 +165,7 @@ function sanitizePlacedDecor(value: unknown): PlacedDecor[] {
       footprint: decor.footprint
     };
 
-    if (canPlaceDecor(grid, clean, candidate.cellX, candidate.cellY, candidate.footprint)) {
+    if (canPlaceDecorInScene(grid, clean, candidate.cellX, candidate.cellY, decor)) {
       clean.push(candidate);
     }
   }

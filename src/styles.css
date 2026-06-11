@@ -396,7 +396,7 @@ button {
 
 .runtime-decor {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -100%);
   object-fit: contain;
   filter: drop-shadow(0 0.58rem 0.54rem rgba(46, 49, 45, 0.18));
   pointer-events: none;
@@ -409,11 +409,11 @@ button {
 .degu-button {
   position: absolute;
   z-index: 45;
-  top: 42.8%;
+  top: 45.6%;
   left: 50%;
   display: grid;
-  width: 34%;
-  min-width: 7.5rem;
+  width: 24%;
+  min-width: 5.2rem;
   aspect-ratio: 1 / 1.05;
   padding: 0;
   transform: translate(-50%, -50%);
@@ -742,6 +742,42 @@ button {
 
 .decor-tray {
   grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.placement-sheet {
+  gap: 0.42rem;
+  padding: 0.46rem 0.52rem 0.56rem;
+}
+
+.placement-sheet .decor-tray {
+  display: grid;
+  grid-auto-columns: 3.9rem;
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  overflow-x: auto;
+  padding: 0.04rem 0.04rem 0.2rem;
+  scrollbar-width: none;
+}
+
+.placement-sheet .decor-tray::-webkit-scrollbar {
+  display: none;
+}
+
+.placement-sheet .asset-card {
+  min-height: 3.34rem;
+  border-radius: 0.66rem;
+}
+
+.placement-sheet .asset-card img {
+  height: 2.1rem;
+}
+
+.placement-sheet .action-row {
+  gap: 0.42rem;
+}
+
+.placement-sheet .action {
+  min-height: 2.08rem;
 }
 
 .asset-card {
