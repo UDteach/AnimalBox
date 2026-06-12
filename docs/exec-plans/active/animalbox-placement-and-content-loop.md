@@ -64,4 +64,7 @@ Stop and ask before destructive file cleanup, credentials, paid services, produc
 - completed: Deployed Batch 003 to Cloudflare Pages and live-smoked preview/production with customization QA.
 - completed: Added the first care loop: Brush/Seeds actions, bond meter, persisted affection/care streak, and home layout clearance QA.
 - completed: Care loop local QA passed: `npm test -- --run`, `npm run qa:assets`, `npm run qa:customization`, `npm run qa:placement`, and `npm run build`.
-- in_progress: Commit, push, deploy, and live-smoke the care loop.
+- completed: Deployed the care loop to Cloudflare Pages and live-smoked preview/production with customization QA.
+- completed: Added placement Undo for the last placed decor, including income rollback and customization QA coverage.
+- completed: Placement Undo local QA passed: `npm run qa:customization`, `npm test -- --run`, `npm run build`, and `npm run qa:placement`.
+- in_progress: Commit, push, deploy, and live-smoke placement Undo.

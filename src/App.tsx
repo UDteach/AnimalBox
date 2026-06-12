@@ -412,6 +412,34 @@ export function App() {
     setStatus(`Placed ${selectedDecor.label}`);
   }
 
+  function undoLastPlacedDecor() {
+    const lastPlaced = saveRef.current.placedDecor.at(-1);
+    if (!lastPlaced) {
+      setStatus('No decor to undo');
+      return;
+    }
+
+    const optimisticDecor = decorItems.find((item) => item.id === lastPlaced.itemId);
+    setSave(
+      nextSave((currentSave) => {
+        const last = currentSave.placedDecor.at(-1);
+        if (!last) return currentSave;
+        const decor = decorItems.find((item) => item.id === last.itemId);
+        const bonus = decor?.bonusPerSecond ?? 0;
+
+        return {
+          ...currentSave,
+          economy: {
+            ...currentSave.economy,
+            incomePerSecond: Math.max(0, currentSave.economy.incomePerSecond - bonus)
+          },
+          placedDecor: currentSave.placedDecor.slice(0, -1)
+        };
+      })
+    );
+    setStatus(`Removed ${optimisticDecor?.label ?? 'decor'}`);
+  }
+
   function runGacha(count: 1 | 10) {
     const optimistic = runPulls(skyGiftBanner, count, saveRef.current.economy, {
       ownedRewardIds: new Set(saveRef.current.ownedRewardIds),
@@ -493,6 +521,7 @@ export function App() {
             }}
             onConfirm={placeSelectedDecor}
             onCancel={() => setStatus('Placement cancelled')}
+            onUndo={undoLastPlacedDecor}
           />
         )}
 
@@ -854,7 +883,8 @@ function PlacementPanel({
   onSelectDecor,
   onRotate,
   onConfirm,
-  onCancel
+  onCancel,
+  onUndo
 }: {
   selectedDecorId: string;
   selectedCell: Cell;
@@ -864,6 +894,7 @@ function PlacementPanel({
   onRotate: () => void;
   onConfirm: () => void;
   onCancel: () => void;
+  onUndo: () => void;
 }) {
   return (
     <section className="bottom-sheet placement-sheet" aria-label="Decor placement">
@@ -896,6 +927,9 @@ function PlacementPanel({
       <div className="action-row">
         <button className="action danger" type="button" onClick={onCancel} aria-label="Cancel placement">
           x
+        </button>
+        <button className="action undo" type="button" onClick={onUndo} aria-label="Undo last decor">
+          undo
         </button>
         <button className="action rotate" type="button" onClick={onRotate} aria-label="Rotate placement">
           r

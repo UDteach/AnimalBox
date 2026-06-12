@@ -142,6 +142,10 @@ try {
         await page.getByRole('button', { name: 'Seeds degu' }).click();
         await page.waitForTimeout(120);
       }
+      if (screen === 'placement') {
+        await page.getByRole('button', { name: 'Undo last decor' }).click();
+        await page.waitForTimeout(120);
+      }
       const metrics = await page.evaluate(
         ({ screen, newDecorIds, newOutfitIds }) => {
           const save = JSON.parse(window.localStorage.getItem('animalbox.prototype.v1') ?? '{}');
@@ -165,6 +169,8 @@ try {
               text: node.textContent ?? '',
               fits: node.scrollWidth <= node.clientWidth + 1
             })),
+            incomePerSecond: save.economy?.incomePerSecond ?? null,
+            placedDecorCount: save.placedDecor?.length ?? null,
             affection: save.progression?.affection ?? null,
             careStreak: save.progression?.careStreak ?? null,
             gamePanelBottomToNav: gamePanel && nav ? nav.top - gamePanel.bottom : null,
@@ -211,6 +217,8 @@ try {
   const placement = results.find((item) => item.screen === 'placement');
   assert(placement?.newDecorCards === newDecorIds.length, 'new decor cards are missing', placement);
   assert(!placement.hasAssetWarning, 'placement asset warning', placement);
+  assert(placement.placedDecorCount === 0, 'placement undo did not remove the last decor', placement);
+  assert(placement.incomePerSecond < baseSave.economy.incomePerSecond, 'placement undo did not reduce decor income', placement);
 
   const gacha = results.find((item) => item.screen === 'gacha');
   assert(gacha?.newDecorCards === newDecorIds.length, 'new decor rewards missing from gacha preview', gacha);
