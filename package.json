@@ -9,6 +9,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
+    "qa:placement": "node tools/qa/placement-fit-qa.mjs",
     "test": "vitest run"
   },
   "dependencies": {

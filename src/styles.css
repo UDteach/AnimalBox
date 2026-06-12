@@ -413,7 +413,7 @@ button {
   left: 50%;
   display: grid;
   width: 24%;
-  min-width: 5.2rem;
+  min-width: 4.5rem;
   aspect-ratio: 1 / 1.05;
   padding: 0;
   transform: translate(-50%, -50%);
@@ -1309,11 +1309,11 @@ button {
 @keyframes place-pop {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.72);
+    transform: translate(-50%, -100%) scale(0.72);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -100%) scale(1);
   }
 }
 
@@ -1387,7 +1387,12 @@ button {
   }
 
   .game-loop-panel {
-    padding: 0.48rem;
+    gap: 0.34rem;
+    padding: 0.42rem;
+  }
+
+  .game-loop-panel .upgrade-strip {
+    display: none;
   }
 }
 

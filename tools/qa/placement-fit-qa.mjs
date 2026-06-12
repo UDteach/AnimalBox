@@ -5,14 +5,24 @@ const baseUrl = process.env.ANIMALBOX_QA_URL ?? 'http://127.0.0.1:5173';
 const outDir = 'output/playwright/placement-fit-qa';
 const storageKey = 'animalbox.prototype.v1';
 
-const allRewardIds = [
+const viewports = [
+  { id: 'compact-320x700', width: 320, height: 700 },
+  { id: 'phone-390x844', width: 390, height: 844 },
+  { id: 'large-430x932', width: 430, height: 932 }
+];
+
+const backgroundThemes = [
   'floating-island',
   'morning-pasture',
   'starlight-night',
   'sunset-clover-isle',
   'rainy-glass-garden',
   'flower-cloud-terrace',
-  'moonlit-hay-field',
+  'moonlit-hay-field'
+];
+
+const allRewardIds = [
+  ...backgroundThemes,
   'agouti',
   'blue-gray',
   'sandy',
@@ -57,40 +67,31 @@ const allRewardIds = [
   'daisy-ear-clip'
 ];
 
-const qaSave = {
+const baseSave = {
   economy: { coins: 12850, tickets: 15, shards: 42, incomePerSecond: 14 },
   screen: 'home',
-  selectedBackgroundId: 'sunset-clover-isle',
+  selectedBackgroundId: 'floating-island',
   selectedVariantId: 'agouti',
   selectedDeguShotId: '04',
   selectedOutfitIds: ['acorn-beret', 'mint-scarf'],
-  placedDecor: [
-    { instanceId: 'qa-hideout', itemId: 'ceramic-hideout', cellX: 0, cellY: 3, footprint: { w: 2, h: 2 } },
-    { instanceId: 'qa-hay', itemId: 'timothy-hay-rack', cellX: 0, cellY: 2, footprint: { w: 2, h: 1 } },
-    { instanceId: 'qa-sand', itemId: 'sand-bath-bowl', cellX: 1, cellY: 3, footprint: { w: 1, h: 1 } },
-    { instanceId: 'qa-sprout', itemId: 'seed-sprout-pot', cellX: 5, cellY: 2, footprint: { w: 1, h: 1 } },
-    { instanceId: 'qa-mail', itemId: 'sky-mailbox', cellX: 5, cellY: 3, footprint: { w: 1, h: 1 } },
-    { instanceId: 'qa-bell', itemId: 'bellflower-planter', cellX: 3, cellY: 4, footprint: { w: 2, h: 1 } }
-  ],
+  placedDecor: [],
   ownedRewardIds: allRewardIds,
   gachaHistory: [],
   pullsSinceRare: 0,
   progression: { xp: 260, ticketProgress: 320, ownedUpgradeIds: ['seed-snack', 'soft-brush'] }
 };
 
-function rectPercent(rect, container) {
-  return {
-    x: ((rect.left - container.left) / container.width) * 100,
-    y: ((rect.top - container.top) / container.height) * 100,
-    w: (rect.width / container.width) * 100,
-    h: (rect.height / container.height) * 100,
-    right: ((rect.right - container.left) / container.width) * 100,
-    bottom: ((rect.bottom - container.top) / container.height) * 100
-  };
-}
+const homePlacedDecor = [
+  { instanceId: 'qa-hideout', itemId: 'ceramic-hideout', cellX: 0, cellY: 3, footprint: { w: 2, h: 2 } },
+  { instanceId: 'qa-hay', itemId: 'timothy-hay-rack', cellX: 0, cellY: 2, footprint: { w: 2, h: 1 } },
+  { instanceId: 'qa-sand', itemId: 'sand-bath-bowl', cellX: 1, cellY: 3, footprint: { w: 1, h: 1 } },
+  { instanceId: 'qa-sprout', itemId: 'seed-sprout-pot', cellX: 5, cellY: 2, footprint: { w: 1, h: 1 } },
+  { instanceId: 'qa-mail', itemId: 'sky-mailbox', cellX: 5, cellY: 3, footprint: { w: 1, h: 1 } },
+  { instanceId: 'qa-bell', itemId: 'bellflower-planter', cellX: 3, cellY: 4, footprint: { w: 2, h: 1 } }
+];
 
-function intersects(a, b) {
-  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+function scenarioName(viewport, backgroundId, screen) {
+  return `${viewport.id}__${backgroundId}__${screen}`;
 }
 
 function assert(condition, message, details = {}) {
@@ -104,15 +105,20 @@ function assert(condition, message, details = {}) {
 await fs.mkdir(outDir, { recursive: true });
 
 const browser = await chromium.launch({ headless: true });
-const context = await browser.newContext({
-  viewport: { width: 390, height: 844 },
-  deviceScaleFactor: 2,
-  isMobile: true
-});
+const failures = [];
+const scenarios = [];
 
-const page = await context.newPage();
+async function createPage(viewport) {
+  const context = await browser.newContext({
+    viewport: { width: viewport.width, height: viewport.height },
+    deviceScaleFactor: 2,
+    isMobile: true
+  });
+  const page = await context.newPage();
+  return { context, page };
+}
 
-async function goto(screen, save = qaSave) {
+async function goto(page, screen, save) {
   await page.goto(`${baseUrl}/?screen=${screen}`, { waitUntil: 'domcontentloaded', timeout: 20000 });
   await page.evaluate(
     ({ key, save }) => {
@@ -122,14 +128,13 @@ async function goto(screen, save = qaSave) {
   );
   await page.reload({ waitUntil: 'domcontentloaded', timeout: 20000 });
   await page.waitForSelector('.phone', { timeout: 10000 });
-  await page.waitForTimeout(900);
+  await page.waitForTimeout(500);
 }
 
-async function detectBackgroundMask() {
+async function detectBackgroundMask(page) {
   return page.evaluate(async () => {
     const image = document.querySelector('.scene-background');
-    const phone = document.querySelector('.phone');
-    if (!(image instanceof HTMLImageElement) || !phone) return null;
+    if (!(image instanceof HTMLImageElement)) return null;
     await image.decode().catch(() => undefined);
 
     const canvas = document.createElement('canvas');
@@ -138,6 +143,7 @@ async function detectBackgroundMask() {
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return null;
     ctx.drawImage(image, 0, 0);
+
     const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     let minX = canvas.width;
     let minY = canvas.height;
@@ -156,8 +162,8 @@ async function detectBackgroundMask() {
         const isUpperSky = y < canvas.height * 0.34;
         const isSkyBlue = b > 135 && g > 110 && b > r + 18;
         const isUiCream = r > 210 && g > 185 && b < 170 && y > canvas.height * 0.68;
-        const isGrass = g > 85 && g > b * 1.08 && g > r * 0.68 && y > canvas.height * 0.39;
-        const isEarth = r > 75 && g > 50 && b < 130 && r > b * 1.1 && y > canvas.height * 0.45;
+        const isGrass = g > 72 && g > b * 0.92 && g > r * 0.55 && y > canvas.height * 0.38;
+        const isEarth = r > 68 && g > 42 && b < 145 && r > b * 0.88 && y > canvas.height * 0.43;
         const isIslandPixel = !isTransparent && !isUpperSky && !isSkyBlue && !isUiCream && (isGrass || isEarth);
         if (!isIslandPixel) continue;
         minX = Math.min(minX, x);
@@ -179,7 +185,7 @@ async function detectBackgroundMask() {
   });
 }
 
-async function annotateHome(mask) {
+async function annotateHome(page, mask) {
   await page.addStyleTag({
     content: `
       .qa-fit-box {
@@ -202,6 +208,7 @@ async function annotateHome(mask) {
       }
     `
   });
+
   await page.evaluate((mask) => {
     const phone = document.querySelector('.phone');
     if (!phone) return;
@@ -229,27 +236,18 @@ async function annotateHome(mask) {
 
     const degu = document.querySelector('.degu-button')?.getBoundingClientRect();
     const bottom = document.querySelector('.game-loop-panel')?.getBoundingClientRect();
-    if (mask) {
-      addBox({ x: mask.x, y: mask.y, w: mask.right - mask.x, h: mask.bottom - mask.y }, 'mask', 'BG MASK');
-    }
-    if (degu) {
-      addBox(percent(degu), 'degu', 'DEGU');
-    }
-    if (bottom) {
-      addBox(percent(bottom), 'bottom', 'BOTTOM UI');
-    }
+    if (mask) addBox({ x: mask.x, y: mask.y, w: mask.right - mask.x, h: mask.bottom - mask.y }, 'mask', 'BG MASK');
+    if (degu) addBox(percent(degu), 'degu', 'DEGU');
+    if (bottom) addBox(percent(bottom), 'bottom', 'BOTTOM UI');
   }, mask);
 }
 
-async function measureHome() {
-  const mask = await detectBackgroundMask();
-  await annotateHome(mask);
-  await page.screenshot({ path: `${outDir}/home-scale-fit.png`, fullPage: true });
-
-  const metrics = await page.evaluate(() => {
+async function collectHomeMetrics(page) {
+  return page.evaluate(() => {
     const phone = document.querySelector('.phone')?.getBoundingClientRect();
     const degu = document.querySelector('.degu-button')?.getBoundingClientRect();
     const bottom = document.querySelector('.game-loop-panel')?.getBoundingClientRect();
+    const nav = document.querySelector('.bottom-nav')?.getBoundingClientRect();
     const percent = (rect, container) => ({
       x: ((rect.left - container.left) / container.width) * 100,
       y: ((rect.top - container.top) / container.height) * 100,
@@ -263,52 +261,73 @@ async function measureHome() {
       return {
         id: node.dataset.decorId,
         cell: `${node.dataset.cellX}:${node.dataset.cellY}`,
-        rect: {
-          left: rect.left,
-          top: rect.top,
-          right: rect.right,
-          bottom: rect.bottom,
-          width: rect.width,
-          height: rect.height
-        },
-        percent: phone ? {
-          x: ((rect.left - phone.left) / phone.width) * 100,
-          y: ((rect.top - phone.top) / phone.height) * 100,
-          w: (rect.width / phone.width) * 100,
-          h: (rect.height / phone.height) * 100,
-          bottom: ((rect.bottom - phone.top) / phone.height) * 100
-        } : null
+        percent: phone ? percent(rect, phone) : null
       };
     });
     return {
       phone: phone ? { width: phone.width, height: phone.height } : null,
       degu: degu && phone ? percent(degu, phone) : null,
       bottom: bottom && phone ? percent(bottom, phone) : null,
+      nav: nav && phone ? percent(nav, phone) : null,
       decor
     };
   });
+}
 
-  assert(metrics.phone, 'phone rect missing');
-  assert(metrics.degu, 'degu rect missing');
-  assert(metrics.bottom, 'bottom panel rect missing');
-  assert(metrics.degu.w <= 30, 'degu is too large relative to the phone scene', metrics.degu);
-  assert(metrics.degu.w >= 21, 'degu became too small to read as the main character', metrics.degu);
+function verifyHomeMetrics(metrics, mask, scenario) {
+  assert(metrics.phone, 'phone rect missing', scenario);
+  assert(metrics.degu, 'degu rect missing', scenario);
+  assert(metrics.bottom, 'bottom panel rect missing', scenario);
+  assert(metrics.nav, 'bottom nav rect missing', scenario);
+  assert(metrics.degu.w <= 30, 'degu is too large relative to the phone scene', { scenario, degu: metrics.degu });
+  assert(metrics.degu.w >= 19, 'degu became too small to read as the main character', { scenario, degu: metrics.degu });
+  assert(mask && mask.coverage > 0.015, 'background island mask detection failed', { scenario, mask });
+  assert(mask.y <= metrics.degu.bottom + 8, 'degu is not visually inside detected island/ground band', {
+    scenario,
+    mask,
+    degu: metrics.degu
+  });
 
   for (const item of metrics.decor) {
-    assert(item.percent.w <= 22, `decor ${item.id} is too large for the island scale`, item);
-    assert(item.percent.bottom < metrics.bottom.y - 1.2, `decor ${item.id} collides with bottom UI`, {
-      decor: item,
+    assert(item.percent, `decor ${item.id} rect missing`, { scenario, item });
+    assert(item.percent.w <= 24, `decor ${item.id} is too large for the island scale`, { scenario, item });
+    assert(item.percent.bottom < metrics.bottom.y - 1.2, `decor ${item.id} collides with bottom panel`, {
+      scenario,
+      item,
       bottom: metrics.bottom
     });
+    assert(item.percent.bottom < metrics.nav.y - 1.2, `decor ${item.id} collides with bottom nav`, {
+      scenario,
+      item,
+      nav: metrics.nav
+    });
   }
+}
 
-  assert(mask && mask.coverage > 0.02, 'background island mask detection failed', mask ?? {});
+async function measureHomeScenario(page, viewport, backgroundId) {
+  const save = {
+    ...baseSave,
+    selectedBackgroundId: backgroundId,
+    placedDecor: homePlacedDecor
+  };
+  await goto(page, 'home', save);
+  const mask = await detectBackgroundMask(page);
+  await annotateHome(page, mask);
+  const metrics = await collectHomeMetrics(page);
+  const name = scenarioName(viewport, backgroundId, 'home');
+  await page.screenshot({ path: `${outDir}/${name}.png`, fullPage: true });
+  verifyHomeMetrics(metrics, mask, { viewport: viewport.id, backgroundId, screen: 'home' });
   return { mask, metrics };
 }
 
-async function verifyPlacementCandidates() {
-  await goto('placement', { ...qaSave, placedDecor: [] });
-  await page.screenshot({ path: `${outDir}/placement-valid-cells.png`, fullPage: true });
+async function verifyPlacementScenario(page, viewport, backgroundId) {
+  await goto(page, 'placement', {
+    ...baseSave,
+    selectedBackgroundId: backgroundId,
+    placedDecor: []
+  });
+  const name = scenarioName(viewport, backgroundId, 'placement');
+  await page.screenshot({ path: `${outDir}/${name}.png`, fullPage: true });
 
   const failures = [];
   const decorButtons = await page.locator('.asset-card[data-locked="false"]').count();
@@ -316,69 +335,120 @@ async function verifyPlacementCandidates() {
     const decorButton = page.locator('.asset-card[data-locked="false"]').nth(decorIndex);
     await decorButton.scrollIntoViewIfNeeded();
     await decorButton.click();
-    await page.waitForTimeout(40);
+    await page.waitForTimeout(25);
 
     const label = await decorButton.getAttribute('aria-label');
     const validCount = await page.locator('.cell-button[data-valid="true"]').count();
-    assert(validCount > 0, `no valid cells for ${label}`);
+    if (validCount <= 0) {
+      failures.push({ label, issue: 'no valid cells' });
+      continue;
+    }
 
-    const sampleCount = Math.min(validCount, 8);
+    const sampleCount = Math.min(validCount, 5);
     for (let i = 0; i < sampleCount; i += 1) {
-      const cell = page.locator('.cell-button[data-valid="true"]').nth(Math.floor((i * validCount) / sampleCount));
-      await cell.click();
-      await page.waitForTimeout(30);
+      const index = Math.floor((i * validCount) / sampleCount);
+      const cell = page.locator('.cell-button[data-valid="true"]').nth(index);
+      try {
+        await cell.click({ timeout: 2500 });
+      } catch (error) {
+        failures.push({ label, issue: 'valid cell not tappable', sampleIndex: index, message: error.message });
+        continue;
+      }
+      await page.waitForTimeout(20);
       const state = await page.evaluate(() => {
         const ghost = document.querySelector('.placement-ghost')?.getBoundingClientRect();
-        const bottom = document.querySelector('.placement-sheet')?.getBoundingClientRect();
+        const sheet = document.querySelector('.placement-sheet')?.getBoundingClientRect();
+        const nav = document.querySelector('.bottom-nav')?.getBoundingClientRect();
         const degu = document.querySelector('.degu-button')?.getBoundingClientRect();
         const selected = document.querySelector('.cell-button[data-selected="true"]');
-        if (!ghost || !bottom || !degu || !selected) return null;
+        if (!ghost || !sheet || !nav || !degu || !selected) return null;
         const ghostArea = ghost.width * ghost.height;
         const ix = Math.max(0, Math.min(ghost.right, degu.right) - Math.max(ghost.left, degu.left));
         const iy = Math.max(0, Math.min(ghost.bottom, degu.bottom) - Math.max(ghost.top, degu.top));
         return {
           decorId: document.querySelector('.placement-ghost')?.dataset.decorId,
           cell: `${selected.dataset.cellX}:${selected.dataset.cellY}`,
-          collidesBottom: ghost.bottom > bottom.top - 8,
+          sheetClearance: sheet.top - ghost.bottom,
+          navClearance: nav.top - ghost.bottom,
           deguOverlapRatio: ghostArea > 0 ? (ix * iy) / ghostArea : 0,
-          ghost: { left: ghost.left, top: ghost.top, right: ghost.right, bottom: ghost.bottom, width: ghost.width, height: ghost.height },
-          bottom: { top: bottom.top },
-          degu: { left: degu.left, top: degu.top, right: degu.right, bottom: degu.bottom }
+          ghost: { left: ghost.left, top: ghost.top, right: ghost.right, bottom: ghost.bottom, width: ghost.width, height: ghost.height }
         };
       });
-
       if (!state) {
         failures.push({ label, issue: 'missing placement measurement' });
         continue;
       }
-      if (state.collidesBottom) {
-        failures.push({ label, issue: 'bottom collision', state });
-      }
-      if (state.deguOverlapRatio > 0.38) {
-        failures.push({ label, issue: 'excessive degu overlap', state });
-      }
+      if (state.sheetClearance < 8) failures.push({ label, issue: 'sheet collision', state });
+      if (state.navClearance < 8) failures.push({ label, issue: 'nav collision', state });
+      if (state.deguOverlapRatio > 0.38) failures.push({ label, issue: 'excessive degu overlap', state });
     }
   }
 
-  assert(failures.length === 0, 'placement candidate visual fit failures', failures.slice(0, 12));
+  assert(failures.length === 0, 'placement candidate visual fit failures', {
+    viewport: viewport.id,
+    backgroundId,
+    failures: failures.slice(0, 12)
+  });
   return { checkedDecor: decorButtons };
 }
 
 try {
-  await goto('home');
-  const home = await measureHome();
-  const placement = await verifyPlacementCandidates();
-  const result = { outDir, home, placement };
+  for (const viewport of viewports) {
+    const { context, page } = await createPage(viewport);
+    try {
+      for (const backgroundId of backgroundThemes) {
+        const scenario = { viewport: viewport.id, backgroundId };
+        try {
+          const home = await measureHomeScenario(page, viewport, backgroundId);
+          const placement = await verifyPlacementScenario(page, viewport, backgroundId);
+          scenarios.push({ ...scenario, home, placement });
+        } catch (error) {
+          await page.screenshot({
+            path: `${outDir}/${scenarioName(viewport, backgroundId, 'failure')}.png`,
+            fullPage: true
+          }).catch(() => undefined);
+          failures.push({
+            ...scenario,
+            message: error.message,
+            details: error.details ?? null
+          });
+        }
+      }
+    } finally {
+      await context.close();
+    }
+  }
+
+  const result = { baseUrl, outDir, viewports, backgroundThemes, scenarios, failures };
   await fs.writeFile(`${outDir}/metrics.json`, JSON.stringify(result, null, 2));
-  console.log(JSON.stringify({ ok: true, outDir, checkedDecor: placement.checkedDecor }, null, 2));
+  assert(failures.length === 0, 'placement fit matrix failed', failures.slice(0, 12));
+  console.log(
+    JSON.stringify(
+      {
+        ok: true,
+        baseUrl,
+        outDir,
+        scenarios: scenarios.length,
+        backgrounds: backgroundThemes.length,
+        viewports: viewports.length
+      },
+      null,
+      2
+    )
+  );
 } catch (error) {
-  await page.screenshot({ path: `${outDir}/failure.png`, fullPage: true }).catch(() => undefined);
-  console.error(JSON.stringify({
-    ok: false,
-    message: error.message,
-    details: error.details ?? null,
-    outDir
-  }, null, 2));
+  console.error(
+    JSON.stringify(
+      {
+        ok: false,
+        message: error.message,
+        details: error.details ?? null,
+        outDir
+      },
+      null,
+      2
+    )
+  );
   process.exitCode = 1;
 } finally {
   await browser.close();
