@@ -61,4 +61,7 @@ Stop and ask before destructive file cleanup, credentials, paid services, produc
 - completed: Wired Batch 003 into placement, wardrobe, gacha preview, and manifest provenance.
 - completed: Added customization flow QA for expanded wardrobe inventory, new decor cards, gacha preview, and asset warnings.
 - completed: Batch 003 local QA passed: `npm test -- --run`, `npm run qa:assets`, `npm run qa:customization`, `npm run qa:placement`, and `npm run build`.
-- in_progress: Commit, push, deploy, and live-smoke Batch 003.
+- completed: Deployed Batch 003 to Cloudflare Pages and live-smoked preview/production with customization QA.
+- completed: Added the first care loop: Brush/Seeds actions, bond meter, persisted affection/care streak, and home layout clearance QA.
+- completed: Care loop local QA passed: `npm test -- --run`, `npm run qa:assets`, `npm run qa:customization`, `npm run qa:placement`, and `npm run build`.
+- in_progress: Commit, push, deploy, and live-smoke the care loop.

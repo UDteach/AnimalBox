@@ -208,7 +208,7 @@ button {
   z-index: 78;
   left: 5.2%;
   right: 5.2%;
-  bottom: calc(6.25rem + env(safe-area-inset-bottom));
+  bottom: calc(7.15rem + env(safe-area-inset-bottom));
   display: grid;
   gap: 0.46rem;
   padding: 0.58rem;
@@ -276,6 +276,65 @@ button {
 
 .ticket-meter span {
   background: linear-gradient(90deg, #75d7ff, #ffd76d);
+}
+
+.care-row {
+  display: grid;
+  grid-template-columns: 1fr 4.75rem 4.75rem;
+  gap: 0.38rem;
+  align-items: center;
+}
+
+.care-meter {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.care-meter > span:first-child {
+  overflow: hidden;
+  color: #5b3b1c;
+  font-size: 0.62rem;
+  font-weight: 1000;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.affection-meter span {
+  background: linear-gradient(90deg, #ff9ac2, #ffd76d);
+}
+
+.care-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 2.06rem;
+  gap: 0.2rem;
+  padding: 0.22rem 0.32rem;
+  border-radius: 0.72rem;
+  color: #4b331a;
+  background: rgba(255, 255, 255, 0.58);
+  font-size: 0.58rem;
+  font-weight: 1000;
+  box-shadow:
+    inset 0 0 0 1px rgba(143, 91, 29, 0.13),
+    0 0.34rem 0.7rem rgba(45, 31, 20, 0.1);
+}
+
+.care-button img {
+  flex: 0 0 auto;
+  width: 1.28rem;
+  height: 1.28rem;
+  object-fit: contain;
+}
+
+.care-button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .loop-actions {
@@ -437,6 +496,7 @@ button {
 .variant-button:focus-visible,
 .shot-button:focus-visible,
 .claim-button:focus-visible,
+.care-button:focus-visible,
 .next-upgrade-button:focus-visible,
 .upgrade-chip:focus-visible,
 .action:focus-visible,

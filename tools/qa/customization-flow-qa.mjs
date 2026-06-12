@@ -83,7 +83,13 @@ const baseSave = {
   ownedRewardIds: allRewardIds,
   gachaHistory: [],
   pullsSinceRare: 0,
-  progression: { xp: 260, ticketProgress: 320, ownedUpgradeIds: ['seed-snack'] },
+  progression: {
+    xp: 260,
+    ticketProgress: 320,
+    ownedUpgradeIds: ['seed-snack'],
+    affection: 35,
+    careStreak: 0
+  },
   layoutPresets: [1, 2, 3].map((slot) => ({
     slot,
     label: `Slot ${slot}`,
@@ -127,13 +133,21 @@ try {
   });
   const page = await context.newPage();
 
-  for (const screen of ['wardrobe', 'placement', 'gacha', 'storage']) {
+  for (const screen of ['home', 'wardrobe', 'placement', 'gacha', 'storage']) {
     try {
       await gotoSeeded(page, screen);
+      if (screen === 'home') {
+        await page.getByRole('button', { name: 'Brush degu' }).click();
+        await page.waitForTimeout(120);
+        await page.getByRole('button', { name: 'Seeds degu' }).click();
+        await page.waitForTimeout(120);
+      }
       const metrics = await page.evaluate(
         ({ screen, newDecorIds, newOutfitIds }) => {
+          const save = JSON.parse(window.localStorage.getItem('animalbox.prototype.v1') ?? '{}');
           const phone = document.querySelector('.phone')?.getBoundingClientRect();
           const nav = document.querySelector('.bottom-nav')?.getBoundingClientRect();
+          const gamePanel = document.querySelector('.game-loop-panel')?.getBoundingClientRect();
           const grid = document.querySelector('.wardrobe-grid');
           const gridRect = grid?.getBoundingClientRect();
           const shotRow = document.querySelector('.shot-row')?.getBoundingClientRect();
@@ -147,6 +161,13 @@ try {
             ),
             newDecorCards: newDecorIds.filter((id) => cardImages.some((src) => src.endsWith(`${id}.png`))).length,
             newOutfitCards: newOutfitIds.filter((id) => cardImages.some((src) => src.endsWith(`${id}.png`))).length,
+            careButtons: [...document.querySelectorAll('.care-button')].map((node) => ({
+              text: node.textContent ?? '',
+              fits: node.scrollWidth <= node.clientWidth + 1
+            })),
+            affection: save.progression?.affection ?? null,
+            careStreak: save.progression?.careStreak ?? null,
+            gamePanelBottomToNav: gamePanel && nav ? nav.top - gamePanel.bottom : null,
             wardrobeGridBottomToNav: gridRect && nav ? nav.top - gridRect.bottom : null,
             shotRowBottomToGrid: shotRow && gridRect ? gridRect.top - shotRow.bottom : null,
             applyBottomToGrid: apply && gridRect ? gridRect.top - apply.bottom : null,
@@ -167,6 +188,15 @@ try {
   }
 
   await context.close();
+
+  const home = results.find((item) => item.screen === 'home');
+  assert(home, 'home metrics missing');
+  assert(!home.hasAssetWarning, 'home asset warning', home);
+  assert(home.careButtons.length === 2, 'home care buttons missing', home);
+  assert(home.careButtons.every((button) => button.fits), 'home care button text overflow', home);
+  assert(home.affection > baseSave.progression.affection, 'home care did not increase affection', home);
+  assert(home.careStreak >= 2, 'home care streak did not persist', home);
+  assert(home.gamePanelBottomToNav >= 4, 'home game panel collides with bottom nav', home);
 
   const wardrobe = results.find((item) => item.screen === 'wardrobe');
   assert(wardrobe, 'wardrobe metrics missing');

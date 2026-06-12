@@ -1,11 +1,14 @@
 import { spendCurrency, type EconomyState } from './economy';
 
 export type UpgradeCurrency = 'coins' | 'shards';
+export type CareActionId = 'brush' | 'snack';
 
 export interface ProgressionState {
   xp: number;
   ticketProgress: number;
   ownedUpgradeIds: string[];
+  affection: number;
+  careStreak: number;
 }
 
 export interface UpgradeDefinition {
@@ -22,6 +25,9 @@ export interface GameStats {
   level: number;
   xpIntoLevel: number;
   xpForNextLevel: number;
+  affectionLevel: number;
+  affectionIntoLevel: number;
+  affectionForNextLevel: number;
   tapPower: number;
   idleIncomePerSecond: number;
   ticketGoal: number;
@@ -34,14 +40,33 @@ export interface UpgradePurchase {
   upgrade: UpgradeDefinition;
 }
 
+export interface CareActionDefinition {
+  id: CareActionId;
+  label: string;
+  cost?: { currency: 'coins'; amount: number };
+  xpReward: number;
+  ticketProgressReward: number;
+  affectionReward: number;
+  coinReward?: number;
+}
+
+export interface CareActionResult {
+  economy: EconomyState;
+  progression: ProgressionState;
+  action: CareActionDefinition;
+}
+
 const baseTapPower = 25;
 const baseTicketGoal = 260;
 const baseXpForLevel = 120;
+const affectionForLevel = 100;
 
 export const defaultProgression: ProgressionState = {
   xp: 0,
   ticketProgress: 80,
-  ownedUpgradeIds: []
+  ownedUpgradeIds: [],
+  affection: 35,
+  careStreak: 0
 };
 
 export const upgradeCatalog: UpgradeDefinition[] = [
@@ -88,6 +113,25 @@ export const upgradeCatalog: UpgradeDefinition[] = [
   }
 ];
 
+export const careActions: CareActionDefinition[] = [
+  {
+    id: 'brush',
+    label: 'Brush',
+    xpReward: 8,
+    ticketProgressReward: 12,
+    affectionReward: 14,
+    coinReward: 20
+  },
+  {
+    id: 'snack',
+    label: 'Seeds',
+    cost: { currency: 'coins', amount: 80 },
+    xpReward: 12,
+    ticketProgressReward: 18,
+    affectionReward: 20
+  }
+];
+
 export function deriveGameStats(baseIncomePerSecond: number, progression: ProgressionState): GameStats {
   const upgrades = getOwnedUpgrades(progression.ownedUpgradeIds);
   const tapPower =
@@ -101,15 +145,47 @@ export function deriveGameStats(baseIncomePerSecond: number, progression: Progre
   const level = levelFromXp(progression.xp);
   const xpStart = xpForLevel(level);
   const xpNext = xpForLevel(level + 1);
+  const affectionLevel = affectionLevelFromPoints(progression.affection);
+  const affectionStart = affectionForLevel * (affectionLevel - 1);
+  const affectionNext = affectionForLevel * affectionLevel;
 
   return {
     level,
     xpIntoLevel: Math.max(0, progression.xp - xpStart),
     xpForNextLevel: xpNext - xpStart,
+    affectionLevel,
+    affectionIntoLevel: Math.max(0, progression.affection - affectionStart),
+    affectionForNextLevel: affectionNext - affectionStart,
     tapPower,
     idleIncomePerSecond,
     ticketGoal,
     claimableTickets: Math.floor(progression.ticketProgress / ticketGoal)
+  };
+}
+
+export function performCareAction(
+  economy: EconomyState,
+  progression: ProgressionState,
+  actionId: CareActionId
+): CareActionResult | null {
+  const action = careActions.find((item) => item.id === actionId);
+  if (!action) return null;
+  const paid = action.cost ? spendCurrency(economy, action.cost.currency, action.cost.amount) : economy;
+  if (!paid) return null;
+
+  return {
+    economy: {
+      ...paid,
+      coins: paid.coins + (action.coinReward ?? 0)
+    },
+    progression: {
+      ...progression,
+      xp: progression.xp + action.xpReward,
+      ticketProgress: progression.ticketProgress + action.ticketProgressReward,
+      affection: progression.affection + action.affectionReward,
+      careStreak: progression.careStreak + 1
+    },
+    action
   };
 }
 
@@ -202,6 +278,10 @@ export function xpForLevel(level: number): number {
   return Math.floor(((level - 1) * level * baseXpForLevel) / 2);
 }
 
+export function affectionLevelFromPoints(affection: number): number {
+  return Math.floor(Math.max(0, affection) / affectionForLevel) + 1;
+}
+
 export function sanitizeProgression(value: unknown): ProgressionState {
   const raw = value && typeof value === 'object' ? (value as Partial<ProgressionState>) : {};
   const allowedUpgrades = new Set(upgradeCatalog.map((upgrade) => upgrade.id));
@@ -221,7 +301,9 @@ export function sanitizeProgression(value: unknown): ProgressionState {
       raw.ticketProgress,
       defaultProgression.ticketProgress
     ),
-    ownedUpgradeIds
+    ownedUpgradeIds,
+    affection: sanitizeNonNegativeNumber(raw.affection, defaultProgression.affection),
+    careStreak: sanitizeNonNegativeNumber(raw.careStreak, defaultProgression.careStreak)
   };
 }
 

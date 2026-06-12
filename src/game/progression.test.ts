@@ -6,6 +6,7 @@ import {
   claimTickets,
   defaultProgression,
   deriveGameStats,
+  performCareAction,
   purchaseUpgrade,
   sanitizeProgression
 } from './progression';
@@ -19,6 +20,7 @@ describe('progression loop', () => {
     });
 
     expect(stats.level).toBe(2);
+    expect(stats.affectionLevel).toBe(1);
     expect(stats.tapPower).toBe(35);
     expect(stats.idleIncomePerSecond).toBe(103);
     expect(stats.ticketGoal).toBeLessThan(260);
@@ -62,16 +64,36 @@ describe('progression loop', () => {
     expect(next.ticketProgress).toBeGreaterThan(defaultProgression.ticketProgress);
   });
 
+  it('applies care actions to affection, XP, tickets, and currency', () => {
+    const brushed = performCareAction(initialEconomy, defaultProgression, 'brush');
+    expect(brushed?.economy.coins).toBe(initialEconomy.coins + 20);
+    expect(brushed?.progression.affection).toBeGreaterThan(defaultProgression.affection);
+    expect(brushed?.progression.careStreak).toBe(defaultProgression.careStreak + 1);
+
+    const snack = performCareAction(initialEconomy, defaultProgression, 'snack');
+    expect(snack?.economy.coins).toBe(initialEconomy.coins - 80);
+    expect(snack?.progression.ticketProgress).toBeGreaterThan(defaultProgression.ticketProgress);
+  });
+
+  it('blocks care actions when their coin cost is unaffordable', () => {
+    const result = performCareAction({ ...initialEconomy, coins: 10 }, defaultProgression, 'snack');
+    expect(result).toBeNull();
+  });
+
   it('sanitizes progression loaded from storage', () => {
     expect(
       sanitizeProgression({
         xp: Number.NaN,
         ticketProgress: -3,
-        ownedUpgradeIds: ['seed-snack', 'unknown']
+        ownedUpgradeIds: ['seed-snack', 'unknown'],
+        affection: 220.9,
+        careStreak: 4.8
       })
     ).toEqual({
       ...defaultProgression,
-      ownedUpgradeIds: ['seed-snack']
+      ownedUpgradeIds: ['seed-snack'],
+      affection: 220,
+      careStreak: 4
     });
   });
 });

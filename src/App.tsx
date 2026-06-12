@@ -22,11 +22,14 @@ import { assetStyle, canPlaceDecorInScene, gridCellAnchor, gridToScene } from '.
 import {
   applyIdleProgress,
   applyTapProgress,
+  careActions,
   claimTickets,
   deriveGameStats,
   getNextUpgrade,
+  performCareAction,
   purchaseUpgrade,
   upgradeCatalog,
+  type CareActionId,
   type GameStats,
   type ProgressionState,
   type UpgradeDefinition
@@ -230,6 +233,35 @@ export function App() {
       optimistic.claimed > 0
         ? `Claimed ${optimistic.claimed} ticket${optimistic.claimed === 1 ? '' : 's'}`
         : 'Ticket meter charging'
+    );
+  }
+
+  function careForDegu(actionId: CareActionId) {
+    const optimistic = performCareAction(
+      saveRef.current.economy,
+      saveRef.current.progression,
+      actionId
+    );
+    setSave(
+      nextSave((currentSave) => {
+        const result = performCareAction(
+          currentSave.economy,
+          currentSave.progression,
+          actionId
+        );
+        if (!result) return currentSave;
+
+        return {
+          ...currentSave,
+          economy: result.economy,
+          progression: result.progression
+        };
+      })
+    );
+    setStatus(
+      optimistic
+        ? `${optimistic.action.label}: +${optimistic.action.affectionReward} bond`
+        : 'Need coins for care'
     );
   }
 
@@ -472,6 +504,7 @@ export function App() {
             nextUpgrade={nextUpgrade}
             onBuyUpgrade={buyUpgrade}
             onClaimTickets={claimEarnedTickets}
+            onCareAction={careForDegu}
           />
         )}
 
@@ -600,7 +633,8 @@ function GameLoopPanel({
   stats,
   nextUpgrade,
   onBuyUpgrade,
-  onClaimTickets
+  onClaimTickets,
+  onCareAction
 }: {
   economy: EconomyState;
   progression: ProgressionState;
@@ -608,13 +642,22 @@ function GameLoopPanel({
   nextUpgrade: UpgradeDefinition | null;
   onBuyUpgrade: (id: string) => void;
   onClaimTickets: () => void;
+  onCareAction: (id: CareActionId) => void;
 }) {
   const xpPct = Math.min(100, Math.round((stats.xpIntoLevel / stats.xpForNextLevel) * 100));
   const ticketPct = Math.min(
     100,
     Math.round(((progression.ticketProgress % stats.ticketGoal) / stats.ticketGoal) * 100)
   );
+  const affectionPct = Math.min(
+    100,
+    Math.round((stats.affectionIntoLevel / stats.affectionForNextLevel) * 100)
+  );
   const claimLabel = stats.claimableTickets > 0 ? `Claim x${stats.claimableTickets}` : 'Charging';
+  const careIcons: Record<CareActionId, string> = {
+    brush: runtimeAssets.careBrush,
+    snack: runtimeAssets.seedPouch
+  };
 
   return (
     <section className="game-loop-panel" aria-label="Progression">
@@ -635,6 +678,26 @@ function GameLoopPanel({
         <span className="meter-track ticket-meter" aria-label="Ticket progress">
           <span style={{ width: `${ticketPct}%` }} />
         </span>
+      </div>
+      <div className="care-row" aria-label="Care actions">
+        <div className="care-meter">
+          <span>Bond {stats.affectionLevel}</span>
+          <span className="meter-track affection-meter" aria-label="Bond progress">
+            <span style={{ width: `${affectionPct}%` }} />
+          </span>
+        </div>
+        {careActions.map((action) => (
+          <button
+            key={action.id}
+            className="care-button"
+            type="button"
+            onClick={() => onCareAction(action.id)}
+            aria-label={`${action.label} degu`}
+          >
+            <img src={careIcons[action.id]} alt="" />
+            <span>{action.label}</span>
+          </button>
+        ))}
       </div>
       <div className="loop-actions">
         <button
