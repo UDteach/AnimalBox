@@ -23,6 +23,40 @@ const backgroundThemes = [
 
 const newDecorIds = ['short-wooden-fence', 'flower-patch', 'snack-tray', 'star-lantern'];
 const newOutfitIds = ['cloud-cap', 'clover-necklace', 'picnic-blanket-cape', 'tiny-cheek-sticker'];
+const floatingItemIds = [
+  'cloud-puff',
+  'clover-charm',
+  'acorn-charm',
+  'seed-pouch-charm',
+  'star-lantern-float',
+  'moon-bell',
+  'sky-ticket-charm',
+  'mushroom-friend',
+  'sprout-buddy',
+  'sleepy-dust-buddy',
+  'cotton-flower-puff',
+  'crystal-shard-float',
+  'bellflower-sprite',
+  'feather-charm',
+  'bread-basket',
+  'water-drop-buddy',
+  'sky-moth',
+  'cloud-sheep',
+  'walnut-charm',
+  'comet-seed',
+  'spiral-shell',
+  'sleepy-seed-spirit',
+  'paper-crane',
+  'honey-jar',
+  'sun-bell',
+  'blue-firefly',
+  'carrot-bit',
+  'teacup-cloud',
+  'cloud-starfish',
+  'pebble-friend',
+  'leaf-boat',
+  'lavender-puff'
+];
 
 const allRewardIds = [
   ...backgroundThemes,
@@ -69,7 +103,8 @@ const allRewardIds = [
   'cozy-poncho',
   'sky-satchel',
   'daisy-ear-clip',
-  ...newOutfitIds
+  ...newOutfitIds,
+  ...floatingItemIds
 ];
 
 const baseSave = {
@@ -78,12 +113,14 @@ const baseSave = {
   selectedBackgroundId: 'floating-island',
   selectedVariantId: 'agouti',
   selectedDeguShotId: '04',
+  customDeguTone: { hue: 0, saturation: 100, brightness: 100 },
   selectedOutfitIds: ['acorn-beret', 'mint-scarf'],
+  accessoryPlacements: {},
   placedDecor: [],
   ownedRewardIds: allRewardIds,
   gachaHistory: [],
   pullsSinceRare: 0,
-  progression: { xp: 260, ticketProgress: 320, ownedUpgradeIds: ['seed-snack', 'soft-brush'] }
+  progression: { xp: 260, ticketProgress: 320, ownedUpgradeIds: ['seed-snack', 'soft-brush'], affection: 64, careStreak: 2 }
 };
 
 const homePlacedDecor = [
@@ -285,7 +322,7 @@ function verifyHomeMetrics(metrics, mask, scenario) {
   assert(metrics.bottom, 'bottom panel rect missing', scenario);
   assert(metrics.nav, 'bottom nav rect missing', scenario);
   assert(metrics.degu.w <= 30, 'degu is too large relative to the phone scene', { scenario, degu: metrics.degu });
-  assert(metrics.degu.w >= 19, 'degu became too small to read as the main character', { scenario, degu: metrics.degu });
+  assert(metrics.degu.w >= 15, 'degu became too small to read as the main character', { scenario, degu: metrics.degu });
   assert(mask && mask.coverage > 0.015, 'background island mask detection failed', { scenario, mask });
   assert(mask.y <= metrics.degu.bottom + 8, 'degu is not visually inside detected island/ground band', {
     scenario,

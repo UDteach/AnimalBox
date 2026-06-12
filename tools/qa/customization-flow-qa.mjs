@@ -6,7 +6,41 @@ const outDir = 'output/playwright/customization-flow-qa';
 const storageKey = 'animalbox.prototype.v1';
 
 const newDecorIds = ['short-wooden-fence', 'flower-patch', 'snack-tray', 'star-lantern'];
-const newOutfitIds = ['cloud-cap', 'clover-necklace', 'picnic-blanket-cape', 'tiny-cheek-sticker'];
+const newOutfitIds = ['cloud-puff', 'clover-charm', 'acorn-charm', 'seed-pouch-charm'];
+const floatingItemIds = [
+  'cloud-puff',
+  'clover-charm',
+  'acorn-charm',
+  'seed-pouch-charm',
+  'star-lantern-float',
+  'moon-bell',
+  'sky-ticket-charm',
+  'mushroom-friend',
+  'sprout-buddy',
+  'sleepy-dust-buddy',
+  'cotton-flower-puff',
+  'crystal-shard-float',
+  'bellflower-sprite',
+  'feather-charm',
+  'bread-basket',
+  'water-drop-buddy',
+  'sky-moth',
+  'cloud-sheep',
+  'walnut-charm',
+  'comet-seed',
+  'spiral-shell',
+  'sleepy-seed-spirit',
+  'paper-crane',
+  'honey-jar',
+  'sun-bell',
+  'blue-firefly',
+  'carrot-bit',
+  'teacup-cloud',
+  'cloud-starfish',
+  'pebble-friend',
+  'leaf-boat',
+  'lavender-puff'
+];
 const backgroundIds = [
   'floating-island',
   'morning-pasture',
@@ -61,7 +95,11 @@ const allRewardIds = [
   'cozy-poncho',
   'sky-satchel',
   'daisy-ear-clip',
-  ...newOutfitIds
+  'cloud-cap',
+  'clover-necklace',
+  'picnic-blanket-cape',
+  'tiny-cheek-sticker',
+  ...floatingItemIds
 ];
 
 const baseSave = {
@@ -70,7 +108,9 @@ const baseSave = {
   selectedBackgroundId: 'floating-island',
   selectedVariantId: 'agouti',
   selectedDeguShotId: '04',
-  selectedOutfitIds: newOutfitIds,
+  customDeguTone: { hue: 0, saturation: 100, brightness: 100 },
+  selectedOutfitIds: ['straw-hat', ...newOutfitIds],
+  accessoryPlacements: {},
   placedDecor: [
     {
       instanceId: 'qa-fence',
@@ -150,7 +190,7 @@ try {
       if (screen === 'home') {
         await page.getByRole('button', { name: 'Brush degu' }).click();
         await page.waitForTimeout(120);
-        await page.getByRole('button', { name: 'Seeds degu' }).click();
+        await page.getByRole('button', { name: 'Feed degu' }).click();
         await page.waitForTimeout(120);
       }
       if (screen === 'placement') {
@@ -158,6 +198,11 @@ try {
         await page.waitForTimeout(120);
         await page.getByRole('button', { name: 'Undo last decor' }).click();
         await page.waitForTimeout(120);
+      }
+      if (screen === 'wardrobe') {
+        await page.getByRole('button', { name: 'Move accessory right' }).click();
+        await page.getByRole('button', { name: 'Scale accessory up' }).click();
+        await page.waitForTimeout(140);
       }
       const metrics = await page.evaluate(
         ({ screen, newDecorIds, newOutfitIds }) => {
@@ -174,9 +219,10 @@ try {
           return {
             screen,
             hasAssetWarning: Boolean(document.querySelector('.asset-warning')),
-            activeOutfits: [...document.querySelectorAll('.pixel-degu-outfit')].map(
+            activeAccessories: [...document.querySelectorAll('.pixel-degu-float-item')].map(
               (node) => node.getAttribute('src') ?? ''
             ),
+            strawHatPlacement: save.accessoryPlacements?.['straw-hat'] ?? null,
             newDecorCards: newDecorIds.filter((id) => cardImages.some((src) => src.endsWith(`${id}.png`))).length,
             newOutfitCards: newOutfitIds.filter((id) => cardImages.some((src) => src.endsWith(`${id}.png`))).length,
             careButtons: [...document.querySelectorAll('.care-button')].map((node) => ({
@@ -209,14 +255,20 @@ try {
         metrics.settingsOpensStorage = true;
       }
       if (screen === 'wardrobe') {
-        await page.getByRole('button', { name: 'Apply wardrobe' }).click();
+        await page.getByRole('button', { name: 'Apply accessories' }).click();
         await page.waitForSelector('.game-loop-panel', { timeout: 5000 });
         metrics.applyReturnsHome = true;
       }
       if (screen === 'gacha') {
         await page.getByRole('button', { name: 'Open one sky gift' }).click();
+        await page.waitForSelector('.gacha-reveal', { timeout: 5000 });
         await page.waitForTimeout(160);
+        metrics.gachaRevealCards = await page.locator('.gacha-result-card').count();
+        metrics.gachaOpeningState = await page.locator('.gacha-screen').getAttribute('data-opening');
         metrics.gachaHistoryText = await page.locator('.history-chip').textContent();
+        await page.getByRole('button', { name: 'Open premium sky gift' }).click();
+        await page.waitForSelector('.gacha-reveal[data-banner="premium-sky-gift-01"]', { timeout: 5000 });
+        metrics.premiumRevealCards = await page.locator('.gacha-reveal[data-banner="premium-sky-gift-01"] .gacha-result-card').count();
       }
       if (screen === 'storage') {
         await page.getByRole('button', { name: 'Clear layout preset 1' }).click();
@@ -246,7 +298,9 @@ try {
   const wardrobe = results.find((item) => item.screen === 'wardrobe');
   assert(wardrobe, 'wardrobe metrics missing');
   assert(!wardrobe.hasAssetWarning, 'wardrobe asset warning', wardrobe);
-  assert(wardrobe.activeOutfits.length === newOutfitIds.length, 'new outfits are not rendered', wardrobe);
+  assert(wardrobe.activeAccessories.length >= newOutfitIds.length, 'new accessories are not rendered', wardrobe);
+  assert(wardrobe.strawHatPlacement?.x === 2, 'accessory move control did not persist x offset', wardrobe);
+  assert(wardrobe.strawHatPlacement?.scale > 1, 'accessory scale control did not persist scale', wardrobe);
   assert(wardrobe.newOutfitCards === newOutfitIds.length, 'new outfit cards are missing', wardrobe);
   assert(wardrobe.wardrobeGridBottomToNav >= 4, 'wardrobe grid collides with bottom nav', wardrobe);
   assert(wardrobe.shotRowBottomToGrid >= 4, 'wardrobe grid collides with shot row', wardrobe);
@@ -266,6 +320,8 @@ try {
   assert(gacha?.newOutfitCards === newOutfitIds.length, 'new outfit rewards missing from gacha preview', gacha);
   assert(!gacha.hasAssetWarning, 'gacha asset warning', gacha);
   assert(/^Last: /.test(gacha.gachaHistoryText ?? ''), 'gacha did not show pull history', gacha);
+  assert(gacha.gachaRevealCards >= 1, 'gacha reveal cards did not render', gacha);
+  assert(gacha.premiumRevealCards >= 1, 'premium earned-ticket reveal cards did not render', gacha);
   assert(!/[a-z]+-[a-z]+/.test(gacha.gachaHistoryText ?? ''), 'gacha history still shows raw reward ids', gacha);
 
   const storage = results.find((item) => item.screen === 'storage');

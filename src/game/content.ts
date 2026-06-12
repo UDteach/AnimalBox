@@ -1,6 +1,15 @@
 export type ScreenId = 'home' | 'placement' | 'wardrobe' | 'gacha' | 'storage';
 
-export type OutfitSlot = 'head' | 'neck' | 'back' | 'face';
+export type FloatingItemSlot =
+  | 'head'
+  | 'neck'
+  | 'back'
+  | 'face'
+  | 'top'
+  | 'left-high'
+  | 'left-low'
+  | 'right-high'
+  | 'right-low';
 
 export interface MockupScreen {
   id: ScreenId;
@@ -33,10 +42,11 @@ export interface PixelDeguShot {
   source: string;
 }
 
-export interface OutfitItem {
+export interface FloatingItem {
   id: string;
   label: string;
-  slot: OutfitSlot;
+  slot: FloatingItemSlot;
+  kind?: 'wearable' | 'float';
   rarity: 'common' | 'rare' | 'special';
   src: string;
 }
@@ -67,7 +77,7 @@ export const screens: Record<ScreenId, MockupScreen> = {
   },
   wardrobe: {
     id: 'wardrobe',
-    label: 'Wardrobe',
+    label: 'Dress',
     image: '/images/runtime/backgrounds/floating-island.png',
     width: 853,
     height: 1844
@@ -155,7 +165,9 @@ export const starterRewardIds = [
   '04',
   'clover-patch',
   'hay-bed',
-  'straw-hat'
+  'straw-hat',
+  'cloud-puff',
+  'sprout-buddy'
 ];
 
 export const deguVariants: DeguVariant[] = [
@@ -191,26 +203,65 @@ export const pixelDeguShots: PixelDeguShot[] = Array.from({ length: 10 }, (_, in
   };
 });
 
-export const outfits: OutfitItem[] = [
-  { id: 'straw-hat', label: 'Straw hat', slot: 'head', rarity: 'common', src: '/images/runtime/wardrobe/straw-hat.png' },
-  { id: 'celestial-cape', label: 'Celestial cape', slot: 'back', rarity: 'rare', src: '/images/runtime/wardrobe/celestial-cape.png' },
-  { id: 'pastel-ribbon', label: 'Pastel ribbon', slot: 'neck', rarity: 'common', src: '/images/runtime/wardrobe/pastel-ribbon.png' },
-  { id: 'flower-crown', label: 'Flower crown', slot: 'head', rarity: 'rare', src: '/images/runtime/wardrobe/flower-crown.png' },
-  { id: 'round-glasses', label: 'Round glasses', slot: 'face', rarity: 'special', src: '/images/runtime/wardrobe/round-glasses.png' },
-  { id: 'angel-halo-wings', label: 'Halo wings', slot: 'head', rarity: 'special', src: '/images/runtime/wardrobe/angel-halo-wings.png' },
-  { id: 'acorn-beret', label: 'Acorn beret', slot: 'head', rarity: 'common', src: '/images/runtime/wardrobe/acorn-beret.png' },
-  { id: 'mint-scarf', label: 'Mint scarf', slot: 'neck', rarity: 'common', src: '/images/runtime/wardrobe/mint-scarf.png' },
-  { id: 'leaf-cape', label: 'Leaf cape', slot: 'back', rarity: 'rare', src: '/images/runtime/wardrobe/leaf-cape.png' },
-  { id: 'star-hairpin', label: 'Star hairpin', slot: 'head', rarity: 'rare', src: '/images/runtime/wardrobe/star-hairpin.png' },
-  { id: 'explorer-goggles', label: 'Explorer goggles', slot: 'face', rarity: 'rare', src: '/images/runtime/wardrobe/explorer-goggles.png' },
-  { id: 'cozy-poncho', label: 'Cozy poncho', slot: 'back', rarity: 'special', src: '/images/runtime/wardrobe/cozy-poncho.png' },
-  { id: 'sky-satchel', label: 'Sky satchel', slot: 'back', rarity: 'common', src: '/images/runtime/wardrobe/sky-satchel.png' },
-  { id: 'daisy-ear-clip', label: 'Daisy ear clip', slot: 'head', rarity: 'common', src: '/images/runtime/wardrobe/daisy-ear-clip.png' },
-  { id: 'cloud-cap', label: 'Cloud cap', slot: 'head', rarity: 'rare', src: '/images/runtime/wardrobe/cloud-cap.png' },
-  { id: 'clover-necklace', label: 'Clover necklace', slot: 'neck', rarity: 'common', src: '/images/runtime/wardrobe/clover-necklace.png' },
-  { id: 'picnic-blanket-cape', label: 'Picnic cape', slot: 'back', rarity: 'rare', src: '/images/runtime/wardrobe/picnic-blanket-cape.png' },
-  { id: 'tiny-cheek-sticker', label: 'Cheek sticker', slot: 'face', rarity: 'common', src: '/images/runtime/wardrobe/tiny-cheek-sticker.png' }
+export const wearableItems: FloatingItem[] = [
+  { id: 'straw-hat', label: 'Straw hat', slot: 'head', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/straw-hat.png' },
+  { id: 'celestial-cape', label: 'Celestial cape', slot: 'back', kind: 'wearable', rarity: 'rare', src: '/images/runtime/wardrobe/celestial-cape.png' },
+  { id: 'pastel-ribbon', label: 'Pastel ribbon', slot: 'neck', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/pastel-ribbon.png' },
+  { id: 'flower-crown', label: 'Flower crown', slot: 'head', kind: 'wearable', rarity: 'rare', src: '/images/runtime/wardrobe/flower-crown.png' },
+  { id: 'round-glasses', label: 'Round glasses', slot: 'face', kind: 'wearable', rarity: 'special', src: '/images/runtime/wardrobe/round-glasses.png' },
+  { id: 'angel-halo-wings', label: 'Halo wings', slot: 'top', kind: 'wearable', rarity: 'special', src: '/images/runtime/wardrobe/angel-halo-wings.png' },
+  { id: 'acorn-beret', label: 'Acorn beret', slot: 'head', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/acorn-beret.png' },
+  { id: 'mint-scarf', label: 'Mint scarf', slot: 'neck', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/mint-scarf.png' },
+  { id: 'leaf-cape', label: 'Leaf cape', slot: 'back', kind: 'wearable', rarity: 'rare', src: '/images/runtime/wardrobe/leaf-cape.png' },
+  { id: 'star-hairpin', label: 'Star hairpin', slot: 'head', kind: 'wearable', rarity: 'rare', src: '/images/runtime/wardrobe/star-hairpin.png' },
+  { id: 'explorer-goggles', label: 'Explorer goggles', slot: 'face', kind: 'wearable', rarity: 'rare', src: '/images/runtime/wardrobe/explorer-goggles.png' },
+  { id: 'cozy-poncho', label: 'Cozy poncho', slot: 'back', kind: 'wearable', rarity: 'special', src: '/images/runtime/wardrobe/cozy-poncho.png' },
+  { id: 'sky-satchel', label: 'Sky satchel', slot: 'back', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/sky-satchel.png' },
+  { id: 'daisy-ear-clip', label: 'Daisy ear clip', slot: 'head', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/daisy-ear-clip.png' },
+  { id: 'cloud-cap', label: 'Cloud cap', slot: 'head', kind: 'wearable', rarity: 'rare', src: '/images/runtime/wardrobe/cloud-cap.png' },
+  { id: 'clover-necklace', label: 'Clover necklace', slot: 'neck', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/clover-necklace.png' },
+  { id: 'picnic-blanket-cape', label: 'Picnic cape', slot: 'back', kind: 'wearable', rarity: 'rare', src: '/images/runtime/wardrobe/picnic-blanket-cape.png' },
+  { id: 'tiny-cheek-sticker', label: 'Cheek sticker', slot: 'face', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/tiny-cheek-sticker.png' }
 ];
+
+export const floatingItems: FloatingItem[] = [
+  { id: 'cloud-puff', label: 'Cloud puff', slot: 'top', rarity: 'common', src: '/images/runtime/floating-items/cloud-puff.png' },
+  { id: 'clover-charm', label: 'Clover charm', slot: 'left-high', rarity: 'common', src: '/images/runtime/floating-items/clover-charm.png' },
+  { id: 'acorn-charm', label: 'Acorn charm', slot: 'right-low', rarity: 'common', src: '/images/runtime/floating-items/acorn-charm.png' },
+  { id: 'seed-pouch-charm', label: 'Seed pouch charm', slot: 'left-low', rarity: 'common', src: '/images/runtime/floating-items/seed-pouch-charm.png' },
+  { id: 'star-lantern-float', label: 'Star lantern', slot: 'top', rarity: 'rare', src: '/images/runtime/floating-items/star-lantern-float.png' },
+  { id: 'moon-bell', label: 'Moon bell', slot: 'right-high', rarity: 'rare', src: '/images/runtime/floating-items/moon-bell.png' },
+  { id: 'sky-ticket-charm', label: 'Sky ticket charm', slot: 'left-high', rarity: 'common', src: '/images/runtime/floating-items/sky-ticket-charm.png' },
+  { id: 'mushroom-friend', label: 'Mushroom friend', slot: 'right-low', rarity: 'common', src: '/images/runtime/floating-items/mushroom-friend.png' },
+  { id: 'sprout-buddy', label: 'Sprout buddy', slot: 'left-low', rarity: 'common', src: '/images/runtime/floating-items/sprout-buddy.png' },
+  { id: 'sleepy-dust-buddy', label: 'Sleepy dust buddy', slot: 'right-low', rarity: 'special', src: '/images/runtime/floating-items/sleepy-dust-buddy.png' },
+  { id: 'cotton-flower-puff', label: 'Cotton puff', slot: 'left-high', rarity: 'rare', src: '/images/runtime/floating-items/cotton-flower-puff.png' },
+  { id: 'crystal-shard-float', label: 'Crystal shard', slot: 'right-high', rarity: 'rare', src: '/images/runtime/floating-items/crystal-shard-float.png' },
+  { id: 'bellflower-sprite', label: 'Bellflower sprite', slot: 'left-low', rarity: 'special', src: '/images/runtime/floating-items/bellflower-sprite.png' },
+  { id: 'feather-charm', label: 'Feather charm', slot: 'right-high', rarity: 'common', src: '/images/runtime/floating-items/feather-charm.png' },
+  { id: 'bread-basket', label: 'Bread basket', slot: 'right-low', rarity: 'rare', src: '/images/runtime/floating-items/bread-basket.png' },
+  { id: 'water-drop-buddy', label: 'Water drop buddy', slot: 'right-high', rarity: 'special', src: '/images/runtime/floating-items/water-drop-buddy.png' },
+  { id: 'sky-moth', label: 'Sky moth', slot: 'left-high', rarity: 'rare', src: '/images/runtime/floating-items/sky-moth.png' },
+  { id: 'cloud-sheep', label: 'Cloud sheep', slot: 'right-high', rarity: 'special', src: '/images/runtime/floating-items/cloud-sheep.png' },
+  { id: 'walnut-charm', label: 'Walnut charm', slot: 'right-low', rarity: 'common', src: '/images/runtime/floating-items/walnut-charm.png' },
+  { id: 'comet-seed', label: 'Comet seed', slot: 'top', rarity: 'rare', src: '/images/runtime/floating-items/comet-seed.png' },
+  { id: 'spiral-shell', label: 'Spiral shell', slot: 'left-low', rarity: 'common', src: '/images/runtime/floating-items/spiral-shell.png' },
+  { id: 'sleepy-seed-spirit', label: 'Sleepy seed', slot: 'left-low', rarity: 'rare', src: '/images/runtime/floating-items/sleepy-seed-spirit.png' },
+  { id: 'paper-crane', label: 'Paper crane', slot: 'top', rarity: 'rare', src: '/images/runtime/floating-items/paper-crane.png' },
+  { id: 'honey-jar', label: 'Honey jar', slot: 'right-low', rarity: 'rare', src: '/images/runtime/floating-items/honey-jar.png' },
+  { id: 'sun-bell', label: 'Sun bell', slot: 'top', rarity: 'special', src: '/images/runtime/floating-items/sun-bell.png' },
+  { id: 'blue-firefly', label: 'Blue firefly', slot: 'right-high', rarity: 'rare', src: '/images/runtime/floating-items/blue-firefly.png' },
+  { id: 'carrot-bit', label: 'Carrot bit', slot: 'left-high', rarity: 'common', src: '/images/runtime/floating-items/carrot-bit.png' },
+  { id: 'teacup-cloud', label: 'Teacup cloud', slot: 'right-high', rarity: 'special', src: '/images/runtime/floating-items/teacup-cloud.png' },
+  { id: 'cloud-starfish', label: 'Cloud starfish', slot: 'top', rarity: 'rare', src: '/images/runtime/floating-items/cloud-starfish.png' },
+  { id: 'pebble-friend', label: 'Pebble friend', slot: 'right-low', rarity: 'common', src: '/images/runtime/floating-items/pebble-friend.png' },
+  { id: 'leaf-boat', label: 'Leaf boat', slot: 'left-low', rarity: 'rare', src: '/images/runtime/floating-items/leaf-boat.png' },
+  { id: 'lavender-puff', label: 'Lavender puff', slot: 'left-high', rarity: 'special', src: '/images/runtime/floating-items/lavender-puff.png' }
+];
+
+export const accessoryItems: FloatingItem[] = [...wearableItems, ...floatingItems];
+
+export const outfits = accessoryItems;
 
 export const decorItems: DecorItem[] = [
   {

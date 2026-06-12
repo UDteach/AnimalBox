@@ -1,26 +1,40 @@
 import { describe, expect, it } from 'vitest';
-import { backgroundThemes, decorItems, deguVariants, outfits } from './content';
+import { accessoryItems, backgroundThemes, decorItems, deguVariants } from './content';
 import { initialEconomy } from './economy';
-import { runPulls, seededRandom, skyGiftBanner } from './gacha';
+import { premiumSkyGiftBanner, runPulls, seededRandom, skyGiftBanner } from './gacha';
+
+const banners = [skyGiftBanner, premiumSkyGiftBanner];
 
 describe('free gacha', () => {
   it('spends only earned tickets and records rewards', () => {
-    const result = runPulls(skyGiftBanner, 1, initialEconomy, {
-      ownedRewardIds: new Set(),
-      pullsSinceRare: 0,
-      random: seededRandom(3)
-    });
+    for (const banner of banners) {
+      const result = runPulls(banner, 1, initialEconomy, {
+        ownedRewardIds: new Set(),
+        pullsSinceRare: 0,
+        random: seededRandom(3)
+      });
 
-    expect(result).not.toBeNull();
-    expect(skyGiftBanner.cost.currency).toBe('tickets');
-    expect(result?.economy.coins).toBe(initialEconomy.coins);
-    expect(result?.economy.tickets).toBe(initialEconomy.tickets - 1);
-    expect(result?.results).toHaveLength(1);
+      expect(result).not.toBeNull();
+      expect(banner.cost.currency).toBe('tickets');
+      expect(result?.economy.coins).toBe(initialEconomy.coins);
+      expect(result?.economy.tickets).toBe(initialEconomy.tickets - banner.cost.amount);
+      expect(result?.results).toHaveLength(1);
+    }
+  });
+
+  it('blocks premium gifts when earned tickets are short', () => {
+    expect(
+      runPulls(premiumSkyGiftBanner, 1, { ...initialEconomy, tickets: 4 }, {
+        ownedRewardIds: new Set(),
+        pullsSinceRare: 0,
+        random: seededRandom(1)
+      })
+    ).toBeNull();
   });
 
   it('converts duplicates into shards', () => {
     const result = runPulls(skyGiftBanner, 1, initialEconomy, {
-      ownedRewardIds: new Set(['hay-bed', 'cloud-lamp', 'flower-crown', 'blue-gray', 'angel-fountain', 'celestial-cape']),
+      ownedRewardIds: new Set(['hay-bed', 'cloud-lamp', 'moon-bell', 'blue-gray', 'angel-fountain', 'cloud-sheep']),
       pullsSinceRare: 0,
       random: () => 0.99
     });
@@ -45,11 +59,13 @@ describe('free gacha', () => {
   it('only references reward ids that exist in customization content', () => {
     const rewardIds = new Set([
       ...decorItems.map((item) => item.id),
-      ...outfits.map((item) => item.id),
+      ...accessoryItems.map((item) => item.id),
       ...deguVariants.map((item) => item.id),
       ...backgroundThemes.map((item) => item.id)
     ]);
 
-    expect(skyGiftBanner.entries.filter((entry) => !rewardIds.has(entry.rewardId))).toEqual([]);
+    for (const banner of banners) {
+      expect(banner.entries.filter((entry) => !rewardIds.has(entry.rewardId))).toEqual([]);
+    }
   });
 });

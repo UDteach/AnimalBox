@@ -454,6 +454,22 @@ button {
   z-index: 2;
 }
 
+.fixed-island-floor {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 61.5%;
+  width: 70%;
+  aspect-ratio: 2.35 / 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(177, 223, 89, 0.72) 0 35%, rgba(91, 174, 83, 0.62) 36% 61%, transparent 62%),
+    repeating-radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.18) 0 3px, transparent 4px 13px);
+  filter: drop-shadow(0 0.86rem 0.45rem rgba(52, 79, 54, 0.18));
+  pointer-events: none;
+}
+
 .runtime-decor {
   --decor-rotation: 0deg;
   position: absolute;
@@ -473,8 +489,8 @@ button {
   top: 45.6%;
   left: 50%;
   display: grid;
-  width: 24%;
-  min-width: 4.5rem;
+  width: 16%;
+  min-width: 3.45rem;
   aspect-ratio: 1 / 1.05;
   padding: 0;
   transform: translate(-50%, -50%);
@@ -502,10 +518,54 @@ button {
 .care-button:focus-visible,
 .next-upgrade-button:focus-visible,
 .upgrade-chip:focus-visible,
+.accessory-tool-grid button:focus-visible,
+.accessory-reset:focus-visible,
 .action:focus-visible,
 .apply-button:focus-visible {
   outline: 3px solid rgba(255, 255, 255, 0.96);
   outline-offset: 2px;
+}
+
+.asset-card,
+.action,
+.apply-button,
+.pull-button,
+.nav-item,
+.care-button,
+.claim-button,
+.next-upgrade-button,
+.upgrade-chip,
+.accessory-tool-grid button,
+.accessory-reset,
+.theme-card,
+.preset-button,
+.preset-clear-button,
+.shot-button,
+.variant-button {
+  transition:
+    transform 110ms ease,
+    filter 110ms ease,
+    box-shadow 110ms ease;
+}
+
+.asset-card:active,
+.action:active,
+.apply-button:active,
+.pull-button:active,
+.nav-item:active,
+.care-button:active,
+.claim-button:active,
+.next-upgrade-button:active,
+.upgrade-chip:active,
+.accessory-tool-grid button:active,
+.accessory-reset:active,
+.theme-card:active,
+.preset-button:active,
+.preset-clear-button:active,
+.shot-button:active,
+.variant-button:active {
+  transform: translateY(0.08rem) scale(0.97);
+  filter: brightness(0.98);
 }
 
 .degu-sprite {
@@ -545,7 +605,7 @@ button {
   position: absolute;
   top: 8.2%;
   left: 50%;
-  width: min(79%, 20rem);
+  width: min(46%, 11.5rem);
   aspect-ratio: 4 / 3;
   height: auto;
   transform: translateX(-50%);
@@ -572,122 +632,29 @@ button {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  image-rendering: pixelated;
+  image-rendering: auto;
   filter: var(--degu-filter) drop-shadow(0 0.75rem 0.55rem rgba(39, 31, 24, 0.22));
   animation: idle-bob 2.6s ease-in-out infinite;
   transition: transform 140ms ease;
 }
 
-.pixel-degu-outfit {
+.pixel-degu-float-item {
   position: absolute;
   z-index: 3;
+  max-width: 3.9rem;
   object-fit: contain;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 0.28rem 0.25rem rgba(38, 28, 20, 0.16));
+  image-rendering: auto;
+  filter: drop-shadow(0 0.34rem 0.28rem rgba(38, 28, 20, 0.2));
   transform-origin: center;
+  transform: translate(-50%, -50%) rotate(var(--float-rotate, 0deg));
+  animation: float-item 3.8s ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
 }
 
-.pixel-degu-outfit--straw-hat {
-  top: 21%;
-  left: 18%;
-  width: 31%;
-  transform: rotate(-15deg);
-}
-
-.pixel-degu-outfit--flower-crown {
-  top: 30%;
-  left: 21%;
-  width: 31%;
-  transform: rotate(-9deg);
-}
-
-.pixel-degu-outfit--round-glasses {
-  top: 38%;
-  left: 23%;
-  width: 25%;
-  transform: rotate(-5deg);
-}
-
-.pixel-degu-outfit--pastel-ribbon {
-  top: 52%;
-  left: 27%;
-  width: 24%;
-  transform: rotate(-5deg);
-}
-
-.pixel-degu-outfit--celestial-cape {
-  z-index: 1;
-  top: 45%;
-  left: 38%;
-  width: 39%;
-  transform: rotate(7deg);
-}
-
-.pixel-degu-outfit--angel-halo-wings {
-  z-index: 1;
-  top: 22%;
-  left: 34%;
-  width: 49%;
-  transform: rotate(4deg);
-}
-
-.pixel-degu-outfit--acorn-beret {
-  top: 21%;
-  left: 18%;
-  width: 31%;
-  transform: rotate(-14deg);
-}
-
-.pixel-degu-outfit--mint-scarf {
-  top: 52%;
-  left: 27%;
-  width: 26%;
-  transform: rotate(-5deg);
-}
-
-.pixel-degu-outfit--leaf-cape {
-  z-index: 1;
-  top: 43%;
-  left: 38%;
-  width: 40%;
-  transform: rotate(7deg);
-}
-
-.pixel-degu-outfit--star-hairpin {
-  top: 28%;
-  left: 22%;
-  width: 19%;
-  transform: rotate(-10deg);
-}
-
-.pixel-degu-outfit--explorer-goggles {
-  top: 38%;
-  left: 22%;
-  width: 27%;
-  transform: rotate(-5deg);
-}
-
-.pixel-degu-outfit--cozy-poncho {
-  z-index: 1;
-  top: 43%;
-  left: 34%;
-  width: 44%;
-  transform: rotate(6deg);
-}
-
-.pixel-degu-outfit--sky-satchel {
-  z-index: 4;
-  top: 51%;
-  left: 50%;
-  width: 23%;
-  transform: rotate(5deg);
-}
-
-.pixel-degu-outfit--daisy-ear-clip {
-  top: 30%;
-  left: 16%;
-  width: 18%;
-  transform: rotate(-12deg);
+.pixel-degu-float-item[data-kind="wearable"] {
+  animation-name: wearable-item-bob;
+  animation-duration: 2.6s;
+  animation-delay: 0s;
 }
 
 .pixel-shot-chip {
@@ -710,10 +677,17 @@ button {
   display: none;
 }
 
+.pixel-degu-stage--wardrobe .pixel-shot-chip {
+  display: none;
+}
+
 .placement-grid {
   position: absolute;
   inset: 0;
   z-index: 55;
+  background:
+    radial-gradient(ellipse at 50% 62%, rgba(145, 211, 101, 0.13) 0 24%, transparent 26%),
+    repeating-radial-gradient(ellipse at 50% 61%, transparent 0 1.35rem, rgba(255, 255, 255, 0.18) 1.42rem 1.5rem, transparent 1.56rem 2.2rem);
 }
 
 .cell-button {
@@ -727,10 +701,15 @@ button {
 
 .cell-button::before {
   position: absolute;
-  inset: 29%;
-  border-radius: 0.32rem;
-  background: rgba(255, 255, 255, 0.26);
-  box-shadow: inset 0 0 0 1px rgba(60, 93, 87, 0.22);
+  inset: 17%;
+  border-radius: 45% 55% 48% 52%;
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.52) 0 13%, transparent 14%),
+    repeating-linear-gradient(135deg, rgba(69, 137, 77, 0.34) 0 3px, transparent 3px 8px),
+    rgba(255, 255, 255, 0.2);
+  box-shadow:
+    inset 0 0 0 1px rgba(60, 93, 87, 0.18),
+    0 0.16rem 0.24rem rgba(67, 94, 51, 0.1);
   content: "";
 }
 
@@ -738,11 +717,24 @@ button {
   background: rgba(219, 70, 54, 0.28);
 }
 
+.cell-button:disabled {
+  cursor: not-allowed;
+}
+
 .cell-button[data-selected="true"]::before {
   background: rgba(248, 200, 77, 0.48);
   box-shadow:
     inset 0 0 0 2px rgba(255, 255, 255, 0.74),
     0 0 0.8rem rgba(248, 200, 77, 0.5);
+}
+
+.cell-button::after {
+  position: absolute;
+  inset: 25%;
+  border-top: 2px dashed rgba(55, 116, 71, 0.56);
+  border-radius: 50%;
+  transform: rotate(-12deg);
+  content: "";
 }
 
 .placement-ghost {
@@ -872,6 +864,13 @@ button {
     0 0.42rem 0.86rem rgba(77, 49, 19, 0.15);
 }
 
+.asset-card[data-selected="true"] {
+  box-shadow:
+    inset 0 0 0 2px rgba(77, 119, 203, 0.42),
+    0 0 0 3px rgba(255, 255, 255, 0.58),
+    0 0.42rem 0.86rem rgba(77, 49, 19, 0.15);
+}
+
 .asset-card[data-locked="true"] {
   opacity: 0.58;
   background: rgba(255, 255, 255, 0.36);
@@ -937,42 +936,6 @@ button {
   inset: 0;
 }
 
-.dragonbones-rig-card {
-  position: absolute;
-  top: 10.2%;
-  left: 50%;
-  display: grid;
-  width: min(72%, 19rem);
-  aspect-ratio: 1 / 1.02;
-  transform: translateX(-50%);
-  place-items: center;
-}
-
-.dragonbones-rig-card::before {
-  position: absolute;
-  inset: 7% 6% 13%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 50% 56%, rgba(255, 246, 210, 0.86) 0 48%, rgba(255, 255, 255, 0.46) 49% 67%, transparent 68%);
-  content: "";
-}
-
-.dragonbones-stage {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-}
-
-.dragonbones-canvas {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain;
-  touch-action: manipulation;
-}
-
 .variant-row {
   position: absolute;
   top: 9.8%;
@@ -989,7 +952,7 @@ button {
   z-index: 9;
   top: 45.2%;
   left: 5%;
-  right: 5%;
+  right: 39%;
   display: grid;
   grid-auto-columns: 3.35rem;
   grid-auto-flow: column;
@@ -1024,6 +987,15 @@ button {
     inset 0 0 0 2px rgba(124, 78, 19, 0.24),
     0 0 0 3px rgba(255, 255, 255, 0.7),
     0 0.42rem 0.78rem rgba(45, 31, 20, 0.16);
+}
+
+.shot-button[data-locked="true"] {
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.shot-button[data-locked="true"] img {
+  filter: grayscale(0.78) saturate(0.55);
+  opacity: 0.68;
 }
 
 .shot-button img {
@@ -1068,6 +1040,94 @@ button {
 .variant-button[data-locked="true"] {
   filter: grayscale(0.82) saturate(0.52);
   opacity: 0.54;
+}
+
+.tone-panel {
+  position: absolute;
+  top: 20.2%;
+  right: 6.2%;
+  display: grid;
+  width: min(29%, 7.4rem);
+  gap: 0.18rem;
+  padding: 0.38rem;
+  border-radius: 0.7rem;
+  background: rgba(255, 248, 224, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(141, 92, 31, 0.13);
+}
+
+.tone-panel label {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.22rem;
+  color: #5f3d1d;
+  font-size: 0.56rem;
+  font-weight: 1000;
+}
+
+.tone-panel input {
+  width: 100%;
+  accent-color: #c9833d;
+}
+
+.accessory-tune-panel {
+  position: absolute;
+  top: 55.5%;
+  left: 6%;
+  right: 6%;
+  display: grid;
+  grid-template-columns: minmax(5rem, 0.82fr) minmax(0, 1.72fr) minmax(4rem, 0.7fr);
+  align-items: center;
+  width: auto;
+  gap: 0.28rem;
+  padding: 0.4rem;
+  border-radius: 0.78rem;
+  background: rgba(255, 248, 224, 0.82);
+  box-shadow:
+    inset 0 0 0 1px rgba(141, 92, 31, 0.13),
+    0 0.44rem 0.9rem rgba(54, 35, 20, 0.12);
+}
+
+.accessory-tune-panel strong {
+  overflow: hidden;
+  color: #573718;
+  font-size: 0.58rem;
+  font-weight: 1000;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accessory-tool-grid {
+  display: grid;
+  grid-auto-columns: 2.16rem;
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  gap: 0.18rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.08rem;
+  scrollbar-width: none;
+}
+
+.accessory-tool-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.accessory-tool-grid button,
+.accessory-reset {
+  min-width: 2.16rem;
+  min-height: 2.16rem;
+  border-radius: 0.5rem;
+  color: #563719;
+  background: rgba(255, 226, 122, 0.84);
+  font-size: 0.72rem;
+  font-weight: 1000;
+}
+
+.accessory-reset {
+  min-height: 2.16rem;
+  background: rgba(255, 255, 255, 0.68);
+  font-size: 0.58rem;
 }
 
 .wardrobe-grid {
@@ -1140,12 +1200,12 @@ button {
 .pull-row {
   position: absolute;
   z-index: 4;
-  top: 56.7%;
+  top: 55.2%;
   left: 7%;
   right: 7%;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.62rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.42rem;
 }
 
 .pull-button {
@@ -1163,6 +1223,71 @@ button {
   object-fit: contain;
 }
 
+.pull-button.premium {
+  color: #f9f1ff;
+  background: #6f4eb6;
+}
+
+.gacha-screen[data-opening="true"] .gacha-machine {
+  animation: gacha-open 740ms cubic-bezier(0.2, 1.1, 0.18, 1) both;
+}
+
+.gacha-reveal {
+  position: absolute;
+  z-index: 5;
+  top: 63.2%;
+  left: 7%;
+  right: 7%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.32rem;
+  pointer-events: none;
+  animation: result-rise 920ms ease both;
+}
+
+.gacha-result-card {
+  display: grid;
+  min-width: 0;
+  min-height: 4.2rem;
+  place-items: center;
+  padding: 0.22rem;
+  border-radius: 0.75rem;
+  color: #4b331a;
+  background: rgba(255, 247, 221, 0.94);
+  box-shadow:
+    inset 0 0 0 1px rgba(143, 91, 29, 0.16),
+    0 0.54rem 0.92rem rgba(43, 31, 22, 0.16);
+}
+
+.gacha-result-card[data-rarity="rare"] {
+  background: rgba(221, 242, 255, 0.96);
+}
+
+.gacha-result-card[data-rarity="special"] {
+  color: #fbf1ff;
+  background: rgba(111, 78, 182, 0.94);
+}
+
+.gacha-result-card[data-duplicate="true"] {
+  filter: saturate(0.82);
+}
+
+.gacha-result-card img {
+  width: 2.4rem;
+  height: 2.3rem;
+  object-fit: contain;
+}
+
+.gacha-result-card span {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.48rem;
+  font-weight: 1000;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .reward-strip {
   position: absolute;
   z-index: 3;
@@ -1176,6 +1301,13 @@ button {
   overflow-y: hidden;
   padding: 0.1rem 0.08rem 0.38rem;
   scrollbar-width: none;
+}
+
+.gacha-screen[data-has-reveal="true"] .reward-strip {
+  top: 74%;
+  opacity: 0.32;
+  transform: scale(0.2);
+  transform-origin: left top;
 }
 
 .reward-strip::-webkit-scrollbar {
@@ -1447,9 +1579,11 @@ button {
 
 .nav-item {
   display: grid;
+  grid-template-rows: 1fr auto;
   min-height: 3.1rem;
   place-items: center;
-  padding: 0.2rem;
+  gap: 0.05rem;
+  padding: 0.18rem 0.14rem 0.2rem;
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.44);
 }
@@ -1460,9 +1594,20 @@ button {
 }
 
 .nav-item img {
-  width: 82%;
-  height: 82%;
+  width: 72%;
+  height: 1.78rem;
   object-fit: contain;
+}
+
+.nav-item span {
+  max-width: 100%;
+  overflow: hidden;
+  color: #5b3b1c;
+  font-size: 0.48rem;
+  font-weight: 1000;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .coin-burst {
@@ -1489,6 +1634,26 @@ button {
   }
 }
 
+@keyframes float-item {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateY(-0.14rem) rotate(var(--float-rotate, 0deg));
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(0.22rem) rotate(var(--float-rotate, 0deg));
+  }
+}
+
+@keyframes wearable-item-bob {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateY(0) rotate(var(--float-rotate, 0deg));
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-0.28rem) rotate(var(--float-rotate, 0deg));
+  }
+}
+
 @keyframes float-burst {
   0% {
     opacity: 0;
@@ -1510,6 +1675,39 @@ button {
   }
   50% {
     transform: translateX(-50%) translateY(-0.34rem);
+  }
+}
+
+@keyframes gacha-open {
+  0% {
+    transform: translateX(-50%) translateY(0) rotate(0deg) scale(1);
+  }
+  24% {
+    transform: translateX(-50%) translateY(-0.2rem) rotate(-3deg) scale(1.04);
+  }
+  48% {
+    transform: translateX(-50%) translateY(0.1rem) rotate(3deg) scale(0.98);
+  }
+  74% {
+    transform: translateX(-50%) translateY(-0.12rem) rotate(-1deg) scale(1.03);
+  }
+  100% {
+    transform: translateX(-50%) translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes result-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0.7rem) scale(0.84);
+  }
+  32% {
+    opacity: 1;
+    transform: translateY(-0.08rem) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -1549,17 +1747,26 @@ button {
     min-height: 2.72rem;
   }
 
+  .nav-item img {
+    height: 1.42rem;
+  }
+
+  .nav-item span {
+    font-size: 0.42rem;
+  }
+
   .decor-tray {
     gap: 0.28rem;
   }
 
   .pixel-degu-stage--wardrobe {
     top: 7.4%;
-    width: min(71%, 18rem);
+    width: min(43%, 10.75rem);
   }
 
   .shot-row {
     top: 42.8%;
+    right: 5%;
     grid-auto-columns: 2.95rem;
     gap: 0.3rem;
   }
@@ -1598,6 +1805,34 @@ button {
     font-size: 0.72rem;
   }
 
+  .accessory-tune-panel {
+    top: 56.4%;
+    left: 6%;
+    right: 6%;
+    width: auto;
+    grid-template-columns: minmax(4.5rem, 0.8fr) minmax(0, 1.7fr) minmax(3.7rem, 0.7fr);
+    align-items: center;
+    gap: 0.28rem;
+    padding: 0.34rem;
+  }
+
+  .accessory-tool-grid {
+    grid-auto-columns: 2.14rem;
+    grid-template-columns: none;
+    gap: 0.14rem;
+  }
+
+  .accessory-tool-grid button,
+  .accessory-reset {
+    min-width: 2.14rem;
+    min-height: 2.14rem;
+    font-size: 0.52rem;
+  }
+
+  .accessory-reset {
+    min-height: 2.14rem;
+  }
+
   .gacha-machine {
     top: 21.6%;
     width: 40%;
@@ -1608,7 +1843,7 @@ button {
   }
 
   .pull-row {
-    top: 54.8%;
+    top: 51.8%;
     gap: 0.48rem;
   }
 
@@ -1621,8 +1856,31 @@ button {
     top: 64.8%;
   }
 
+  .gacha-screen[data-has-reveal="true"] .reward-strip {
+    top: 72.6%;
+  }
+
   .reward-card {
     --reward-card-size: 3.08rem;
+  }
+
+  .gacha-reveal {
+    top: 61.4%;
+    gap: 0.24rem;
+  }
+
+  .gacha-result-card {
+    min-height: 3.4rem;
+    padding: 0.16rem;
+  }
+
+  .gacha-result-card img {
+    width: 1.92rem;
+    height: 1.78rem;
+  }
+
+  .gacha-result-card span {
+    font-size: 0.42rem;
   }
 }
 
@@ -1708,6 +1966,10 @@ button {
 
   .reward-card {
     --reward-card-size: 2.85rem;
+  }
+
+  .gacha-result-card {
+    min-height: 3.08rem;
   }
 
   .variant-row {

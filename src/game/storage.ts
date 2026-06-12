@@ -1,9 +1,9 @@
 import {
   backgroundThemes,
+  accessoryItems,
   decorItems,
   deguVariants,
   navOrder,
-  outfits,
   pixelDeguShots,
   starterRewardIds
 } from './content';
@@ -18,7 +18,7 @@ const starterBackgroundId = 'floating-island';
 const rewardIds = [
   ...backgroundThemes.map((item) => item.id),
   ...decorItems.map((item) => item.id),
-  ...outfits.map((item) => item.id),
+  ...accessoryItems.map((item) => item.id),
   ...deguVariants.map((item) => item.id),
   ...pixelDeguShots.map((item) => item.id),
   ...starterRewardIds
@@ -40,13 +40,28 @@ export interface PrototypeSave {
   selectedBackgroundId: string;
   selectedVariantId: string;
   selectedDeguShotId: string;
+  customDeguTone: DeguTone;
   selectedOutfitIds: string[];
+  accessoryPlacements: Record<string, AccessoryPlacement>;
   placedDecor: PlacedDecor[];
   ownedRewardIds: string[];
   gachaHistory: string[];
   pullsSinceRare: number;
   progression: ProgressionState;
   layoutPresets: LayoutPreset[];
+}
+
+export interface AccessoryPlacement {
+  x: number;
+  y: number;
+  scale: number;
+  rotation: number;
+}
+
+export interface DeguTone {
+  hue: number;
+  saturation: number;
+  brightness: number;
 }
 
 export function createDefaultLayoutPresets(): LayoutPreset[] {
@@ -65,7 +80,9 @@ export const defaultSave: PrototypeSave = {
   selectedBackgroundId: starterBackgroundId,
   selectedVariantId: 'agouti',
   selectedDeguShotId: '04',
-  selectedOutfitIds: ['straw-hat'],
+  customDeguTone: { hue: 0, saturation: 100, brightness: 100 },
+  selectedOutfitIds: ['straw-hat', 'cloud-puff', 'sprout-buddy'],
+  accessoryPlacements: {},
   placedDecor: [
     {
       instanceId: 'starter-clover-1',
@@ -109,11 +126,13 @@ export function loadSave(storage: Pick<Storage, 'getItem'> = localStorage): Prot
         pixelDeguShots.map((shot) => shot.id),
         defaultSave.selectedDeguShotId
       ),
+      customDeguTone: sanitizeDeguTone(parsed.customDeguTone),
       selectedOutfitIds: sanitizeIdList(
         parsed.selectedOutfitIds,
-        outfits.map((item) => item.id),
+        accessoryItems.map((item) => item.id),
         defaultSave.selectedOutfitIds
       ),
+      accessoryPlacements: sanitizeAccessoryPlacements(parsed.accessoryPlacements),
       placedDecor: sanitizePlacedDecor(parsed.placedDecor),
       ownedRewardIds: sanitizeIdList(parsed.ownedRewardIds, rewardIds, defaultSave.ownedRewardIds),
       gachaHistory: sanitizeIdList(parsed.gachaHistory, rewardIds, defaultSave.gachaHistory),
@@ -168,6 +187,39 @@ function sanitizeIdList(value: unknown, allowed: string[], fallback: string[]): 
   const ids = sanitizeStringList(value, fallback);
   const filtered = ids.filter((id) => allowed.includes(id));
   return filtered;
+}
+
+function sanitizeAccessoryPlacements(value: unknown): Record<string, AccessoryPlacement> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return defaultSave.accessoryPlacements;
+
+  const allowed = new Set(accessoryItems.map((item) => item.id));
+  const clean: Record<string, AccessoryPlacement> = {};
+  for (const [id, placement] of Object.entries(value as Record<string, unknown>)) {
+    if (!allowed.has(id) || !placement || typeof placement !== 'object' || Array.isArray(placement)) continue;
+    const item = placement as Partial<AccessoryPlacement>;
+    clean[id] = {
+      x: clampNumber(item.x, -28, 28, 0),
+      y: clampNumber(item.y, -28, 28, 0),
+      scale: clampNumber(item.scale, 0.62, 1.7, 1),
+      rotation: clampNumber(item.rotation, -45, 45, 0)
+    };
+  }
+  return clean;
+}
+
+function sanitizeDeguTone(value: unknown): DeguTone {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return defaultSave.customDeguTone;
+  const tone = value as Partial<DeguTone>;
+  return {
+    hue: clampNumber(tone.hue, -35, 35, defaultSave.customDeguTone.hue),
+    saturation: clampNumber(tone.saturation, 70, 135, defaultSave.customDeguTone.saturation),
+    brightness: clampNumber(tone.brightness, 82, 122, defaultSave.customDeguTone.brightness)
+  };
+}
+
+function clampNumber(value: unknown, min: number, max: number, fallback: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+  return Math.max(min, Math.min(max, value));
 }
 
 function sanitizePlacedDecor(value: unknown, fallback: PlacedDecor[] = defaultSave.placedDecor): PlacedDecor[] {

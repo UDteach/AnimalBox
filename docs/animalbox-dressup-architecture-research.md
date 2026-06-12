@@ -94,19 +94,17 @@ Once the degu design is chosen, replace the simple stage anchors with a real com
 
 ### Current Prototype Spike
 
-The current repo now includes a small PixiJS + DragonBones runtime spike in the wardrobe screen. Rig v2 uses an ImageGen-generated technical parts sheet plus the ImageGen wardrobe pack, converted into DragonBones-style runtime files: `degu-v2_ske.json`, `degu-v2_tex.json`, and `degu-v2_tex.png`. The provisional armature exposes `body`, `head`, `ears`, `tail`, `paws`, `feet`, `headwear`, `face`, `neck`, `cape`, `halo`, and wing slots.
+The PixiJS + DragonBones runtime spike was removed from the active prototype. It was useful for understanding why fixed overlays feel wrong, but the generated parts and anchor quality were not reliable enough for the current pixel-art direction.
 
-This spike is intentionally not the final degu design. Its job is to test the implementation path that makes headwear follow head rotation, face items follow the head/face anchor, and back/neck items follow body motion, instead of staying as fixed DOM image layers.
-
-The first visual polish pass also proved that one wardrobe item may need multiple rig attachments. `angel-halo-wings` is treated as separate halo, left-wing, and right-wing attachments so the wings can sit behind the head while the halo stays above it.
+The current repo now uses transparent pixel PNG composition in React/CSS. Wearable items and floating companions share one accessory catalog, and each item has a default anchor plus user-adjustable x/y, scale, and rotation offsets. This is intentionally simpler than a full rig while the degu design and item style are still changing.
 
 Current prototype stack:
 
 ```text
 React + Vite + TypeScript
-PixiJS 8
-pixi-dragonbones-runtime 8
-ImageGen parts sheet + wardrobe pack -> chroma-key alpha PNGs -> DragonBones ske/tex JSON + atlas PNG
+ImageGen transparent PNG assets
+CSS idle/tap/gacha motion
+TypeScript anchor metadata + saved user offsets
 ```
 
 Adoption gate before using this for production wardrobe:

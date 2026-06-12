@@ -1,14 +1,18 @@
-import { outfits } from './content';
+import { accessoryItems } from './content';
 
-export function toggleOutfitForSlot(selectedOutfitIds: string[], outfitId: string) {
-  const outfit = outfits.find((item) => item.id === outfitId);
-  if (!outfit) return selectedOutfitIds;
+export function toggleFloatingItemForSlot(selectedItemIds: string[], itemId: string) {
+  const item = accessoryItems.find((candidate) => candidate.id === itemId);
+  if (!item) return selectedItemIds;
 
-  if (selectedOutfitIds.includes(outfitId)) {
-    return selectedOutfitIds.filter((id) => id !== outfitId);
+  if (selectedItemIds.includes(itemId)) {
+    return selectedItemIds.filter((id) => id !== itemId);
   }
 
-  const sameSlotIds = new Set(outfits.filter((item) => item.slot === outfit.slot).map((item) => item.id));
+  const sameSlotIds = new Set(
+    accessoryItems.filter((candidate) => candidate.slot === item.slot).map((candidate) => candidate.id)
+  );
 
-  return [...selectedOutfitIds.filter((id) => !sameSlotIds.has(id)), outfitId];
+  return [...selectedItemIds.filter((id) => !sameSlotIds.has(id)), itemId];
 }
+
+export const toggleOutfitForSlot = toggleFloatingItemForSlot;

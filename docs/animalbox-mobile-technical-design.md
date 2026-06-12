@@ -9,17 +9,17 @@ The product target is closer to a cozy avatar garden app than a pure idle clicke
 ## Recommended Stack
 
 - Runtime: React + Vite + TypeScript.
-- Current rig spike: PixiJS 8 + `pixi-dragonbones-runtime` 8 in the wardrobe screen to validate bone-following outfits.
-- Game/UI split: React renders top/bottom HUD, bottom sheets, wardrobe, inventory, settings, and gacha screens. The animal/island renderer can be PixiJS + DragonBones if the spike holds up, or Phaser if broader scene/game primitives become more important.
+- Current avatar direction: transparent pixel PNG composition with per-item anchors, user-adjustable accessory offsets, and CSS frame/idle motion. The DragonBones/Pixi spike was dropped for now because image-swap iteration is faster and more controllable for the current pixel-art prototype.
+- Game/UI split: React renders the island scene, top/bottom HUD, bottom sheets, wardrobe, inventory, settings, and gacha screens. A canvas renderer such as Phaser can be reconsidered later if wandering actors, pathing, atlas batching, or richer scene depth becomes the bottleneck.
 - Mobile delivery: PWA first with `vite-plugin-pwa`; add Capacitor later only for app-store packaging, haptics, notifications, or native share features.
 - State: plain TypeScript domain modules for economy/gacha/placement; Zustand for React-to-game state bridge.
 - Persistence: localStorage only for a tiny prototype; Dexie/IndexedDB for real save data, inventory, placement records, gacha history, and migrations.
-- Assets: ImageGen sources, local cleanup, sprite atlas packing, then DragonBones/Pixi or Phaser atlas import. Use Free Texture Packer or a local max-rects packer for early atlas generation.
+- Assets: ImageGen sources, local cleanup, transparent runtime PNGs, manifest provenance, and rendered QA. Atlas packing can come later after the composition contract stabilizes.
 - Testing: Vitest for gacha weights, pity/stamp behavior, duplicate conversion, placement overlap, offline income, save migration, and deterministic seeded simulations.
 
 ## Renderer Direction
 
-The original plan favored Phaser because it has scene, input, depth sorting, atlas, and animation primitives. The DragonBones spike tests a narrower but important question first: whether AnimalBox can make wardrobe items follow a degu rig naturally in a web/PWA build.
+The original plan favored Phaser because it has scene, input, depth sorting, atlas, and animation primitives. The current prototype intentionally stays in React/CSS with transparent PNG parts because the degu design, accessory inventory, and placement rules are still changing quickly.
 
 Phaser remains a good option for broader island gameplay:
 
@@ -30,11 +30,11 @@ Phaser remains a good option for broader island gameplay:
 - `ScaleManager` for portrait canvas scaling.
 - texture atlas and spritesheet support for mobile draw-call control.
 
-PixiJS + DragonBones is the better near-term candidate for the avatar renderer if the wardrobe workflow matters more than general game-scene features. Avoid depending on niche plugins until the first playable prototype is stable.
+Avoid depending on niche rig plugins until the first playable prototype is stable. The next renderer migration should be justified by a specific failure in the PNG composition path, not by expected future complexity alone.
 
 ## Dress-Up Implementation
 
-Use rig or layered composition, not pre-rendered combinations. The current wardrobe prototype uses PixiJS + DragonBones rig v2 with separated body/head/ear/tail/paw/foot parts and DragonBones-style `ske/tex` JSON files. The Phaser container contract below remains the fallback/general game-scene shape if the project moves away from DragonBones.
+Use layered composition, not pre-rendered combinations. The current wardrobe prototype uses one degu PNG plus separate wearable/floating transparent PNGs. Each accessory has a default anchor and the player can nudge x/y, scale, and rotation so hats, charms, and floating companions can be corrected without regenerating art.
 
 `DeguActor` is a Phaser `Container` with fixed child order:
 

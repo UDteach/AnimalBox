@@ -274,46 +274,6 @@
       "status": "active-pixel-swap-candidate"
     },
     {
-      "id": "degu-dragonbones-rig-atlas",
-      "src": "/images/runtime/dragonbones/degu-rig-atlas.png",
-      "size": [
-        1536,
-        1536
-      ],
-      "source": "assets/source/imagegen/dragonbones-prototype/degu-rig-parts-sheet__source.png",
-      "additionalSources": [
-        "assets/source/imagegen/wardrobe-packs/wardrobe-pack-001__source.png"
-      ],
-      "status": "technical-prototype-not-final-character"
-    },
-    {
-      "id": "degu-dragonbones-rig-v2-atlas",
-      "src": "/images/runtime/dragonbones/degu-v2/degu-v2_tex.png",
-      "size": [
-        1536,
-        1024
-      ],
-      "source": "assets/source/imagegen/dragonbones-rig-v2/degu-rig-v2-parts-sheet__source.png",
-      "additionalSources": [
-        "assets/source/imagegen/wardrobe-packs/wardrobe-pack-001__source.png"
-      ],
-      "dragonBones": {
-        "skeleton": "/images/runtime/dragonbones/degu-v2/degu-v2_ske.json",
-        "textureAtlas": "/images/runtime/dragonbones/degu-v2/degu-v2_tex.json"
-      },
-      "status": "technical-rig-v2-not-final-character"
-    },
-    {
-      "id": "degu-dragonbones-rig-v2-complete-reference",
-      "src": "/images/runtime/dragonbones/degu-v2-reference/degu-v2-complete-reference.png",
-      "size": [
-        1254,
-        1254
-      ],
-      "source": "assets/source/imagegen/dragonbones-rig-v2/degu-v2-complete-reference__source.png",
-      "status": "visual-reference-for-rig-redraw-not-final-character"
-    },
-    {
       "id": "sunset-clover-isle",
       "src": "/images/runtime/backgrounds/floating-island-sunset-clover-isle.png",
       "size": [
@@ -632,6 +592,326 @@
       ],
       "source": "assets/source/imagegen/wardrobe-batch-003/tiny-cheek-sticker__source.png",
       "status": "imagegen-batch-003"
+    },
+    {
+      "id": "cloud-puff",
+      "src": "/images/runtime/floating-items/cloud-puff.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "clover-charm",
+      "src": "/images/runtime/floating-items/clover-charm.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "acorn-charm",
+      "src": "/images/runtime/floating-items/acorn-charm.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "seed-pouch-charm",
+      "src": "/images/runtime/floating-items/seed-pouch-charm.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "star-lantern-float",
+      "src": "/images/runtime/floating-items/star-lantern-float.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "moon-bell",
+      "src": "/images/runtime/floating-items/moon-bell.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "sky-ticket-charm",
+      "src": "/images/runtime/floating-items/sky-ticket-charm.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "mushroom-friend",
+      "src": "/images/runtime/floating-items/mushroom-friend.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "sprout-buddy",
+      "src": "/images/runtime/floating-items/sprout-buddy.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "sleepy-dust-buddy",
+      "src": "/images/runtime/floating-items/sleepy-dust-buddy.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "cotton-flower-puff",
+      "src": "/images/runtime/floating-items/cotton-flower-puff.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "crystal-shard-float",
+      "src": "/images/runtime/floating-items/crystal-shard-float.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "bellflower-sprite",
+      "src": "/images/runtime/floating-items/bellflower-sprite.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "feather-charm",
+      "src": "/images/runtime/floating-items/feather-charm.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "bread-basket",
+      "src": "/images/runtime/floating-items/bread-basket.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "water-drop-buddy",
+      "src": "/images/runtime/floating-items/water-drop-buddy.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-001__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "sky-moth",
+      "src": "/images/runtime/floating-items/sky-moth.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "cloud-sheep",
+      "src": "/images/runtime/floating-items/cloud-sheep.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "walnut-charm",
+      "src": "/images/runtime/floating-items/walnut-charm.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "comet-seed",
+      "src": "/images/runtime/floating-items/comet-seed.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "spiral-shell",
+      "src": "/images/runtime/floating-items/spiral-shell.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "sleepy-seed-spirit",
+      "src": "/images/runtime/floating-items/sleepy-seed-spirit.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "paper-crane",
+      "src": "/images/runtime/floating-items/paper-crane.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "honey-jar",
+      "src": "/images/runtime/floating-items/honey-jar.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "sun-bell",
+      "src": "/images/runtime/floating-items/sun-bell.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "blue-firefly",
+      "src": "/images/runtime/floating-items/blue-firefly.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "carrot-bit",
+      "src": "/images/runtime/floating-items/carrot-bit.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "teacup-cloud",
+      "src": "/images/runtime/floating-items/teacup-cloud.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "cloud-starfish",
+      "src": "/images/runtime/floating-items/cloud-starfish.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "pebble-friend",
+      "src": "/images/runtime/floating-items/pebble-friend.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "leaf-boat",
+      "src": "/images/runtime/floating-items/leaf-boat.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "lavender-puff",
+      "src": "/images/runtime/floating-items/lavender-puff.png",
+      "size": [
+        320,
+        320
+      ],
+      "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
+      "status": "active-accessory-floating-item"
     }
   ]
 }

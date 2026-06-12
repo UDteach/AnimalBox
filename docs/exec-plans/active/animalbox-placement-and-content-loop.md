@@ -12,7 +12,7 @@ The player should be able to open the mobile prototype, see a degu that fits the
 
 - Improve decor placement and scale through rendered evidence loops.
 - Add missing QA that catches visual placement failures before asset expansion.
-- Add small game/content improvements only when they support the mobile garden loop.
+- Add small game/content improvements only when they support the mobile garden loop: feeding, level/ticket progression, adjustable accessories, and earned-ticket gifts.
 - Keep paid gacha out of scope.
 - Keep runtime art sourced from ImageGen-approved assets; code can add manifests, placement metadata, and UI around them.
 
@@ -67,4 +67,8 @@ Stop and ask before destructive file cleanup, credentials, paid services, produc
 - completed: Deployed the care loop to Cloudflare Pages and live-smoked preview/production with customization QA.
 - completed: Added placement Undo for the last placed decor, including income rollback and customization QA coverage.
 - completed: Placement Undo local QA passed: `npm run qa:customization`, `npm test -- --run`, `npm run build`, and `npm run qa:placement`.
-- in_progress: Commit, push, deploy, and live-smoke placement Undo.
+- completed: Pivoted from DragonBones to transparent pixel PNG composition and removed the obsolete DragonBones runtime path.
+- completed: Added ImageGen floating item runtime assets, combined wearable/floating accessory catalog, and adjustable accessory placement metadata.
+- completed: Added color tuning, coin-unlocked degu poses, earned-ticket premium gift, and gacha result animation.
+- completed: Updated unit tests and customization QA for Feed, accessory adjustment, and earned-ticket gacha reveals.
+- in_progress: Run full local rendered QA, fix visual/layout issues, then commit, push, deploy, and live-smoke.

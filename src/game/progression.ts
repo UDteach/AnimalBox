@@ -124,7 +124,7 @@ export const careActions: CareActionDefinition[] = [
   },
   {
     id: 'snack',
-    label: 'Seeds',
+    label: 'Feed',
     cost: { currency: 'coins', amount: 80 },
     xpReward: 12,
     ticketProgressReward: 18,

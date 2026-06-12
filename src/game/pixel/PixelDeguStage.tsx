@@ -1,12 +1,15 @@
 import type { CSSProperties } from 'react';
 
-import { deguVariants, outfits, pixelDeguShots } from '../content';
-import { outfitAnchorStyle } from './outfitAnchors';
+import { accessoryItems, deguVariants, pixelDeguShots } from '../content';
+import { floatingItemAnchorStyle } from './floatingItemAnchors';
+import type { AccessoryPlacement } from '../storage';
 
 interface PixelDeguStageProps {
   selectedShotId: string;
   selectedVariantId: string;
   selectedOutfitIds: string[];
+  accessoryPlacements?: Record<string, AccessoryPlacement>;
+  customFilter?: string;
   mode: 'island' | 'wardrobe';
 }
 
@@ -14,44 +17,32 @@ export function PixelDeguStage({
   selectedShotId,
   selectedVariantId,
   selectedOutfitIds,
+  accessoryPlacements = {},
+  customFilter,
   mode
 }: PixelDeguStageProps) {
   const shot = pixelDeguShots.find((item) => item.id === selectedShotId) ?? pixelDeguShots[3];
   const variant = deguVariants.find((item) => item.id === selectedVariantId) ?? deguVariants[0];
-  const activeOutfits = selectedOutfitIds
-    .map((id) => outfits.find((item) => item.id === id))
+  const activeItems = selectedOutfitIds
+    .map((id) => accessoryItems.find((item) => item.id === id))
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
-  const backOutfits = activeOutfits.filter(
-    (item) => item.slot === 'back' || item.id === 'angel-halo-wings'
-  );
-  const frontOutfits = activeOutfits.filter(
-    (item) => item.slot !== 'back' && item.id !== 'angel-halo-wings'
-  );
 
   return (
     <section
       className={`pixel-degu-stage pixel-degu-stage--${mode}`}
-      style={{ '--degu-filter': variant.filter } as CSSProperties}
+      style={{ '--degu-filter': customFilter ?? variant.filter } as CSSProperties}
       aria-label={`Pixel degu ${shot.label}`}
     >
       <div className="pixel-degu-aura" />
-      {backOutfits.map((outfit) => (
-        <img
-          key={outfit.id}
-          className={`pixel-degu-outfit pixel-degu-outfit--${outfit.id}`}
-          style={outfitAnchorStyle(outfit.id)}
-          src={outfit.src}
-          alt=""
-          draggable={false}
-        />
-      ))}
       <img className="pixel-degu-image" src={shot.src} alt="" draggable={false} />
-      {frontOutfits.map((outfit) => (
+      {activeItems.map((item) => (
         <img
-          key={outfit.id}
-          className={`pixel-degu-outfit pixel-degu-outfit--${outfit.id}`}
-          style={outfitAnchorStyle(outfit.id)}
-          src={outfit.src}
+          key={item.id}
+          className={`pixel-degu-float-item pixel-degu-float-item--${item.id}`}
+          data-slot={item.slot}
+          data-kind={item.kind ?? 'float'}
+          style={floatingItemAnchorStyle(item.id, accessoryPlacements[item.id])}
+          src={item.src}
           alt=""
           draggable={false}
         />

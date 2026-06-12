@@ -1,21 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   backgroundThemes,
+  accessoryItems,
   decorItems,
   deguVariants,
   navOrder,
-  outfits,
   pixelDeguShots,
   runtimeAssets,
   screens,
   isRewardOwned,
   type BackgroundTheme,
   type DecorItem,
-  type OutfitItem,
+  type FloatingItem,
   type ScreenId
 } from './game/content';
-import { addIdleIncome, formatNumber, tapForCoins, type EconomyState } from './game/economy';
-import { browserRandom, runPulls, skyGiftBanner } from './game/gacha';
+import { addIdleIncome, formatNumber, spendCurrency, tapForCoins, type EconomyState } from './game/economy';
+import {
+  browserRandom,
+  runPulls,
+  skyGiftBanner,
+  premiumSkyGiftBanner,
+  type GachaBanner,
+  type PullResult
+} from './game/gacha';
 import { PixelDeguStage } from './game/pixel/PixelDeguStage';
 import { normalizeRotation, type Cell, type PlacedDecor, withRotatedFootprint } from './game/placement';
 import { assetStyle, canPlaceDecorInScene, gridCellAnchor, gridToScene } from './game/sceneLayout';
@@ -38,10 +45,12 @@ import {
   createDefaultLayoutPresets,
   loadSave,
   savePrototype,
+  type AccessoryPlacement,
+  type DeguTone,
   type LayoutPreset,
   type PrototypeSave
 } from './game/storage';
-import { toggleOutfitForSlot } from './game/wardrobe';
+import { toggleFloatingItemForSlot } from './game/wardrobe';
 
 interface Burst {
   id: number;
@@ -50,9 +59,27 @@ interface Burst {
   y: number;
 }
 
+interface GachaReveal {
+  id: number;
+  bannerId: string;
+  results: PullResult[];
+}
+
 const screenSet = new Set<ScreenId>(navOrder);
 const grid = { width: 6, height: 6 };
 const firstOpenCell: Cell = { x: 0, y: 2 };
+
+function deguShotUnlockCost(shotId: string): number {
+  return 650 + Math.max(0, Number.parseInt(shotId, 10) - 1) * 260;
+}
+
+function deguToneFilter(tone: DeguTone, baseFilter: string): string {
+  return `${baseFilter} hue-rotate(${tone.hue}deg) saturate(${tone.saturation / 100}) brightness(${tone.brightness / 100})`;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
 
 function coerceScreen(value: string): ScreenId {
   return screenSet.has(value as ScreenId) ? (value as ScreenId) : 'home';
@@ -73,10 +100,13 @@ export function App() {
   const [screen, setScreenState] = useState<ScreenId>(() => getInitialScreen());
   const [bursts, setBursts] = useState<Burst[]>([]);
   const [selectedDecorId, setSelectedDecorId] = useState('hay-bed');
+  const [selectedAccessoryId, setSelectedAccessoryId] = useState('straw-hat');
   const [selectedCell, setSelectedCell] = useState<Cell>(firstOpenCell);
   const [rotation, setRotation] = useState(0);
   const [status, setStatus] = useState('Runtime parts prototype');
   const [missingAssets, setMissingAssets] = useState<string[]>([]);
+  const [gachaReveal, setGachaReveal] = useState<GachaReveal | null>(null);
+  const [gachaOpening, setGachaOpening] = useState(false);
 
   const current = screens[screen];
   const economy = save.economy;
@@ -88,9 +118,9 @@ export function App() {
   const selectedVariantId = isRewardOwned(save.ownedRewardIds, save.selectedVariantId)
     ? save.selectedVariantId
     : 'agouti';
-  const selectedOutfitIds = save.selectedOutfitIds.filter((id) =>
-    isRewardOwned(save.ownedRewardIds, id)
-  );
+  const selectedOutfitIds = save.selectedOutfitIds.filter((id) => isRewardOwned(save.ownedRewardIds, id));
+  const activeVariant = deguVariants.find((item) => item.id === selectedVariantId) ?? deguVariants[0];
+  const customDeguFilter = deguToneFilter(save.customDeguTone, activeVariant.filter);
   const selectedDecor = decorItems.find((item) => item.id === selectedDecorId) ?? decorItems[0];
   const placementDecor = useMemo(
     () => withRotatedFootprint(selectedDecor, rotation),
@@ -104,7 +134,7 @@ export function App() {
       ...backgroundThemes.map((theme) => theme.src),
       ...Object.values(screens).map((item) => item.image),
       ...decorItems.map((item) => item.src),
-      ...outfits.map((item) => item.src),
+      ...accessoryItems.map((item) => item.src),
       ...pixelDeguShots.map((item) => item.src),
       ...Object.values(runtimeAssets)
     ],
@@ -174,6 +204,12 @@ export function App() {
     const timer = window.setTimeout(() => setBursts((items) => items.slice(1)), 780);
     return () => window.clearTimeout(timer);
   }, [bursts]);
+
+  useEffect(() => {
+    if (!gachaOpening) return;
+    const timer = window.setTimeout(() => setGachaOpening(false), 1050);
+    return () => window.clearTimeout(timer);
+  }, [gachaOpening, gachaReveal?.id]);
 
   function setScreen(next: ScreenId) {
     setScreenState(next);
@@ -372,8 +408,29 @@ export function App() {
   }
 
   function selectDeguShot(shotId: string) {
-    setSave(nextSave((currentSave) => ({ ...currentSave, selectedDeguShotId: shotId })));
-    setStatus(`Degu shot: ${shotId}`);
+    const shot = pixelDeguShots.find((item) => item.id === shotId);
+    if (!shot) return;
+
+    if (isRewardOwned(saveRef.current.ownedRewardIds, shotId)) {
+      setSave(nextSave((currentSave) => ({ ...currentSave, selectedDeguShotId: shotId })));
+      setStatus(`Pose: ${shotId}`);
+      return;
+    }
+
+    const cost = deguShotUnlockCost(shotId);
+    setSave(
+      nextSave((currentSave) => {
+        const paid = spendCurrency(currentSave.economy, 'coins', cost);
+        if (!paid) return currentSave;
+        return {
+          ...currentSave,
+          economy: paid,
+          selectedDeguShotId: shotId,
+          ownedRewardIds: Array.from(new Set([...currentSave.ownedRewardIds, shotId]))
+        };
+      })
+    );
+    setStatus(saveRef.current.economy.coins >= cost ? `Unlocked pose ${shotId}` : `Need ${formatNumber(cost)} coins`);
   }
 
   function selectDecor(decorId: string) {
@@ -386,11 +443,11 @@ export function App() {
     setStatus(`Decor: ${decor.label}`);
   }
 
-  function toggleOutfit(outfitId: string) {
-    const outfit = outfits.find((item) => item.id === outfitId);
-    if (!outfit) return;
-    if (!isRewardOwned(save.ownedRewardIds, outfit.id)) {
-      setStatus(`${outfit.label} locked`);
+  function toggleFloatingItem(itemId: string) {
+    const item = accessoryItems.find((candidate) => candidate.id === itemId);
+    if (!item) return;
+    if (!isRewardOwned(save.ownedRewardIds, item.id)) {
+      setStatus(`${item.label} locked`);
       return;
     }
 
@@ -398,11 +455,66 @@ export function App() {
       nextSave((currentSave) => {
         return {
           ...currentSave,
-          selectedOutfitIds: toggleOutfitForSlot(currentSave.selectedOutfitIds, outfitId)
+          selectedOutfitIds: toggleFloatingItemForSlot(currentSave.selectedOutfitIds, itemId)
         };
       })
     );
-    setStatus(`Outfit: ${outfitId}`);
+    setSelectedAccessoryId(itemId);
+    setStatus(`Accessory: ${item.label}`);
+  }
+
+  function adjustAccessory(itemId: string, patch: Partial<AccessoryPlacement>) {
+    const item = accessoryItems.find((candidate) => candidate.id === itemId);
+    if (!item || !saveRef.current.selectedOutfitIds.includes(itemId)) return;
+
+    setSave(
+      nextSave((currentSave) => {
+        const current = currentSave.accessoryPlacements[itemId] ?? {
+          x: 0,
+          y: 0,
+          scale: 1,
+          rotation: 0
+        };
+        return {
+          ...currentSave,
+          accessoryPlacements: {
+            ...currentSave.accessoryPlacements,
+            [itemId]: {
+              x: clamp(current.x + (patch.x ?? 0), -28, 28),
+              y: clamp(current.y + (patch.y ?? 0), -28, 28),
+              scale: clamp(current.scale + (patch.scale ?? 0), 0.62, 1.7),
+              rotation: clamp(current.rotation + (patch.rotation ?? 0), -45, 45)
+            }
+          }
+        };
+      })
+    );
+    setStatus(`Adjusted ${item.label}`);
+  }
+
+  function resetAccessory(itemId: string) {
+    setSave(
+      nextSave((currentSave) => {
+        const nextPlacements = { ...currentSave.accessoryPlacements };
+        delete nextPlacements[itemId];
+        return { ...currentSave, accessoryPlacements: nextPlacements };
+      })
+    );
+    setStatus('Accessory reset');
+  }
+
+  function changeDeguTone(nextTone: Partial<DeguTone>) {
+    setSave(
+      nextSave((currentSave) => ({
+        ...currentSave,
+        customDeguTone: {
+          hue: clamp(nextTone.hue ?? currentSave.customDeguTone.hue, -35, 35),
+          saturation: clamp(nextTone.saturation ?? currentSave.customDeguTone.saturation, 70, 135),
+          brightness: clamp(nextTone.brightness ?? currentSave.customDeguTone.brightness, 82, 122)
+        }
+      }))
+    );
+    setStatus('Color tuned');
   }
 
   function placeSelectedDecor() {
@@ -479,19 +591,24 @@ export function App() {
     setStatus(`Removed ${optimisticDecor?.label ?? 'decor'}`);
   }
 
-  function runGacha(count: 1 | 10) {
-    const optimistic = runPulls(skyGiftBanner, count, saveRef.current.economy, {
+  function runGacha(count: 1 | 10, banner: GachaBanner = skyGiftBanner) {
+    const randomValues = Array.from({ length: count }, () => browserRandom());
+    const randomFrom = (values: number[]) => {
+      let index = 0;
+      return () => values[index++] ?? browserRandom();
+    };
+    const optimistic = runPulls(banner, count, saveRef.current.economy, {
       ownedRewardIds: new Set(saveRef.current.ownedRewardIds),
       pullsSinceRare: saveRef.current.pullsSinceRare,
-      random: browserRandom
+      random: randomFrom(randomValues)
     });
 
     setSave(
       nextSave((currentSave) => {
-        const result = runPulls(skyGiftBanner, count, currentSave.economy, {
+        const result = runPulls(banner, count, currentSave.economy, {
           ownedRewardIds: new Set(currentSave.ownedRewardIds),
           pullsSinceRare: currentSave.pullsSinceRare,
-          random: browserRandom
+          random: randomFrom(randomValues)
         });
 
         if (!result) return currentSave;
@@ -506,7 +623,18 @@ export function App() {
         };
       })
     );
-    setStatus(optimistic ? `${count} sky gift${count === 1 ? '' : 's'} opened` : 'Need earned tickets');
+    const label = banner.id.startsWith('premium') ? 'premium gift' : 'sky gift';
+    setGachaReveal(
+      optimistic
+        ? {
+            id: Date.now(),
+            bannerId: banner.id,
+            results: optimistic.results
+          }
+        : null
+    );
+    setGachaOpening(Boolean(optimistic));
+    setStatus(optimistic ? `${count} ${label}${count === 1 ? '' : 's'} opened` : 'Need earned tickets');
   }
 
   const style = useMemo(
@@ -544,6 +672,8 @@ export function App() {
             selectedDeguShotId={save.selectedDeguShotId}
             selectedVariantId={selectedVariantId}
             selectedOutfitIds={selectedOutfitIds}
+            accessoryPlacements={save.accessoryPlacements}
+            customDeguFilter={customDeguFilter}
             onTapDegu={tapDegu}
             onSelectCell={setSelectedCell}
           />
@@ -580,13 +710,20 @@ export function App() {
             selectedVariantId={selectedVariantId}
             selectedDeguShotId={save.selectedDeguShotId}
             selectedOutfitIds={selectedOutfitIds}
+            accessoryPlacements={save.accessoryPlacements}
+            selectedAccessoryId={selectedAccessoryId}
+            customDeguTone={save.customDeguTone}
             ownedRewardIds={save.ownedRewardIds}
             onSelectVariant={selectVariant}
             onSelectDeguShot={selectDeguShot}
-            onToggleOutfit={toggleOutfit}
+            onToggleOutfit={toggleFloatingItem}
+            onSelectAccessory={setSelectedAccessoryId}
+            onAdjustAccessory={adjustAccessory}
+            onResetAccessory={resetAccessory}
+            onChangeDeguTone={changeDeguTone}
             onApply={() => {
               setScreen('home');
-              setStatus('Wardrobe saved');
+              setStatus('Accessories saved');
             }}
           />
         )}
@@ -595,8 +732,11 @@ export function App() {
           <GachaScreen
             ownedRewardIds={save.ownedRewardIds}
             history={save.gachaHistory}
-            onSingle={() => runGacha(1)}
-            onTen={() => runGacha(10)}
+            reveal={gachaReveal}
+            isOpening={gachaOpening}
+            onSingle={() => runGacha(1, skyGiftBanner)}
+            onTen={() => runGacha(10, skyGiftBanner)}
+            onPremium={() => runGacha(1, premiumSkyGiftBanner)}
           />
         )}
 
@@ -625,7 +765,7 @@ export function App() {
           </span>
         ))}
 
-        <NavBar active={screen} onNavigate={setScreen} />
+        <NavBar active={screen} onNavigate={(next) => (next === screen && next !== 'home' ? setScreen('home') : setScreen(next))} />
       </section>
     </main>
   );
@@ -654,10 +794,20 @@ function rewardLabel(rewardId: string): string {
   return (
     backgroundThemes.find((item) => item.id === rewardId)?.label ??
     decorItems.find((item) => item.id === rewardId)?.label ??
-    outfits.find((item) => item.id === rewardId)?.label ??
+    accessoryItems.find((item) => item.id === rewardId)?.label ??
     deguVariants.find((item) => item.id === rewardId)?.label ??
     pixelDeguShots.find((item) => item.id === rewardId)?.label ??
     rewardId
+  );
+}
+
+function rewardImage(rewardId: string): string {
+  return (
+    backgroundThemes.find((item) => item.id === rewardId)?.src ??
+    decorItems.find((item) => item.id === rewardId)?.src ??
+    accessoryItems.find((item) => item.id === rewardId)?.src ??
+    pixelDeguShots.find((item) => item.id === rewardId)?.src ??
+    runtimeAssets.ticket
   );
 }
 
@@ -849,6 +999,8 @@ function IslandScene({
   selectedDeguShotId,
   selectedVariantId,
   selectedOutfitIds,
+  accessoryPlacements,
+  customDeguFilter,
   onTapDegu,
   onSelectCell
 }: {
@@ -860,6 +1012,8 @@ function IslandScene({
   selectedDeguShotId: string;
   selectedVariantId: string;
   selectedOutfitIds: string[];
+  accessoryPlacements: Record<string, AccessoryPlacement>;
+  customDeguFilter: string;
   onTapDegu: () => void;
   onSelectCell: (cell: Cell) => void;
 }) {
@@ -867,6 +1021,7 @@ function IslandScene({
 
   return (
     <div className="island-layer">
+      <div className="fixed-island-floor" aria-hidden="true" />
       {save.placedDecor.map((placed) => {
         const decor = decorItems.find((item) => item.id === placed.itemId);
         if (!decor) return null;
@@ -910,9 +1065,12 @@ function IslandScene({
                 data-valid={valid}
                 data-cell-x={x}
                 data-cell-y={y}
+                disabled={!valid}
                 style={{ left: `${anchor.x}%`, top: `${anchor.y}%` }}
                 aria-label={`Select cell ${x + 1}, ${y + 1}`}
-                onClick={() => onSelectCell({ x, y })}
+                onClick={() => {
+                  if (valid) onSelectCell({ x, y });
+                }}
               />
             );
           })}
@@ -940,6 +1098,8 @@ function IslandScene({
           selectedShotId={selectedDeguShotId}
           selectedVariantId={selectedVariantId}
           selectedOutfitIds={selectedOutfitIds}
+          accessoryPlacements={accessoryPlacements}
+          customFilter={customDeguFilter}
         />
       </button>
     </div>
@@ -1017,28 +1177,52 @@ function WardrobeScreen({
   selectedVariantId,
   selectedDeguShotId,
   selectedOutfitIds,
+  accessoryPlacements,
+  selectedAccessoryId,
+  customDeguTone,
   ownedRewardIds,
   onSelectVariant,
   onSelectDeguShot,
   onToggleOutfit,
+  onSelectAccessory,
+  onAdjustAccessory,
+  onResetAccessory,
+  onChangeDeguTone,
   onApply
 }: {
   selectedVariantId: string;
   selectedDeguShotId: string;
   selectedOutfitIds: string[];
+  accessoryPlacements: Record<string, AccessoryPlacement>;
+  selectedAccessoryId: string;
+  customDeguTone: DeguTone;
   ownedRewardIds: string[];
   onSelectVariant: (id: string) => void;
   onSelectDeguShot: (id: string) => void;
   onToggleOutfit: (id: string) => void;
+  onSelectAccessory: (id: string) => void;
+  onAdjustAccessory: (id: string, patch: Partial<AccessoryPlacement>) => void;
+  onResetAccessory: (id: string) => void;
+  onChangeDeguTone: (tone: Partial<DeguTone>) => void;
   onApply: () => void;
 }) {
+  const selectedAccessory =
+    accessoryItems.find((item) => selectedOutfitIds.includes(item.id) && item.id === selectedAccessoryId) ??
+    accessoryItems.find((item) => selectedOutfitIds.includes(item.id));
+  const customFilter = deguToneFilter(
+    customDeguTone,
+    deguVariants.find((item) => item.id === selectedVariantId)?.filter ?? deguVariants[0].filter
+  );
+
   return (
-    <section className="wardrobe-screen" aria-label="Wardrobe">
+    <section className="wardrobe-screen" aria-label="Floating companions">
       <PixelDeguStage
         mode="wardrobe"
         selectedShotId={selectedDeguShotId}
         selectedVariantId={selectedVariantId}
         selectedOutfitIds={selectedOutfitIds}
+        accessoryPlacements={accessoryPlacements}
+        customFilter={customFilter}
       />
       <div className="shot-row" aria-label="Degu shot choices">
         {pixelDeguShots.map((shot) => (
@@ -1047,11 +1231,12 @@ function WardrobeScreen({
             className="shot-button"
             type="button"
             data-active={shot.id === selectedDeguShotId}
+            data-locked={!isRewardOwned(ownedRewardIds, shot.id)}
             onClick={() => onSelectDeguShot(shot.id)}
-            aria-label={`Select degu shot ${shot.id}`}
+            aria-label={`${isRewardOwned(ownedRewardIds, shot.id) ? 'Select' : 'Unlock'} degu pose ${shot.id}`}
           >
             <img src={shot.src} alt="" draggable={false} />
-            <span>{shot.id}</span>
+            <span>{isRewardOwned(ownedRewardIds, shot.id) ? shot.id : formatNumber(deguShotUnlockCost(shot.id))}</span>
           </button>
         ))}
       </div>
@@ -1072,26 +1257,78 @@ function WardrobeScreen({
           );
         })}
       </div>
+      <div className="tone-panel" aria-label="Degu color tuning">
+        <label>
+          H
+          <input
+            type="range"
+            min="-35"
+            max="35"
+            value={customDeguTone.hue}
+            onChange={(event) => onChangeDeguTone({ hue: Number(event.currentTarget.value) })}
+          />
+        </label>
+        <label>
+          S
+          <input
+            type="range"
+            min="70"
+            max="135"
+            value={customDeguTone.saturation}
+            onChange={(event) => onChangeDeguTone({ saturation: Number(event.currentTarget.value) })}
+          />
+        </label>
+        <label>
+          B
+          <input
+            type="range"
+            min="82"
+            max="122"
+            value={customDeguTone.brightness}
+            onChange={(event) => onChangeDeguTone({ brightness: Number(event.currentTarget.value) })}
+          />
+        </label>
+      </div>
+      <div className="accessory-tune-panel" aria-label="Accessory position tools" data-empty={!selectedAccessory}>
+        <strong>{selectedAccessory?.label ?? 'Select item'}</strong>
+        <div className="accessory-tool-grid">
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { y: -2 })} aria-label="Move accessory up">↑</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { y: 2 })} aria-label="Move accessory down">↓</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { x: -2 })} aria-label="Move accessory left">←</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { x: 2 })} aria-label="Move accessory right">→</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { scale: 0.08 })} aria-label="Scale accessory up">＋</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { scale: -0.08 })} aria-label="Scale accessory down">－</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { rotation: -5 })} aria-label="Rotate accessory left">↺</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { rotation: 5 })} aria-label="Rotate accessory right">↻</button>
+        </div>
+        <button className="accessory-reset" type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onResetAccessory(selectedAccessory.id)} aria-label="Reset accessory position">
+          reset
+        </button>
+      </div>
       <div className="wardrobe-grid">
-        {outfits.map((outfit) => {
-          const owned = isRewardOwned(ownedRewardIds, outfit.id);
+        {accessoryItems.map((item) => {
+          const owned = isRewardOwned(ownedRewardIds, item.id);
           return (
             <button
-              key={outfit.id}
+              key={item.id}
               className="asset-card outfit-card-ui"
               type="button"
-              data-active={selectedOutfitIds.includes(outfit.id)}
+              data-active={selectedOutfitIds.includes(item.id)}
+              data-selected={selectedAccessoryId === item.id}
               data-locked={!owned}
-              onClick={() => onToggleOutfit(outfit.id)}
-              aria-label={`${owned ? 'Toggle' : 'Locked'} ${outfit.label}`}
+              onClick={() => {
+                onSelectAccessory(item.id);
+                onToggleOutfit(item.id);
+              }}
+              aria-label={`${owned ? 'Toggle' : 'Locked'} ${item.label}`}
             >
-              <img src={outfit.src} alt="" draggable={false} />
+              <img src={item.src} alt="" draggable={false} />
               {!owned && <span>Locked</span>}
             </button>
           );
         })}
       </div>
-      <button className="apply-button" type="button" onClick={onApply} aria-label="Apply wardrobe">
+      <button className="apply-button" type="button" onClick={onApply} aria-label="Apply accessories">
         Apply
       </button>
     </section>
@@ -1101,23 +1338,35 @@ function WardrobeScreen({
 function GachaScreen({
   ownedRewardIds,
   history,
+  reveal,
+  isOpening,
   onSingle,
-  onTen
+  onTen,
+  onPremium
 }: {
   ownedRewardIds: string[];
   history: string[];
+  reveal: GachaReveal | null;
+  isOpening: boolean;
   onSingle: () => void;
   onTen: () => void;
+  onPremium: () => void;
 }) {
   const rewards = [
     decorItems.find((item) => item.id === 'cloud-lamp'),
     backgroundThemes.find((item) => item.id === 'morning-pasture'),
     backgroundThemes.find((item) => item.id === 'sunset-clover-isle'),
     backgroundThemes.find((item) => item.id === 'flower-cloud-terrace'),
-    outfits.find((item) => item.id === 'flower-crown'),
-    outfits.find((item) => item.id === 'acorn-beret'),
-    outfits.find((item) => item.id === 'mint-scarf'),
-    outfits.find((item) => item.id === 'explorer-goggles'),
+    accessoryItems.find((item) => item.id === 'straw-hat'),
+    accessoryItems.find((item) => item.id === 'flower-crown'),
+    accessoryItems.find((item) => item.id === 'cloud-puff'),
+    accessoryItems.find((item) => item.id === 'clover-charm'),
+    accessoryItems.find((item) => item.id === 'acorn-charm'),
+    accessoryItems.find((item) => item.id === 'seed-pouch-charm'),
+    accessoryItems.find((item) => item.id === 'star-lantern-float'),
+    accessoryItems.find((item) => item.id === 'moon-bell'),
+    accessoryItems.find((item) => item.id === 'mushroom-friend'),
+    accessoryItems.find((item) => item.id === 'sprout-buddy'),
     decorItems.find((item) => item.id === 'timothy-hay-rack'),
     decorItems.find((item) => item.id === 'sand-bath-bowl'),
     decorItems.find((item) => item.id === 'wood-tunnel'),
@@ -1127,16 +1376,16 @@ function GachaScreen({
     decorItems.find((item) => item.id === 'snack-tray'),
     decorItems.find((item) => item.id === 'star-lantern'),
     decorItems.find((item) => item.id === 'angel-fountain'),
-    outfits.find((item) => item.id === 'cloud-cap'),
-    outfits.find((item) => item.id === 'clover-necklace'),
-    outfits.find((item) => item.id === 'picnic-blanket-cape'),
-    outfits.find((item) => item.id === 'tiny-cheek-sticker'),
-    outfits.find((item) => item.id === 'celestial-cape')
-  ].filter(Boolean) as Array<DecorItem | OutfitItem | BackgroundTheme>;
+    accessoryItems.find((item) => item.id === 'cloud-sheep'),
+    accessoryItems.find((item) => item.id === 'sun-bell'),
+    accessoryItems.find((item) => item.id === 'water-drop-buddy'),
+    accessoryItems.find((item) => item.id === 'teacup-cloud'),
+    accessoryItems.find((item) => item.id === 'lavender-puff')
+  ].filter(Boolean) as Array<DecorItem | FloatingItem | BackgroundTheme>;
   const historySummary = history.slice(0, 3).map(rewardLabel).join(', ');
 
   return (
-    <section className="gacha-screen" aria-label="Free sky gift">
+    <section className="gacha-screen" aria-label="Free sky gift" data-opening={isOpening} data-has-reveal={Boolean(reveal)}>
       <img className="gacha-machine" src={runtimeAssets.skyGiftMachine} alt="" draggable={false} />
       <p className="free-label">Earned tickets only</p>
       <div className="pull-row">
@@ -1146,7 +1395,25 @@ function GachaScreen({
         <button className="pull-button ten" type="button" onClick={onTen} aria-label="Open ten sky gifts">
           <img src={runtimeAssets.ticket} alt="" />10
         </button>
+        <button className="pull-button premium" type="button" onClick={onPremium} aria-label="Open premium sky gift">
+          <img src={runtimeAssets.ticket} alt="" />5
+        </button>
       </div>
+      {reveal && (
+        <div key={reveal.id} className="gacha-reveal" data-banner={reveal.bannerId} aria-label="Sky gift results">
+          {reveal.results.slice(0, 4).map((pull, index) => (
+            <div
+              key={`${pull.entry.rewardId}-${index}`}
+              className="gacha-result-card"
+              data-rarity={pull.entry.rarity}
+              data-duplicate={pull.duplicate}
+            >
+              <img src={rewardImage(pull.entry.rewardId)} alt="" draggable={false} />
+              <span>{rewardLabel(pull.entry.rewardId)}</span>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="reward-strip">
         {rewards.map((reward) => (
           <div key={reward.id} className="reward-card" data-owned={ownedRewardIds.includes(reward.id)}>
@@ -1300,6 +1567,7 @@ function NavBar({
           onClick={() => onNavigate(screenId)}
         >
           <img src={icons[screenId]} alt="" draggable={false} />
+          <span>{screens[screenId].label}</span>
         </button>
       ))}
     </nav>

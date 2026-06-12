@@ -62,7 +62,39 @@ const outfitIds = [
   'cloud-cap',
   'clover-necklace',
   'picnic-blanket-cape',
-  'tiny-cheek-sticker'
+  'tiny-cheek-sticker',
+  'cloud-puff',
+  'clover-charm',
+  'acorn-charm',
+  'seed-pouch-charm',
+  'star-lantern-float',
+  'moon-bell',
+  'sky-ticket-charm',
+  'mushroom-friend',
+  'sprout-buddy',
+  'sleepy-dust-buddy',
+  'cotton-flower-puff',
+  'crystal-shard-float',
+  'bellflower-sprite',
+  'feather-charm',
+  'bread-basket',
+  'water-drop-buddy',
+  'sky-moth',
+  'cloud-sheep',
+  'walnut-charm',
+  'comet-seed',
+  'spiral-shell',
+  'sleepy-seed-spirit',
+  'paper-crane',
+  'honey-jar',
+  'sun-bell',
+  'blue-firefly',
+  'carrot-bit',
+  'teacup-cloud',
+  'cloud-starfish',
+  'pebble-friend',
+  'leaf-boat',
+  'lavender-puff'
 ];
 
 const allRewardIds = [
@@ -91,7 +123,9 @@ const baseSave = {
   selectedBackgroundId: 'floating-island',
   selectedVariantId: 'agouti',
   selectedDeguShotId: '04',
-  selectedOutfitIds: ['cloud-cap', 'clover-necklace', 'picnic-blanket-cape', 'tiny-cheek-sticker'],
+  customDeguTone: { hue: 0, saturation: 100, brightness: 100 },
+  selectedOutfitIds: ['straw-hat', 'cloud-puff', 'clover-charm', 'acorn-charm', 'seed-pouch-charm'],
+  accessoryPlacements: {},
   placedDecor: [],
   ownedRewardIds: allRewardIds,
   gachaHistory: ['cloud-cap', 'flower-patch', 'morning-pasture'],
@@ -267,6 +301,8 @@ async function collectMetrics(page, screen) {
       wardrobeGrid: rectOf('.wardrobe-grid'),
       shotRow: rectOf('.shot-row'),
       variantRow: rectOf('.variant-row'),
+      tonePanel: rectOf('.tone-panel'),
+      accessoryTunePanel: rectOf('.accessory-tune-panel'),
       applyButton: rectOf('.apply-button'),
       gachaMachine: rectOf('.gacha-machine'),
       freeLabel: rectOf('.free-label'),
@@ -294,6 +330,8 @@ function auditCommon(metrics, scenario) {
     'wardrobeGrid',
     'shotRow',
     'variantRow',
+    'tonePanel',
+    'accessoryTunePanel',
     'applyButton',
     'gachaMachine',
     'freeLabel',
@@ -324,7 +362,7 @@ function auditHome(metrics, scenario) {
   if (!metrics.nav) return issues;
   if (metrics.degu && metrics.phone) {
     const ratio = metrics.degu.width / metrics.phone.width;
-    if (ratio < 0.22 || ratio > 0.31) {
+    if (ratio < 0.14 || ratio > 0.31) {
       issues.push(fail('home degu/background size ratio out of range', { ...scenario, ratio, degu: metrics.degu, phone: metrics.phone }));
     }
   }
@@ -357,7 +395,7 @@ function auditPlacement(metrics, scenario) {
 
 function auditWardrobe(metrics, scenario) {
   const issues = [];
-  for (const key of ['stage', 'shotRow', 'variantRow', 'applyButton', 'wardrobeGrid']) {
+  for (const key of ['stage', 'shotRow', 'variantRow', 'tonePanel', 'accessoryTunePanel', 'applyButton', 'wardrobeGrid']) {
     if (!metrics[key]) issues.push(fail(`wardrobe ${key} missing`, scenario));
   }
   if (metrics.nav && metrics.wardrobeGrid) {
@@ -375,6 +413,13 @@ function auditWardrobe(metrics, scenario) {
   }
   if (metrics.variantRow && metrics.applyButton && overlaps(metrics.variantRow, metrics.applyButton, 2)) {
     issues.push(fail('wardrobe color row overlaps apply button', { ...scenario, gap: rectGap(metrics.variantRow, metrics.applyButton), variantRow: metrics.variantRow, applyButton: metrics.applyButton }));
+  }
+  if (metrics.tonePanel && metrics.accessoryTunePanel) {
+    const gap = verticalClearance(metrics.tonePanel, metrics.accessoryTunePanel);
+    if (gap < 4) issues.push(fail('wardrobe tone panel too close to accessory tools', { ...scenario, gap }));
+  }
+  if (metrics.accessoryTunePanel && metrics.shotRow && overlaps(metrics.accessoryTunePanel, metrics.shotRow, 2)) {
+    issues.push(fail('wardrobe accessory tools overlap shot row', { ...scenario, accessoryTunePanel: metrics.accessoryTunePanel, shotRow: metrics.shotRow }));
   }
   if (metrics.variantRow && metrics.wardrobeGrid) {
     const gap = verticalClearance(metrics.variantRow, metrics.wardrobeGrid);

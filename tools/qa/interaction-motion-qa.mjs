@@ -71,7 +71,39 @@ const allRewardIds = [
   'cloud-cap',
   'clover-necklace',
   'picnic-blanket-cape',
-  'tiny-cheek-sticker'
+  'tiny-cheek-sticker',
+  'cloud-puff',
+  'clover-charm',
+  'acorn-charm',
+  'seed-pouch-charm',
+  'star-lantern-float',
+  'moon-bell',
+  'sky-ticket-charm',
+  'mushroom-friend',
+  'sprout-buddy',
+  'sleepy-dust-buddy',
+  'cotton-flower-puff',
+  'crystal-shard-float',
+  'bellflower-sprite',
+  'feather-charm',
+  'bread-basket',
+  'water-drop-buddy',
+  'sky-moth',
+  'cloud-sheep',
+  'walnut-charm',
+  'comet-seed',
+  'spiral-shell',
+  'sleepy-seed-spirit',
+  'paper-crane',
+  'honey-jar',
+  'sun-bell',
+  'blue-firefly',
+  'carrot-bit',
+  'teacup-cloud',
+  'cloud-starfish',
+  'pebble-friend',
+  'leaf-boat',
+  'lavender-puff'
 ];
 
 const baseSave = {
@@ -80,7 +112,9 @@ const baseSave = {
   selectedBackgroundId: 'floating-island',
   selectedVariantId: 'agouti',
   selectedDeguShotId: '04',
-  selectedOutfitIds: ['cloud-cap', 'clover-necklace', 'picnic-blanket-cape', 'tiny-cheek-sticker'],
+  customDeguTone: { hue: 0, saturation: 100, brightness: 100 },
+  selectedOutfitIds: ['straw-hat', 'cloud-puff', 'clover-charm', 'acorn-charm', 'seed-pouch-charm'],
+  accessoryPlacements: {},
   placedDecor: [
     { instanceId: 'qa-hay', itemId: 'timothy-hay-rack', cellX: 0, cellY: 2, footprint: { w: 2, h: 1 } }
   ],
@@ -181,14 +215,21 @@ async function metrics(page) {
       placementGhost: rect('.placement-ghost'),
       placedDecor: rect('.placed-decor'),
       wardrobeStage: rect('.pixel-degu-stage--wardrobe'),
+      firstAccessory: rect('.pixel-degu-float-item'),
       shotRow: rect('.shot-row'),
       wardrobeGrid: rect('.wardrobe-grid'),
+      accessoryTunePanel: rect('.accessory-tune-panel'),
       gachaMachine: rect('.gacha-machine'),
       pullRow: rect('.pull-row'),
+      gachaReveal: rect('.gacha-reveal'),
       rewardStrip: rect('.reward-strip'),
       historyChip: rect('.history-chip'),
       storageSheet: rect('.storage-sheet'),
       deguTransform: transform('.pixel-degu-image'),
+      firstAccessoryTop: document.querySelector('.pixel-degu-float-item')
+        ? window.getComputedStyle(document.querySelector('.pixel-degu-float-item')).top
+        : null,
+      firstAccessoryAnimation: animation('.pixel-degu-float-item'),
       deguAnimation: animation('.pixel-degu-image'),
       gachaTransform: transform('.gacha-machine'),
       gachaAnimation: animation('.gacha-machine'),
@@ -231,7 +272,8 @@ function assertCommonNoOverlap(state, scenario) {
       key === 'coinBursts' ||
       key.endsWith('Transform') ||
       key.endsWith('Animation') ||
-      key.endsWith('Rotation')
+      key.endsWith('Rotation') ||
+      key.endsWith('Top')
     ) {
       continue;
     }
@@ -348,6 +390,15 @@ async function runWardrobe(page, scenario) {
     shotRow: first.shotRow,
     grid: first.wardrobeGrid
   });
+  assert(first.firstAccessoryAnimation, 'wardrobe accessory animation missing', scenario);
+  await page.getByRole('button', { name: 'Move accessory down' }).click();
+  await page.waitForTimeout(80);
+  const adjusted = await metrics(page);
+  assert(first.firstAccessoryTop !== adjusted.firstAccessoryTop, 'accessory move control did not affect rendered position', {
+    ...scenario,
+    before: first.firstAccessoryTop,
+    after: adjusted.firstAccessoryTop
+  });
   await page.locator('.wardrobe-grid').evaluate((node) => {
     node.scrollLeft = node.scrollWidth;
   });
@@ -371,11 +422,23 @@ async function runGacha(page, scenario) {
   });
 
   await page.getByRole('button', { name: 'Open ten sky gifts' }).click();
+  await page.waitForSelector('.gacha-reveal', { timeout: 5000 });
   await page.waitForTimeout(220);
   const text = await page.locator('.history-chip').textContent();
   assert(/^Last: /.test(text ?? ''), 'gacha history did not update after pull', { ...scenario, text });
   assert(!/[a-z]+-[a-z]+/.test(text ?? ''), 'gacha history exposes raw reward ids after pull', { ...scenario, text });
   const state = await metrics(page);
+  assert(state.gachaReveal, 'gacha reveal panel missing after pull', scenario);
+  assert(state.gachaReveal.top - state.pullRow.bottom >= 2, 'gacha reveal overlaps pull row after pull', {
+    ...scenario,
+    pullRow: state.pullRow,
+    gachaReveal: state.gachaReveal
+  });
+  assert(state.rewardStrip.top - state.gachaReveal.bottom >= 2, 'gacha reveal overlaps reward strip after pull', {
+    ...scenario,
+    gachaReveal: state.gachaReveal,
+    rewardStrip: state.rewardStrip
+  });
   assert(state.historyChip.top - state.rewardStrip.bottom >= 8, 'gacha history overlaps reward strip after pull', {
     ...scenario,
     rewardStrip: state.rewardStrip,

@@ -62,13 +62,39 @@ describe('prototype save data', () => {
   });
 
   it('migrates older saves without progression or pixel degu shot fields', () => {
-    const { progression, selectedDeguShotId, layoutPresets, ...legacySave } = defaultSave;
+    const { progression, selectedDeguShotId, layoutPresets, customDeguTone, accessoryPlacements, ...legacySave } = defaultSave;
     const storage = memoryStorage(JSON.stringify(legacySave));
     const migrated = loadSave(storage);
 
     expect(migrated.selectedDeguShotId).toBe(defaultSave.selectedDeguShotId);
     expect(migrated.progression).toEqual(defaultSave.progression);
     expect(migrated.layoutPresets).toEqual(defaultSave.layoutPresets);
+    expect(migrated.customDeguTone).toEqual(defaultSave.customDeguTone);
+    expect(migrated.accessoryPlacements).toEqual(defaultSave.accessoryPlacements);
+  });
+
+  it('sanitizes custom color bars and accessory placement overrides', () => {
+    const storage = memoryStorage(
+      JSON.stringify({
+        ...defaultSave,
+        customDeguTone: {
+          hue: 90,
+          saturation: 200,
+          brightness: -4
+        },
+        accessoryPlacements: {
+          'straw-hat': { x: 99, y: -99, scale: 9, rotation: -120 },
+          'secret-accessory': { x: 4, y: 4, scale: 1, rotation: 0 }
+        }
+      })
+    );
+
+    const save = loadSave(storage);
+
+    expect(save.customDeguTone).toEqual({ hue: 35, saturation: 135, brightness: 82 });
+    expect(save.accessoryPlacements).toEqual({
+      'straw-hat': { x: 28, y: -28, scale: 1.7, rotation: -45 }
+    });
   });
 
   it('sanitizes invalid saved decor placements', () => {

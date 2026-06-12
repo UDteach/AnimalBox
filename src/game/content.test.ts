@@ -9,7 +9,7 @@ describe('content ownership helpers', () => {
   });
 
   it('treats earned rewards as owned and unknown rewards as locked', () => {
-    expect(isRewardOwned(['flower-crown'], 'flower-crown')).toBe(true);
-    expect(isRewardOwned(['flower-crown'], 'celestial-cape')).toBe(false);
+    expect(isRewardOwned(['moon-bell'], 'moon-bell')).toBe(true);
+    expect(isRewardOwned(['moon-bell'], 'cloud-sheep')).toBe(false);
   });
 });
