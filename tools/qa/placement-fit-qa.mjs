@@ -156,19 +156,21 @@ async function createPage(viewport) {
     deviceScaleFactor: 2,
     isMobile: true
   });
+  await context.addInitScript(
+    ({ key }) => {
+      const params = new URLSearchParams(window.location.hash.slice(1));
+      const save = params.get('qaSave');
+      if (save) window.localStorage.setItem(key, save);
+    },
+    { key: storageKey }
+  );
   const page = await context.newPage();
   return { context, page };
 }
 
 async function goto(page, screen, save) {
-  await page.goto(`${baseUrl}/?screen=${screen}`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-  await page.evaluate(
-    ({ key, save }) => {
-      window.localStorage.setItem(key, JSON.stringify(save));
-    },
-    { key: storageKey, save: { ...save, screen } }
-  );
-  await page.reload({ waitUntil: 'domcontentloaded', timeout: 20000 });
+  const encodedSave = encodeURIComponent(JSON.stringify({ ...save, screen }));
+  await page.goto(`${baseUrl}/?screen=${screen}#qaSave=${encodedSave}`, { waitUntil: 'domcontentloaded', timeout: 20000 });
   await page.waitForSelector('.phone', { timeout: 10000 });
   await page.waitForTimeout(500);
 }
@@ -383,7 +385,11 @@ async function verifyPlacementScenario(page, viewport, backgroundId) {
       },
       { selector: decorSelector, index: decorIndex }
     );
-    await page.waitForTimeout(25);
+    await page.waitForFunction(
+      () => document.querySelectorAll('.cell-button[data-valid="true"]').length > 0,
+      null,
+      { timeout: 1000 }
+    ).catch(() => undefined);
 
     const validCount = await page.locator('.cell-button[data-valid="true"]').count();
     if (validCount <= 0) {
