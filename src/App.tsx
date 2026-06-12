@@ -1056,20 +1056,21 @@ function IslandScene({
             const y = Math.floor(index / grid.width);
             const anchor = gridCellAnchor({ x, y });
             const valid = canPlaceDecorInScene(grid, save.placedDecor, x, y, selectedDecor);
+            if (!valid) return null;
+
             return (
               <button
                 key={`${x}:${y}`}
                 className="cell-button"
                 type="button"
                 data-selected={x === selectedCell.x && y === selectedCell.y}
-                data-valid={valid}
+                data-valid="true"
                 data-cell-x={x}
                 data-cell-y={y}
-                disabled={!valid}
                 style={{ left: `${anchor.x}%`, top: `${anchor.y}%` }}
                 aria-label={`Select cell ${x + 1}, ${y + 1}`}
                 onClick={() => {
-                  if (valid) onSelectCell({ x, y });
+                  onSelectCell({ x, y });
                 }}
               />
             );

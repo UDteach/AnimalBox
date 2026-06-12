@@ -685,9 +685,7 @@ button {
   position: absolute;
   inset: 0;
   z-index: 55;
-  background:
-    radial-gradient(ellipse at 50% 62%, rgba(145, 211, 101, 0.13) 0 24%, transparent 26%),
-    repeating-radial-gradient(ellipse at 50% 61%, transparent 0 1.35rem, rgba(255, 255, 255, 0.18) 1.42rem 1.5rem, transparent 1.56rem 2.2rem);
+  pointer-events: none;
 }
 
 .cell-button {
@@ -697,6 +695,7 @@ button {
   padding: 0;
   transform: translate(-50%, -50%) rotate(45deg);
   background: transparent;
+  pointer-events: auto;
 }
 
 .cell-button::before {
@@ -705,20 +704,12 @@ button {
   border-radius: 45% 55% 48% 52%;
   background:
     radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.52) 0 13%, transparent 14%),
-    repeating-linear-gradient(135deg, rgba(69, 137, 77, 0.34) 0 3px, transparent 3px 8px),
-    rgba(255, 255, 255, 0.2);
+    repeating-linear-gradient(135deg, rgba(69, 137, 77, 0.3) 0 2px, transparent 2px 7px),
+    rgba(236, 255, 198, 0.28);
   box-shadow:
-    inset 0 0 0 1px rgba(60, 93, 87, 0.18),
+    inset 0 0 0 1px rgba(70, 123, 68, 0.2),
     0 0.16rem 0.24rem rgba(67, 94, 51, 0.1);
   content: "";
-}
-
-.cell-button[data-valid="false"]::before {
-  background: rgba(219, 70, 54, 0.28);
-}
-
-.cell-button:disabled {
-  cursor: not-allowed;
 }
 
 .cell-button[data-selected="true"]::before {
