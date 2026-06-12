@@ -30,5 +30,23 @@ Polish AnimalBox as a mobile-first 2D garden/idler prototype across visual quali
 - completed: Removed Storage theme-card overflow by making cards block image containers.
 - completed: Reduced Wardrobe degu preview scale.
 - completed: Added gacha flash/reveal polish.
-- in_progress: Run required QA gates.
-- pending: Push to GitHub and deploy Cloudflare Pages.
+- completed: Required QA gates passed.
+- completed: Pushed the implementation to GitHub `main`.
+- completed: Deployed Cloudflare Pages.
+
+## Validation
+
+- `npm run typecheck`: passed.
+- `npm test -- --run`: 42 tests passed.
+- `npm run qa:assets`: 93 assets checked, 76 alpha checked.
+- `npm run qa:customization`: passed.
+- `npm run qa:ui`: 140 scenarios passed, 0 warnings.
+- `npm run qa:motion`: 14 scenarios passed.
+- `npm run qa:placement`: 21 scenarios passed.
+- `npm run qa:visual`: local + production screenshots passed, issueCount 0.
+- `npm run build`: passed.
+
+## URLs
+
+- Production: https://animalbox.pages.dev
+- Deployment: https://8d5dc059.animalbox.pages.dev
