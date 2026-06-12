@@ -826,12 +826,17 @@ function rewardImage(rewardId: string): string {
 }
 
 function animalChoiceBadge(shot: PixelDeguShot, owned: boolean): string {
-  if (!owned) return formatNumber(deguShotUnlockCost(shot.id));
+  if (!owned) return compactUnlockCost(deguShotUnlockCost(shot.id));
   if (/^\d+$/.test(shot.id)) return shot.id;
   return shot.label
     .split(/\s+/)
     .map((part) => part.slice(0, 3))
     .join('.');
+}
+
+function compactUnlockCost(cost: number): string {
+  if (cost < 1000) return formatNumber(cost);
+  return `${(cost / 1000).toFixed(1).replace(/\.0$/, '')}k`;
 }
 
 function Hud({

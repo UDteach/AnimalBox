@@ -1003,11 +1003,11 @@ button {
 }
 
 .shot-button img {
-  width: 112%;
-  height: 112%;
+  width: 98%;
+  height: 98%;
   object-fit: contain;
   image-rendering: pixelated;
-  transform: translateY(0.12rem);
+  transform: translateY(0.04rem);
 }
 
 .shot-button span {
