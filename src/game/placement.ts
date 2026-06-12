@@ -19,6 +19,30 @@ export interface PlacedDecor {
   cellX: number;
   cellY: number;
   footprint: Footprint;
+  rotation?: number;
+}
+
+export function normalizeRotation(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 0;
+  return ((Math.round(value / 90) * 90) % 360 + 360) % 360;
+}
+
+export function footprintForRotation(footprint: Footprint, rotation: number): Footprint {
+  const normalized = normalizeRotation(rotation);
+  if (normalized === 90 || normalized === 270) {
+    return { w: footprint.h, h: footprint.w };
+  }
+  return { ...footprint };
+}
+
+export function withRotatedFootprint<T extends { footprint: Footprint }>(
+  item: T,
+  rotation: number
+): T {
+  return {
+    ...item,
+    footprint: footprintForRotation(item.footprint, rotation)
+  };
 }
 
 export function canPlaceDecor(

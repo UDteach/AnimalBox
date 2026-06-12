@@ -17,7 +17,7 @@ import {
 import { addIdleIncome, formatNumber, tapForCoins, type EconomyState } from './game/economy';
 import { browserRandom, runPulls, skyGiftBanner } from './game/gacha';
 import { PixelDeguStage } from './game/pixel/PixelDeguStage';
-import { type Cell, type PlacedDecor } from './game/placement';
+import { normalizeRotation, type Cell, type PlacedDecor, withRotatedFootprint } from './game/placement';
 import { assetStyle, canPlaceDecorInScene, gridCellAnchor, gridToScene } from './game/sceneLayout';
 import {
   applyIdleProgress,
@@ -34,7 +34,13 @@ import {
   type ProgressionState,
   type UpgradeDefinition
 } from './game/progression';
-import { loadSave, savePrototype, type LayoutPreset, type PrototypeSave } from './game/storage';
+import {
+  createDefaultLayoutPresets,
+  loadSave,
+  savePrototype,
+  type LayoutPreset,
+  type PrototypeSave
+} from './game/storage';
 import { toggleOutfitForSlot } from './game/wardrobe';
 
 interface Burst {
@@ -86,6 +92,10 @@ export function App() {
     isRewardOwned(save.ownedRewardIds, id)
   );
   const selectedDecor = decorItems.find((item) => item.id === selectedDecorId) ?? decorItems[0];
+  const placementDecor = useMemo(
+    () => withRotatedFootprint(selectedDecor, rotation),
+    [selectedDecor, rotation]
+  );
   const activeTheme =
     backgroundThemes.find((theme) => theme.id === selectedBackgroundId) ?? backgroundThemes[0];
 
@@ -107,13 +117,13 @@ export function App() {
   }, [save]);
 
   useEffect(() => {
-    if (canPlaceDecorInScene(grid, save.placedDecor, selectedCell.x, selectedCell.y, selectedDecor)) {
+    if (canPlaceDecorInScene(grid, save.placedDecor, selectedCell.x, selectedCell.y, placementDecor)) {
       return;
     }
 
-    const nextCell = findFirstSceneSafeCell(selectedDecor, save.placedDecor);
+    const nextCell = findFirstSceneSafeCell(placementDecor, save.placedDecor);
     if (nextCell) setSelectedCell(nextCell);
-  }, [save.placedDecor, selectedCell.x, selectedCell.y, selectedDecor]);
+  }, [save.placedDecor, selectedCell.x, selectedCell.y, placementDecor]);
 
   useEffect(() => {
     let cancelled = false;
@@ -334,6 +344,21 @@ export function App() {
     setStatus(`Loaded layout ${slot}`);
   }
 
+  function clearLayoutPreset(slot: number) {
+    const fallback = createDefaultLayoutPresets().find((item) => item.slot === slot);
+    if (!fallback) return;
+
+    setSave(
+      nextSave((currentSave) => ({
+        ...currentSave,
+        layoutPresets: currentSave.layoutPresets.map((item) =>
+          item.slot === slot ? fallback : item
+        )
+      }))
+    );
+    setStatus(`Cleared layout ${slot}`);
+  }
+
   function selectVariant(variantId: string) {
     const variant = deguVariants.find((item) => item.id === variantId);
     if (!variant) return;
@@ -356,7 +381,7 @@ export function App() {
     if (!decor) return;
     setSelectedDecorId(decorId);
 
-    const nextCell = findFirstSceneSafeCell(decor, saveRef.current.placedDecor);
+    const nextCell = findFirstSceneSafeCell(withRotatedFootprint(decor, rotation), saveRef.current.placedDecor);
     if (nextCell) setSelectedCell(nextCell);
     setStatus(`Decor: ${decor.label}`);
   }
@@ -391,10 +416,11 @@ export function App() {
       itemId: selectedDecor.id,
       cellX: selectedCell.x,
       cellY: selectedCell.y,
-      footprint: selectedDecor.footprint
+      footprint: placementDecor.footprint,
+      ...(normalizeRotation(rotation) === 0 ? {} : { rotation: normalizeRotation(rotation) })
     };
 
-    if (!canPlaceDecorInScene(grid, save.placedDecor, candidate.cellX, candidate.cellY, selectedDecor)) {
+    if (!canPlaceDecorInScene(grid, save.placedDecor, candidate.cellX, candidate.cellY, placementDecor)) {
       setStatus('That cell is blocked');
       return;
     }
@@ -409,7 +435,20 @@ export function App() {
         placedDecor: [...currentSave.placedDecor, candidate]
       }))
     );
-    setStatus(`Placed ${selectedDecor.label}`);
+    setStatus(`Placed ${selectedDecor.label}${rotation === 0 ? '' : ` ${rotation}deg`}`);
+  }
+
+  function rotatePlacement() {
+    const nextRotation = (rotation + 90) % 360;
+    const orientedDecor = withRotatedFootprint(selectedDecor, nextRotation);
+    const nextCell =
+      canPlaceDecorInScene(grid, saveRef.current.placedDecor, selectedCell.x, selectedCell.y, orientedDecor)
+        ? selectedCell
+        : findFirstSceneSafeCell(orientedDecor, saveRef.current.placedDecor);
+
+    setRotation(nextRotation);
+    if (nextCell) setSelectedCell(nextCell);
+    setStatus(`Rotated ${selectedDecor.label} ${nextRotation}deg`);
   }
 
   function undoLastPlacedDecor() {
@@ -492,13 +531,15 @@ export function App() {
           status={status}
           activeTheme={activeTheme}
           missingAssets={missingAssets}
+          onSettings={() => setScreen('storage')}
         />
 
         {(screen === 'home' || screen === 'placement' || screen === 'storage') && (
           <IslandScene
             save={save}
-            selectedDecor={selectedDecor}
+            selectedDecor={placementDecor}
             selectedCell={selectedCell}
+            placementRotation={rotation}
             screen={screen}
             selectedDeguShotId={save.selectedDeguShotId}
             selectedVariantId={selectedVariantId}
@@ -515,10 +556,7 @@ export function App() {
             rotation={rotation}
             ownedRewardIds={save.ownedRewardIds}
             onSelectDecor={selectDecor}
-            onRotate={() => {
-              setRotation((value) => (value + 90) % 360);
-              setStatus('Rotated placement ghost');
-            }}
+            onRotate={rotatePlacement}
             onConfirm={placeSelectedDecor}
             onCancel={() => setStatus('Placement cancelled')}
             onUndo={undoLastPlacedDecor}
@@ -546,7 +584,10 @@ export function App() {
             onSelectVariant={selectVariant}
             onSelectDeguShot={selectDeguShot}
             onToggleOutfit={toggleOutfit}
-            onApply={() => setStatus('Wardrobe applied')}
+            onApply={() => {
+              setScreen('home');
+              setStatus('Wardrobe saved');
+            }}
           />
         )}
 
@@ -570,6 +611,7 @@ export function App() {
             layoutPresets={save.layoutPresets}
             onSaveLayoutPreset={saveLayoutPreset}
             onLoadLayoutPreset={loadLayoutPreset}
+            onClearLayoutPreset={clearLayoutPreset}
           />
         )}
 
@@ -608,18 +650,31 @@ function clonePlacedDecor(items: PlacedDecor[]): PlacedDecor[] {
   }));
 }
 
+function rewardLabel(rewardId: string): string {
+  return (
+    backgroundThemes.find((item) => item.id === rewardId)?.label ??
+    decorItems.find((item) => item.id === rewardId)?.label ??
+    outfits.find((item) => item.id === rewardId)?.label ??
+    deguVariants.find((item) => item.id === rewardId)?.label ??
+    pixelDeguShots.find((item) => item.id === rewardId)?.label ??
+    rewardId
+  );
+}
+
 function Hud({
   economy,
   stats,
   status,
   activeTheme,
-  missingAssets
+  missingAssets,
+  onSettings
 }: {
   economy: EconomyState;
   stats: GameStats;
   status: string;
   activeTheme: BackgroundTheme;
   missingAssets: string[];
+  onSettings: () => void;
 }) {
   return (
     <header className="hud">
@@ -639,7 +694,7 @@ function Hud({
       <div className="theme-chip" aria-label={`Current theme ${activeTheme.label}`}>
         <span style={{ backgroundColor: activeTheme.swatch }} />
       </div>
-      <button className="round-button" type="button" aria-label="Settings">
+      <button className="round-button" type="button" aria-label="Settings" onClick={onSettings}>
         ...
       </button>
       <div className="sr-only" role="status">
@@ -733,6 +788,7 @@ function GameLoopPanel({
           className="claim-button"
           type="button"
           data-ready={stats.claimableTickets > 0}
+          disabled={stats.claimableTickets <= 0}
           onClick={onClaimTickets}
           aria-label="Claim earned tickets"
         >
@@ -788,6 +844,7 @@ function IslandScene({
   save,
   selectedDecor,
   selectedCell,
+  placementRotation,
   screen,
   selectedDeguShotId,
   selectedVariantId,
@@ -798,6 +855,7 @@ function IslandScene({
   save: PrototypeSave;
   selectedDecor: DecorItem;
   selectedCell: Cell;
+  placementRotation: number;
   screen: ScreenId;
   selectedDeguShotId: string;
   selectedVariantId: string;
@@ -812,7 +870,9 @@ function IslandScene({
       {save.placedDecor.map((placed) => {
         const decor = decorItems.find((item) => item.id === placed.itemId);
         if (!decor) return null;
-        const scene = gridToScene({ x: placed.cellX, y: placed.cellY }, decor);
+        const placedRotation = normalizeRotation(placed.rotation);
+        const orientedDecor = withRotatedFootprint(decor, placedRotation);
+        const scene = gridToScene({ x: placed.cellX, y: placed.cellY }, orientedDecor);
         return (
           <img
             key={placed.instanceId}
@@ -823,7 +883,13 @@ function IslandScene({
             src={decor.src}
             alt=""
             draggable={false}
-            style={{ ...assetStyle(scene.x, scene.y, scene.w), zIndex: 20 + placed.cellY + decor.footprint.h }}
+            style={
+              {
+                ...assetStyle(scene.x, scene.y, scene.w),
+                '--decor-rotation': `${placedRotation}deg`,
+                zIndex: 20 + placed.cellY + orientedDecor.footprint.h
+              } as React.CSSProperties
+            }
           />
         );
       })}
@@ -858,7 +924,12 @@ function IslandScene({
             src={selectedDecor.src}
             alt=""
             draggable={false}
-            style={assetStyle(ghost.x, ghost.y, ghost.w)}
+            style={
+              {
+                ...assetStyle(ghost.x, ghost.y, ghost.w),
+                '--decor-rotation': `${normalizeRotation(placementRotation)}deg`
+              } as React.CSSProperties
+            }
           />
         </div>
       )}
@@ -1062,6 +1133,7 @@ function GachaScreen({
     outfits.find((item) => item.id === 'tiny-cheek-sticker'),
     outfits.find((item) => item.id === 'celestial-cape')
   ].filter(Boolean) as Array<DecorItem | OutfitItem | BackgroundTheme>;
+  const historySummary = history.slice(0, 3).map(rewardLabel).join(', ');
 
   return (
     <section className="gacha-screen" aria-label="Free sky gift">
@@ -1082,7 +1154,7 @@ function GachaScreen({
           </div>
         ))}
       </div>
-      <div className="history-chip">{history.length > 0 ? `Last: ${history.slice(0, 3).join(', ')}` : 'No gifts opened yet'}</div>
+      <div className="history-chip">{history.length > 0 ? `Last: ${historySummary}` : 'No gifts opened yet'}</div>
     </section>
   );
 }
@@ -1096,7 +1168,8 @@ function StorageOverlay({
   onSelectBackground,
   layoutPresets,
   onSaveLayoutPreset,
-  onLoadLayoutPreset
+  onLoadLayoutPreset,
+  onClearLayoutPreset
 }: {
   save: PrototypeSave;
   activeTheme: BackgroundTheme;
@@ -1107,6 +1180,7 @@ function StorageOverlay({
   layoutPresets: LayoutPreset[];
   onSaveLayoutPreset: (slot: number) => void;
   onLoadLayoutPreset: (slot: number) => void;
+  onClearLayoutPreset: (slot: number) => void;
 }) {
   return (
     <section className="storage-sheet" aria-label="Storage and customization">
@@ -1134,6 +1208,15 @@ function StorageOverlay({
 
             return (
               <div key={preset.slot} className="layout-preset-card" data-empty={!hasSave}>
+                <button
+                  className="preset-clear-button"
+                  type="button"
+                  disabled={!hasSave}
+                  onClick={() => onClearLayoutPreset(preset.slot)}
+                  aria-label={`Clear layout preset ${preset.slot}`}
+                >
+                  x
+                </button>
                 <strong>{preset.label}</strong>
                 <span>{hasSave ? theme.label : 'Empty'}</span>
                 <div className="preset-actions">

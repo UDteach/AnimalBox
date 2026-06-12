@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { decorItems } from './content';
+import { withRotatedFootprint } from './placement';
 import { canPlaceDecorInScene, decorSceneBounds, gridToScene, sceneLayout } from './sceneLayout';
 
 const grid = { width: 6, height: 6 };
@@ -16,6 +17,22 @@ describe('scene layout contracts', () => {
       }
 
       expect(validCells, decor.id).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps at least one scene-safe placement for every rotated decor footprint', () => {
+    for (const decor of decorItems) {
+      for (const rotation of [0, 90, 180, 270]) {
+        const oriented = withRotatedFootprint(decor, rotation);
+        let validCells = 0;
+        for (let y = 0; y <= 6 - oriented.footprint.h; y += 1) {
+          for (let x = 0; x <= 6 - oriented.footprint.w; x += 1) {
+            if (canPlaceDecorInScene(grid, [], x, y, oriented)) validCells += 1;
+          }
+        }
+
+        expect(validCells, `${decor.id} ${rotation}deg`).toBeGreaterThan(0);
+      }
     }
   });
 

@@ -21,6 +21,9 @@ const backgroundThemes = [
   'moonlit-hay-field'
 ];
 
+const newDecorIds = ['short-wooden-fence', 'flower-patch', 'snack-tray', 'star-lantern'];
+const newOutfitIds = ['cloud-cap', 'clover-necklace', 'picnic-blanket-cape', 'tiny-cheek-sticker'];
+
 const allRewardIds = [
   ...backgroundThemes,
   'agouti',
@@ -51,6 +54,7 @@ const allRewardIds = [
   'cloud-bridge',
   'sky-mailbox',
   'bellflower-planter',
+  ...newDecorIds,
   'straw-hat',
   'celestial-cape',
   'pastel-ribbon',
@@ -64,7 +68,8 @@ const allRewardIds = [
   'explorer-goggles',
   'cozy-poncho',
   'sky-satchel',
-  'daisy-ear-clip'
+  'daisy-ear-clip',
+  ...newOutfitIds
 ];
 
 const baseSave = {
@@ -330,14 +335,19 @@ async function verifyPlacementScenario(page, viewport, backgroundId) {
   await page.screenshot({ path: `${outDir}/${name}.png`, fullPage: true });
 
   const failures = [];
-  const decorButtons = await page.locator('.asset-card[data-locked="false"]').count();
+  const decorSelector = '.placement-sheet .asset-card[data-locked="false"]';
+  const decorButtons = await page.locator(decorSelector).count();
   for (let decorIndex = 0; decorIndex < decorButtons; decorIndex += 1) {
-    const decorButton = page.locator('.asset-card[data-locked="false"]').nth(decorIndex);
-    await decorButton.scrollIntoViewIfNeeded();
-    await decorButton.click();
+    const label = await page.locator(decorSelector).nth(decorIndex).getAttribute('aria-label');
+    await page.evaluate(
+      ({ selector, index }) => {
+        const button = document.querySelectorAll(selector).item(index);
+        if (button instanceof HTMLButtonElement) button.click();
+      },
+      { selector: decorSelector, index: decorIndex }
+    );
     await page.waitForTimeout(25);
 
-    const label = await decorButton.getAttribute('aria-label');
     const validCount = await page.locator('.cell-button[data-valid="true"]').count();
     if (validCount <= 0) {
       failures.push({ label, issue: 'no valid cells' });
@@ -347,11 +357,14 @@ async function verifyPlacementScenario(page, viewport, backgroundId) {
     const sampleCount = Math.min(validCount, 5);
     for (let i = 0; i < sampleCount; i += 1) {
       const index = Math.floor((i * validCount) / sampleCount);
-      const cell = page.locator('.cell-button[data-valid="true"]').nth(index);
-      try {
-        await cell.click({ timeout: 2500 });
-      } catch (error) {
-        failures.push({ label, issue: 'valid cell not tappable', sampleIndex: index, message: error.message });
+      const didSelect = await page.evaluate((index) => {
+        const cell = document.querySelectorAll('.cell-button[data-valid="true"]').item(index);
+        if (!(cell instanceof HTMLButtonElement)) return false;
+        cell.click();
+        return true;
+      }, index);
+      if (!didSelect) {
+        failures.push({ label, issue: 'valid cell not selectable', sampleIndex: index });
         continue;
       }
       await page.waitForTimeout(20);

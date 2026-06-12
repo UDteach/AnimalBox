@@ -26,11 +26,12 @@ export const sceneLayout = {
   minDecorWidth: 10.5,
   decorScale: 0.66,
   decorHeightRatioMin: 0.72,
+  decorHeightRatioMax: 1.1,
   decorSafe: {
     minX: 11,
     maxX: 89,
     minY: 36,
-    maxY: 64.2
+    maxY: 60
   },
   deguKeepout: {
     minX: 38,
@@ -61,10 +62,14 @@ export function gridToScene(cell: Cell, decor: DecorItem): SceneRect {
 
 export function decorSceneBounds(cell: Cell, decor: DecorItem): SceneBounds {
   const rect = gridToScene(cell, decor);
-  const height = rect.w * Math.max(
-    sceneLayout.decorHeightRatioMin,
-    decor.footprint.h / Math.max(1, decor.footprint.w)
+  const heightRatio = Math.min(
+    sceneLayout.decorHeightRatioMax,
+    Math.max(
+      sceneLayout.decorHeightRatioMin,
+      decor.footprint.h / Math.max(1, decor.footprint.w)
+    )
   );
+  const height = rect.w * heightRatio;
   const x = rect.x - rect.w / 2;
   const y = rect.y - height;
 

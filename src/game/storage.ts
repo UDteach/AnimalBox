@@ -8,7 +8,7 @@ import {
   starterRewardIds
 } from './content';
 import { initialEconomy, type EconomyState } from './economy';
-import { type PlacedDecor } from './placement';
+import { normalizeRotation, type PlacedDecor, withRotatedFootprint } from './placement';
 import { defaultProgression, sanitizeProgression, type ProgressionState } from './progression';
 import { canPlaceDecorInScene } from './sceneLayout';
 
@@ -180,16 +180,19 @@ function sanitizePlacedDecor(value: unknown, fallback: PlacedDecor[] = defaultSa
     if (!isPlacedDecorLike(item)) continue;
     const decor = allowedDecor.get(item.itemId);
     if (!decor) continue;
+    const rotation = normalizeRotation(item.rotation);
+    const orientedDecor = withRotatedFootprint(decor, rotation);
 
     const candidate: PlacedDecor = {
       instanceId: item.instanceId,
       itemId: item.itemId,
       cellX: Math.floor(item.cellX),
       cellY: Math.floor(item.cellY),
-      footprint: decor.footprint
+      footprint: orientedDecor.footprint,
+      ...(rotation === 0 ? {} : { rotation })
     };
 
-    if (canPlaceDecorInScene(grid, clean, candidate.cellX, candidate.cellY, decor)) {
+    if (canPlaceDecorInScene(grid, clean, candidate.cellX, candidate.cellY, orientedDecor)) {
       clean.push(candidate);
     }
   }

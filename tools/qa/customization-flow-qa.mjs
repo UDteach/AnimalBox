@@ -93,9 +93,20 @@ const baseSave = {
   layoutPresets: [1, 2, 3].map((slot) => ({
     slot,
     label: `Slot ${slot}`,
-    selectedBackgroundId: 'floating-island',
-    placedDecor: [],
-    updatedAt: null
+    selectedBackgroundId: slot === 1 ? 'flower-cloud-terrace' : 'floating-island',
+    placedDecor:
+      slot === 1
+        ? [
+            {
+              instanceId: 'slot-fence',
+              itemId: 'short-wooden-fence',
+              cellX: 0,
+              cellY: 2,
+              footprint: { w: 2, h: 1 }
+            }
+          ]
+        : [],
+    updatedAt: slot === 1 ? 1781200000000 : null
   }))
 };
 
@@ -143,6 +154,8 @@ try {
         await page.waitForTimeout(120);
       }
       if (screen === 'placement') {
+        await page.getByRole('button', { name: 'Rotate placement' }).click();
+        await page.waitForTimeout(120);
         await page.getByRole('button', { name: 'Undo last decor' }).click();
         await page.waitForTimeout(120);
       }
@@ -156,6 +169,7 @@ try {
           const gridRect = grid?.getBoundingClientRect();
           const shotRow = document.querySelector('.shot-row')?.getBoundingClientRect();
           const apply = document.querySelector('.apply-button')?.getBoundingClientRect();
+          const ghost = document.querySelector('.placement-ghost');
           const cardImages = [...document.querySelectorAll('img')].map((image) => image.getAttribute('src') ?? '');
           return {
             screen,
@@ -173,6 +187,7 @@ try {
             placedDecorCount: save.placedDecor?.length ?? null,
             affection: save.progression?.affection ?? null,
             careStreak: save.progression?.careStreak ?? null,
+            placementGhostRotation: ghost ? window.getComputedStyle(ghost).getPropertyValue('--decor-rotation').trim() : null,
             gamePanelBottomToNav: gamePanel && nav ? nav.top - gamePanel.bottom : null,
             wardrobeGridBottomToNav: gridRect && nav ? nav.top - gridRect.bottom : null,
             shotRowBottomToGrid: shotRow && gridRect ? gridRect.top - shotRow.bottom : null,
@@ -186,6 +201,29 @@ try {
 
       if (screen === 'wardrobe') {
         await page.screenshot({ path: `${outDir}/wardrobe-batch003.png`, fullPage: true });
+      }
+
+      if (screen === 'home') {
+        await page.getByRole('button', { name: 'Settings' }).click();
+        await page.waitForSelector('.storage-sheet', { timeout: 5000 });
+        metrics.settingsOpensStorage = true;
+      }
+      if (screen === 'wardrobe') {
+        await page.getByRole('button', { name: 'Apply wardrobe' }).click();
+        await page.waitForSelector('.game-loop-panel', { timeout: 5000 });
+        metrics.applyReturnsHome = true;
+      }
+      if (screen === 'gacha') {
+        await page.getByRole('button', { name: 'Open one sky gift' }).click();
+        await page.waitForTimeout(160);
+        metrics.gachaHistoryText = await page.locator('.history-chip').textContent();
+      }
+      if (screen === 'storage') {
+        await page.getByRole('button', { name: 'Clear layout preset 1' }).click();
+        await page.waitForTimeout(120);
+        metrics.clearPresetDisablesLoad = await page
+          .getByRole('button', { name: 'Load layout preset 1' })
+          .isDisabled();
       }
       results.push(metrics);
     } catch (error) {
@@ -202,6 +240,7 @@ try {
   assert(home.careButtons.every((button) => button.fits), 'home care button text overflow', home);
   assert(home.affection > baseSave.progression.affection, 'home care did not increase affection', home);
   assert(home.careStreak >= 2, 'home care streak did not persist', home);
+  assert(home.settingsOpensStorage, 'settings button did not open storage', home);
   assert(home.gamePanelBottomToNav >= 4, 'home game panel collides with bottom nav', home);
 
   const wardrobe = results.find((item) => item.screen === 'wardrobe');
@@ -213,10 +252,12 @@ try {
   assert(wardrobe.shotRowBottomToGrid >= 4, 'wardrobe grid collides with shot row', wardrobe);
   assert(wardrobe.applyBottomToGrid >= 4, 'wardrobe grid collides with apply button', wardrobe);
   assert(wardrobe.gridScrollable, 'wardrobe grid should scroll horizontally for expanded inventory', wardrobe);
+  assert(wardrobe.applyReturnsHome, 'wardrobe apply did not return to home', wardrobe);
 
   const placement = results.find((item) => item.screen === 'placement');
   assert(placement?.newDecorCards === newDecorIds.length, 'new decor cards are missing', placement);
   assert(!placement.hasAssetWarning, 'placement asset warning', placement);
+  assert(placement.placementGhostRotation === '90deg', 'placement rotate did not update ghost rotation', placement);
   assert(placement.placedDecorCount === 0, 'placement undo did not remove the last decor', placement);
   assert(placement.incomePerSecond < baseSave.economy.incomePerSecond, 'placement undo did not reduce decor income', placement);
 
@@ -224,9 +265,12 @@ try {
   assert(gacha?.newDecorCards === newDecorIds.length, 'new decor rewards missing from gacha preview', gacha);
   assert(gacha?.newOutfitCards === newOutfitIds.length, 'new outfit rewards missing from gacha preview', gacha);
   assert(!gacha.hasAssetWarning, 'gacha asset warning', gacha);
+  assert(/^Last: /.test(gacha.gachaHistoryText ?? ''), 'gacha did not show pull history', gacha);
+  assert(!/[a-z]+-[a-z]+/.test(gacha.gachaHistoryText ?? ''), 'gacha history still shows raw reward ids', gacha);
 
   const storage = results.find((item) => item.screen === 'storage');
   assert(!storage?.hasAssetWarning, 'storage asset warning', storage);
+  assert(storage?.clearPresetDisablesLoad, 'storage clear preset did not disable load', storage);
 
   console.log(JSON.stringify({ ok: true, baseUrl, outDir, results }, null, 2));
 } catch (error) {

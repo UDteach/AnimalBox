@@ -153,6 +153,35 @@ describe('prototype save data', () => {
     ]);
   });
 
+  it('keeps normalized rotation and rotated footprints for saved decor', () => {
+    const storage = memoryStorage(
+      JSON.stringify({
+        ...defaultSave,
+        placedDecor: [
+          {
+            instanceId: 'rotated-lantern',
+            itemId: 'star-lantern',
+            cellX: 0,
+            cellY: 3,
+            footprint: { w: 99, h: 99 },
+            rotation: 450
+          }
+        ]
+      })
+    );
+
+    expect(loadSave(storage).placedDecor).toEqual([
+      {
+        instanceId: 'rotated-lantern',
+        itemId: 'star-lantern',
+        cellX: 0,
+        cellY: 3,
+        footprint: { w: 2, h: 1 },
+        rotation: 90
+      }
+    ]);
+  });
+
   it('sanitizes economy, variant, reward, and history values from local storage', () => {
     const storage = memoryStorage(
       JSON.stringify({

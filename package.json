@@ -11,6 +11,8 @@
     "lint": "tsc --noEmit",
     "qa:assets": "node tools/qa/runtime-assets-qa.mjs",
     "qa:customization": "node tools/qa/customization-flow-qa.mjs",
+    "qa:ui": "node tools/qa/ui-layout-audit.mjs",
+    "qa:motion": "node tools/qa/interaction-motion-qa.mjs",
     "qa:placement": "node tools/qa/placement-fit-qa.mjs",
     "test": "vitest run"
   },
