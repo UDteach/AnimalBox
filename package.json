@@ -9,6 +9,8 @@
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
+    "qa:assets": "node tools/qa/runtime-assets-qa.mjs",
+    "qa:customization": "node tools/qa/customization-flow-qa.mjs",
     "qa:placement": "node tools/qa/placement-fit-qa.mjs",
     "test": "vitest run"
   },

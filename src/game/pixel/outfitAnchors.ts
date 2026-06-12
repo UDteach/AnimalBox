@@ -22,7 +22,11 @@ export const outfitAnchors: Record<string, OutfitAnchor> = {
   'explorer-goggles': { top: 38, left: 22, width: 27, rotate: -5 },
   'cozy-poncho': { top: 43, left: 34, width: 44, rotate: 6, zIndex: 1 },
   'sky-satchel': { top: 51, left: 50, width: 23, rotate: 5, zIndex: 4 },
-  'daisy-ear-clip': { top: 30, left: 16, width: 18, rotate: -12 }
+  'daisy-ear-clip': { top: 30, left: 16, width: 18, rotate: -12 },
+  'cloud-cap': { top: 22, left: 17, width: 33, rotate: -10 },
+  'clover-necklace': { top: 52, left: 26, width: 27, rotate: -4 },
+  'picnic-blanket-cape': { top: 44, left: 35, width: 43, rotate: 6, zIndex: 1 },
+  'tiny-cheek-sticker': { top: 40, left: 24, width: 22, rotate: -5 }
 };
 
 export function outfitAnchorStyle(outfitId: string): CSSProperties {

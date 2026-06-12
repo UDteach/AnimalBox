@@ -6,6 +6,19 @@ import { canPlaceDecorInScene, decorSceneBounds, gridToScene, sceneLayout } from
 const grid = { width: 6, height: 6 };
 
 describe('scene layout contracts', () => {
+  it('keeps at least one scene-safe placement for every decor item', () => {
+    for (const decor of decorItems) {
+      let validCells = 0;
+      for (let y = 0; y <= 6 - decor.footprint.h; y += 1) {
+        for (let x = 0; x <= 6 - decor.footprint.w; x += 1) {
+          if (canPlaceDecorInScene(grid, [], x, y, decor)) validCells += 1;
+        }
+      }
+
+      expect(validCells, decor.id).toBeGreaterThan(0);
+    }
+  });
+
   it('keeps every accepted decor placement inside the playable island scene band', () => {
     for (const decor of decorItems) {
       for (let y = 0; y <= 6 - decor.footprint.h; y += 1) {

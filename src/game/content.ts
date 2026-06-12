@@ -205,7 +205,11 @@ export const outfits: OutfitItem[] = [
   { id: 'explorer-goggles', label: 'Explorer goggles', slot: 'face', rarity: 'rare', src: '/images/runtime/wardrobe/explorer-goggles.png' },
   { id: 'cozy-poncho', label: 'Cozy poncho', slot: 'back', rarity: 'special', src: '/images/runtime/wardrobe/cozy-poncho.png' },
   { id: 'sky-satchel', label: 'Sky satchel', slot: 'back', rarity: 'common', src: '/images/runtime/wardrobe/sky-satchel.png' },
-  { id: 'daisy-ear-clip', label: 'Daisy ear clip', slot: 'head', rarity: 'common', src: '/images/runtime/wardrobe/daisy-ear-clip.png' }
+  { id: 'daisy-ear-clip', label: 'Daisy ear clip', slot: 'head', rarity: 'common', src: '/images/runtime/wardrobe/daisy-ear-clip.png' },
+  { id: 'cloud-cap', label: 'Cloud cap', slot: 'head', rarity: 'rare', src: '/images/runtime/wardrobe/cloud-cap.png' },
+  { id: 'clover-necklace', label: 'Clover necklace', slot: 'neck', rarity: 'common', src: '/images/runtime/wardrobe/clover-necklace.png' },
+  { id: 'picnic-blanket-cape', label: 'Picnic cape', slot: 'back', rarity: 'rare', src: '/images/runtime/wardrobe/picnic-blanket-cape.png' },
+  { id: 'tiny-cheek-sticker', label: 'Cheek sticker', slot: 'face', rarity: 'common', src: '/images/runtime/wardrobe/tiny-cheek-sticker.png' }
 ];
 
 export const decorItems: DecorItem[] = [
@@ -320,6 +324,38 @@ export const decorItems: DecorItem[] = [
     src: '/images/runtime/decor/bellflower-planter.png',
     scene: { x: 10, y: 50, w: 22 },
     bonusPerSecond: 10
+  },
+  {
+    id: 'short-wooden-fence',
+    label: 'Wood fence',
+    footprint: { w: 2, h: 1 },
+    src: '/images/runtime/decor/short-wooden-fence.png',
+    scene: { x: 24, y: 58, w: 24 },
+    bonusPerSecond: 7
+  },
+  {
+    id: 'flower-patch',
+    label: 'Flower patch',
+    footprint: { w: 2, h: 1 },
+    src: '/images/runtime/decor/flower-patch.png',
+    scene: { x: 48, y: 61, w: 21 },
+    bonusPerSecond: 6
+  },
+  {
+    id: 'snack-tray',
+    label: 'Snack tray',
+    footprint: { w: 1, h: 1 },
+    src: '/images/runtime/decor/snack-tray.png',
+    scene: { x: 43, y: 62, w: 16 },
+    bonusPerSecond: 5
+  },
+  {
+    id: 'star-lantern',
+    label: 'Star lantern',
+    footprint: { w: 1, h: 2 },
+    src: '/images/runtime/decor/star-lantern.png',
+    scene: { x: 72, y: 46, w: 17 },
+    bonusPerSecond: 8
   }
 ];
 

@@ -43,7 +43,7 @@ npm run preview
 - DragonBones prototype rig v2: `public/images/runtime/dragonbones/degu-v2/degu-v2_ske.json`, `degu-v2_tex.json`, and `degu-v2_tex.png`
 - Provenance manifest: `assets/manifests/imagegen-runtime-assets.json`
 
-The first large ImageGen expansion batch adds 24 runtime assets: 4 backgrounds, 8 decor items, 8 wardrobe overlays, and 4 UI icons. The project now tracks 56 ImageGen runtime assets in the provenance manifest.
+The first large ImageGen expansion batch adds 24 runtime assets: 4 backgrounds, 8 decor items, 8 wardrobe overlays, and 4 UI icons. Batch 003 adds 8 more runtime items: 4 decor sprites and 4 wardrobe overlays. The project now tracks 64 ImageGen runtime assets in the provenance manifest.
 
 The original mobile mockups remain under `public/images/mockups/` as visual references, not runtime UI.
 

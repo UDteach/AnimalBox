@@ -1000,20 +1000,32 @@ button {
   left: 6%;
   right: 6%;
   bottom: 14.2%;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: grid;
+  grid-auto-columns: clamp(4.15rem, 19vw, 4.9rem);
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.08rem 0.08rem 0.42rem;
+  scrollbar-width: none;
+}
+
+.wardrobe-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .outfit-card-ui {
-  min-height: clamp(3.35rem, 9.6dvh, 4.7rem);
+  min-height: clamp(3.22rem, 8.8dvh, 4.15rem);
 }
 
 .outfit-card-ui img {
-  height: clamp(2.45rem, 7.3dvh, 3.6rem);
+  height: clamp(2.36rem, 6.6dvh, 3.12rem);
 }
 
 .apply-button {
   position: absolute;
-  top: 61.6%;
+  top: 58.4%;
   right: 6%;
   bottom: auto;
   min-width: 6rem;

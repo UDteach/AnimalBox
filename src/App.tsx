@@ -954,7 +954,15 @@ function GachaScreen({
     decorItems.find((item) => item.id === 'sand-bath-bowl'),
     decorItems.find((item) => item.id === 'wood-tunnel'),
     decorItems.find((item) => item.id === 'ceramic-hideout'),
+    decorItems.find((item) => item.id === 'short-wooden-fence'),
+    decorItems.find((item) => item.id === 'flower-patch'),
+    decorItems.find((item) => item.id === 'snack-tray'),
+    decorItems.find((item) => item.id === 'star-lantern'),
     decorItems.find((item) => item.id === 'angel-fountain'),
+    outfits.find((item) => item.id === 'cloud-cap'),
+    outfits.find((item) => item.id === 'clover-necklace'),
+    outfits.find((item) => item.id === 'picnic-blanket-cape'),
+    outfits.find((item) => item.id === 'tiny-cheek-sticker'),
     outfits.find((item) => item.id === 'celestial-cape')
   ].filter(Boolean) as Array<DecorItem | OutfitItem | BackgroundTheme>;
 

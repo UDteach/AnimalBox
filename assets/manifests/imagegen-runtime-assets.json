@@ -552,6 +552,86 @@
       ],
       "source": "assets/source/imagegen/ui-batch-002/seed-pouch__source.png",
       "status": "imagegen-batch-002"
+    },
+    {
+      "id": "short-wooden-fence",
+      "src": "/images/runtime/decor/short-wooden-fence.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-003/short-wooden-fence__source.png",
+      "status": "imagegen-batch-003"
+    },
+    {
+      "id": "flower-patch",
+      "src": "/images/runtime/decor/flower-patch.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-003/flower-patch__source.png",
+      "status": "imagegen-batch-003"
+    },
+    {
+      "id": "snack-tray",
+      "src": "/images/runtime/decor/snack-tray.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-003/snack-tray__source.png",
+      "status": "imagegen-batch-003"
+    },
+    {
+      "id": "star-lantern",
+      "src": "/images/runtime/decor/star-lantern.png",
+      "size": [
+        260,
+        260
+      ],
+      "source": "assets/source/imagegen/decor-batch-003/star-lantern__source.png",
+      "status": "imagegen-batch-003"
+    },
+    {
+      "id": "cloud-cap",
+      "src": "/images/runtime/wardrobe/cloud-cap.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-003/cloud-cap__source.png",
+      "status": "imagegen-batch-003"
+    },
+    {
+      "id": "clover-necklace",
+      "src": "/images/runtime/wardrobe/clover-necklace.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-003/clover-necklace__source.png",
+      "status": "imagegen-batch-003"
+    },
+    {
+      "id": "picnic-blanket-cape",
+      "src": "/images/runtime/wardrobe/picnic-blanket-cape.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-003/picnic-blanket-cape__source.png",
+      "status": "imagegen-batch-003"
+    },
+    {
+      "id": "tiny-cheek-sticker",
+      "src": "/images/runtime/wardrobe/tiny-cheek-sticker.png",
+      "size": [
+        220,
+        220
+      ],
+      "source": "assets/source/imagegen/wardrobe-batch-003/tiny-cheek-sticker__source.png",
+      "status": "imagegen-batch-003"
     }
   ]
 }
