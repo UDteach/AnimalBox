@@ -27,4 +27,17 @@ Add more unlockable small animals and stricter QA for dense island placement.
 - completed: Generated and promoted an ImageGen decor source sheet.
 - completed: Integrated new animal and decor IDs into content, gacha, storage, and QA seeds.
 - completed: Added dense placement QA for 12-item island stress layouts.
-- in_progress: Run QA and fix regressions.
+- completed: Ran QA, fixed wardrobe badge overflow, pushed to GitHub, and deployed to Cloudflare Pages.
+
+## Validation
+
+- `npm run typecheck`
+- `npm test -- --run`
+- `npm run qa:assets`
+- `npm run qa:customization`
+- `npm run qa:placement`
+- `npm run qa:dense-placement`
+- `npm run qa:motion`
+- `npm run qa:ui`
+- `npm run build`
+- `ANIMALBOX_PRODUCTION_URL=https://5060abe5.animalbox.pages.dev npm run qa:visual`
