@@ -34,10 +34,10 @@ export const sceneLayout = {
     maxY: 60
   },
   deguKeepout: {
-    minX: 38,
-    maxX: 62,
-    minY: 37,
-    maxY: 55
+    minX: 42,
+    maxX: 58,
+    minY: 38,
+    maxY: 44.5
   }
 };
 

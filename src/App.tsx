@@ -650,7 +650,15 @@ export function App() {
   return (
     <main className="app" data-view={screen}>
       <section className="phone" style={style} aria-label={`AnimalBox ${current.label}`}>
-        <img className="scene-background" src={activeTheme.src} alt="" draggable={false} />
+        <img
+          className="scene-background"
+          src={activeTheme.src}
+          alt=""
+          draggable={false}
+          loading="eager"
+          decoding="sync"
+          fetchPriority="high"
+        />
         <div className="sky-vignette" />
 
         <Hud
@@ -1020,7 +1028,7 @@ function IslandScene({
   const ghost = gridToScene(selectedCell, selectedDecor);
 
   return (
-    <div className="island-layer">
+    <div className="island-layer" data-screen={screen}>
       <div className="fixed-island-floor" aria-hidden="true" />
       {save.placedDecor.map((placed) => {
         const decor = decorItems.find((item) => item.id === placed.itemId);
@@ -1391,13 +1399,17 @@ function GachaScreen({
       <p className="free-label">Earned tickets only</p>
       <div className="pull-row">
         <button className="pull-button single" type="button" onClick={onSingle} aria-label="Open one sky gift">
-          <img src={runtimeAssets.ticket} alt="" />1
+          <img src={runtimeAssets.ticket} alt="" />
+          <span>1</span>
         </button>
         <button className="pull-button ten" type="button" onClick={onTen} aria-label="Open ten sky gifts">
-          <img src={runtimeAssets.ticket} alt="" />10
+          <img src={runtimeAssets.ticket} alt="" />
+          <span>10</span>
         </button>
         <button className="pull-button premium" type="button" onClick={onPremium} aria-label="Open premium sky gift">
-          <img src={runtimeAssets.ticket} alt="" />5
+          <img src={runtimeAssets.ticket} alt="" />
+          <span>5</span>
+          <small>rare+</small>
         </button>
       </div>
       {reveal && (

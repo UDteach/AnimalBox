@@ -56,7 +56,9 @@ button {
   aspect-ratio: var(--screen-w) / var(--screen-h);
   overflow: hidden;
   border-radius: clamp(22px, 7vw, 40px);
-  background: #8bcdf8;
+  background:
+    radial-gradient(ellipse at 50% 63%, rgba(184, 227, 104, 0.34) 0 18%, transparent 19%),
+    linear-gradient(180deg, #83c9f1 0%, #9cd8f5 58%, #e8f7ff 100%);
   box-shadow:
     0 18px 50px rgba(39, 61, 88, 0.35),
     0 0 0 1px rgba(255, 255, 255, 0.32);
@@ -76,6 +78,7 @@ button {
   height: 100%;
   object-fit: cover;
   pointer-events: none;
+  transform: translateZ(0);
 }
 
 .sky-vignette {
@@ -459,15 +462,25 @@ button {
   z-index: 3;
   left: 50%;
   top: 61.5%;
-  width: 70%;
+  width: 66%;
   aspect-ratio: 2.35 / 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background:
-    radial-gradient(ellipse at 50% 35%, rgba(177, 223, 89, 0.72) 0 35%, rgba(91, 174, 83, 0.62) 36% 61%, transparent 62%),
-    repeating-radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.18) 0 3px, transparent 4px 13px);
+    radial-gradient(ellipse at 50% 37%, rgba(179, 226, 93, 0.38) 0 36%, rgba(78, 160, 83, 0.32) 37% 63%, transparent 64%),
+    repeating-radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.12) 0 3px, transparent 4px 14px);
   filter: drop-shadow(0 0.86rem 0.45rem rgba(52, 79, 54, 0.18));
+  opacity: 0.48;
   pointer-events: none;
+}
+
+.island-layer[data-screen="placement"] .fixed-island-floor {
+  opacity: 0.7;
+}
+
+.island-layer[data-screen="home"] .fixed-island-floor,
+.island-layer[data-screen="storage"] .fixed-island-floor {
+  opacity: 0.32;
 }
 
 .runtime-decor {
@@ -603,9 +616,9 @@ button {
 
 .pixel-degu-stage--wardrobe {
   position: absolute;
-  top: 8.2%;
+  top: 8.8%;
   left: 50%;
-  width: min(46%, 11.5rem);
+  width: min(40%, 10rem);
   aspect-ratio: 4 / 3;
   height: auto;
   transform: translateX(-50%);
@@ -690,7 +703,7 @@ button {
 
 .cell-button {
   position: absolute;
-  width: max(6.2%, 2.15rem);
+  width: max(6.8%, 2.28rem);
   aspect-ratio: 1;
   padding: 0;
   transform: translate(-50%, -50%) rotate(45deg);
@@ -700,15 +713,15 @@ button {
 
 .cell-button::before {
   position: absolute;
-  inset: 17%;
-  border-radius: 45% 55% 48% 52%;
+  inset: 14%;
+  border-radius: 46% 54% 45% 55%;
   background:
-    radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.52) 0 13%, transparent 14%),
-    repeating-linear-gradient(135deg, rgba(69, 137, 77, 0.3) 0 2px, transparent 2px 7px),
-    rgba(236, 255, 198, 0.28);
+    radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.56) 0 12%, transparent 13%),
+    repeating-linear-gradient(140deg, rgba(64, 128, 75, 0.34) 0 2px, transparent 2px 8px),
+    rgba(234, 255, 191, 0.34);
   box-shadow:
-    inset 0 0 0 1px rgba(70, 123, 68, 0.2),
-    0 0.16rem 0.24rem rgba(67, 94, 51, 0.1);
+    inset 0 0 0 1px rgba(54, 120, 66, 0.26),
+    0 0.16rem 0.24rem rgba(67, 94, 51, 0.12);
   content: "";
 }
 
@@ -721,8 +734,8 @@ button {
 
 .cell-button::after {
   position: absolute;
-  inset: 25%;
-  border-top: 2px dashed rgba(55, 116, 71, 0.56);
+  inset: 22%;
+  border-top: 2px dashed rgba(43, 105, 65, 0.62);
   border-radius: 50%;
   transform: rotate(-12deg);
   content: "";
@@ -1208,6 +1221,19 @@ button {
   font-size: 1.1rem;
 }
 
+.pull-button span {
+  line-height: 1;
+}
+
+.pull-button small {
+  display: block;
+  margin-left: -0.12rem;
+  font-size: 0.44rem;
+  font-weight: 1000;
+  line-height: 1;
+  opacity: 0.86;
+}
+
 .pull-button img {
   width: 1.55rem;
   height: 1.55rem;
@@ -1223,6 +1249,25 @@ button {
   animation: gacha-open 740ms cubic-bezier(0.2, 1.1, 0.18, 1) both;
 }
 
+.gacha-screen[data-opening="true"]::before {
+  position: absolute;
+  z-index: 4;
+  top: 18%;
+  left: 50%;
+  width: 54%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 239, 132, 0.68) 0 12%, transparent 13%),
+    conic-gradient(from 10deg, transparent 0 10deg, rgba(255, 251, 191, 0.72) 10deg 15deg, transparent 15deg 35deg);
+  filter: blur(0.2px);
+  opacity: 0;
+  content: "";
+  animation: gacha-flash 740ms ease both;
+  pointer-events: none;
+}
+
 .gacha-reveal {
   position: absolute;
   z-index: 5;
@@ -1234,6 +1279,19 @@ button {
   gap: 0.32rem;
   pointer-events: none;
   animation: result-rise 920ms ease both;
+}
+
+.gacha-reveal::before {
+  position: absolute;
+  z-index: -1;
+  inset: -0.38rem -0.28rem;
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.72) 0 0.18rem, transparent 0.2rem),
+    radial-gradient(circle at 79% 26%, rgba(255, 241, 128, 0.8) 0 0.22rem, transparent 0.24rem),
+    linear-gradient(180deg, rgba(255, 250, 216, 0.22), rgba(255, 247, 221, 0));
+  content: "";
+  pointer-events: none;
 }
 
 .gacha-result-card {
@@ -1358,7 +1416,9 @@ button {
   display: grid;
   gap: 0.52rem;
   max-height: calc(100% - 9.8rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0.75rem;
   border-radius: 1.2rem;
   color: #4b331a;
@@ -1379,6 +1439,7 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .storage-head strong {
@@ -1388,9 +1449,13 @@ button {
 
 .storage-head span,
 .storage-stats span {
+  min-width: 0;
+  overflow: hidden;
   font-size: 0.68rem;
   font-weight: 900;
   opacity: 0.78;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .theme-panel {
@@ -1456,6 +1521,11 @@ button {
   white-space: nowrap;
 }
 
+.layout-preset-card > strong,
+.layout-preset-card > span {
+  padding-right: 1.25rem;
+}
+
 .layout-preset-card strong {
   font-size: 0.62rem;
   font-weight: 1000;
@@ -1500,11 +1570,13 @@ button {
 
 .theme-card {
   position: relative;
+  display: block;
   min-width: 0;
   aspect-ratio: 1 / 1.16;
   overflow: hidden;
   padding: 0;
   border-radius: 0.78rem;
+  line-height: 0;
   background: rgba(255, 255, 255, 0.5);
   box-shadow:
     inset 0 0 0 1px rgba(143, 91, 29, 0.14),
@@ -1536,6 +1608,7 @@ button {
 }
 
 .theme-card img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1687,6 +1760,20 @@ button {
   }
 }
 
+@keyframes gacha-flash {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.62) rotate(0deg);
+  }
+  28% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.22) rotate(18deg);
+  }
+}
+
 @keyframes result-rise {
   0% {
     opacity: 0;
@@ -1751,8 +1838,8 @@ button {
   }
 
   .pixel-degu-stage--wardrobe {
-    top: 7.4%;
-    width: min(43%, 10.75rem);
+    top: 8%;
+    width: min(38%, 9.4rem);
   }
 
   .shot-row {
