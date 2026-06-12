@@ -14,6 +14,7 @@ import { canPlaceDecorInScene } from './sceneLayout';
 
 const STORAGE_KEY = 'animalbox.prototype.v1';
 const grid = { width: 6, height: 6 };
+const starterBackgroundId = 'floating-island';
 const rewardIds = [
   ...backgroundThemes.map((item) => item.id),
   ...decorItems.map((item) => item.id),
@@ -22,6 +23,16 @@ const rewardIds = [
   ...pixelDeguShots.map((item) => item.id),
   ...starterRewardIds
 ];
+
+export const layoutPresetCount = 3;
+
+export interface LayoutPreset {
+  slot: number;
+  label: string;
+  selectedBackgroundId: string;
+  placedDecor: PlacedDecor[];
+  updatedAt: number | null;
+}
 
 export interface PrototypeSave {
   economy: EconomyState;
@@ -35,12 +46,23 @@ export interface PrototypeSave {
   gachaHistory: string[];
   pullsSinceRare: number;
   progression: ProgressionState;
+  layoutPresets: LayoutPreset[];
+}
+
+export function createDefaultLayoutPresets(): LayoutPreset[] {
+  return Array.from({ length: layoutPresetCount }, (_, index) => ({
+    slot: index + 1,
+    label: `Slot ${index + 1}`,
+    selectedBackgroundId: starterBackgroundId,
+    placedDecor: [],
+    updatedAt: null
+  }));
 }
 
 export const defaultSave: PrototypeSave = {
   economy: initialEconomy,
   screen: 'home',
-  selectedBackgroundId: 'floating-island',
+  selectedBackgroundId: starterBackgroundId,
   selectedVariantId: 'agouti',
   selectedDeguShotId: '04',
   selectedOutfitIds: ['straw-hat'],
@@ -56,7 +78,8 @@ export const defaultSave: PrototypeSave = {
   ownedRewardIds: starterRewardIds,
   gachaHistory: [],
   pullsSinceRare: 0,
-  progression: defaultProgression
+  progression: defaultProgression,
+  layoutPresets: createDefaultLayoutPresets()
 };
 
 export function loadSave(storage: Pick<Storage, 'getItem'> = localStorage): PrototypeSave {
@@ -98,7 +121,8 @@ export function loadSave(storage: Pick<Storage, 'getItem'> = localStorage): Prot
         typeof parsed.pullsSinceRare === 'number' && parsed.pullsSinceRare >= 0
           ? Math.floor(parsed.pullsSinceRare)
           : defaultSave.pullsSinceRare,
-      progression: sanitizeProgression(parsed.progression)
+      progression: sanitizeProgression(parsed.progression),
+      layoutPresets: sanitizeLayoutPresets(parsed.layoutPresets)
     };
   } catch {
     return defaultSave;
@@ -146,8 +170,8 @@ function sanitizeIdList(value: unknown, allowed: string[], fallback: string[]): 
   return filtered;
 }
 
-function sanitizePlacedDecor(value: unknown): PlacedDecor[] {
-  if (!Array.isArray(value)) return defaultSave.placedDecor;
+function sanitizePlacedDecor(value: unknown, fallback: PlacedDecor[] = defaultSave.placedDecor): PlacedDecor[] {
+  if (!Array.isArray(value)) return fallback;
 
   const allowedDecor = new Map(decorItems.map((item) => [item.id, item]));
   const clean: PlacedDecor[] = [];
@@ -171,6 +195,41 @@ function sanitizePlacedDecor(value: unknown): PlacedDecor[] {
   }
 
   return clean;
+}
+
+function sanitizeLayoutPresets(value: unknown): LayoutPreset[] {
+  const defaults = createDefaultLayoutPresets();
+  if (!Array.isArray(value)) return defaults;
+
+  const backgroundIds = backgroundThemes.map((theme) => theme.id);
+
+  return defaults.map((fallback, index) => {
+    const bySlot = value.find((item) => {
+      if (!item || typeof item !== 'object') return false;
+      return (item as Partial<LayoutPreset>).slot === fallback.slot;
+    });
+    const source = bySlot ?? value[index];
+
+    if (!source || typeof source !== 'object') return fallback;
+    const preset = source as Partial<LayoutPreset>;
+
+    return {
+      ...fallback,
+      selectedBackgroundId: sanitizeId(
+        preset.selectedBackgroundId,
+        backgroundIds,
+        fallback.selectedBackgroundId
+      ),
+      placedDecor: sanitizePlacedDecor(preset.placedDecor, []),
+      updatedAt: sanitizeNullableTimestamp(preset.updatedAt)
+    };
+  });
+}
+
+function sanitizeNullableTimestamp(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0
+    ? Math.floor(value)
+    : null;
 }
 
 function isPlacedDecorLike(value: unknown): value is PlacedDecor {

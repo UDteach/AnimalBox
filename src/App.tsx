@@ -31,7 +31,7 @@ import {
   type ProgressionState,
   type UpgradeDefinition
 } from './game/progression';
-import { loadSave, savePrototype, type PrototypeSave } from './game/storage';
+import { loadSave, savePrototype, type LayoutPreset, type PrototypeSave } from './game/storage';
 import { toggleOutfitForSlot } from './game/wardrobe';
 
 interface Burst {
@@ -245,6 +245,63 @@ export function App() {
     setStatus(`Theme: ${theme.label}`);
   }
 
+  function saveLayoutPreset(slot: number) {
+    setSave(
+      nextSave((currentSave) => {
+        const preset: LayoutPreset = {
+          slot,
+          label: `Slot ${slot}`,
+          selectedBackgroundId: currentSave.selectedBackgroundId,
+          placedDecor: clonePlacedDecor(currentSave.placedDecor),
+          updatedAt: Date.now()
+        };
+
+        return {
+          ...currentSave,
+          layoutPresets: currentSave.layoutPresets.map((item) =>
+            item.slot === slot ? preset : item
+          )
+        };
+      })
+    );
+    setStatus(`Saved layout ${slot}`);
+  }
+
+  function loadLayoutPreset(slot: number) {
+    const preset = saveRef.current.layoutPresets.find((item) => item.slot === slot);
+    if (!preset?.updatedAt) {
+      setStatus(`Layout ${slot} empty`);
+      return;
+    }
+
+    const hasLockedBackground = !isRewardOwned(
+      saveRef.current.ownedRewardIds,
+      preset.selectedBackgroundId
+    );
+    const hasLockedDecor = preset.placedDecor.some(
+      (item) => !isRewardOwned(saveRef.current.ownedRewardIds, item.itemId)
+    );
+
+    if (hasLockedBackground || hasLockedDecor) {
+      setStatus(`Layout ${slot} has locked items`);
+      return;
+    }
+
+    setSave(
+      nextSave((currentSave) => {
+        const currentPreset = currentSave.layoutPresets.find((item) => item.slot === slot);
+        if (!currentPreset?.updatedAt) return currentSave;
+
+        return {
+          ...currentSave,
+          selectedBackgroundId: currentPreset.selectedBackgroundId,
+          placedDecor: clonePlacedDecor(currentPreset.placedDecor)
+        };
+      })
+    );
+    setStatus(`Loaded layout ${slot}`);
+  }
+
   function selectVariant(variantId: string) {
     const variant = deguVariants.find((item) => item.id === variantId);
     if (!variant) return;
@@ -448,6 +505,9 @@ export function App() {
             ownedRewardIds={save.ownedRewardIds}
             selectedBackgroundId={selectedBackgroundId}
             onSelectBackground={selectBackground}
+            layoutPresets={save.layoutPresets}
+            onSaveLayoutPreset={saveLayoutPreset}
+            onLoadLayoutPreset={loadLayoutPreset}
           />
         )}
 
@@ -477,6 +537,13 @@ function findFirstSceneSafeCell(decor: DecorItem, placedDecor: PlacedDecor[]): C
   }
 
   return null;
+}
+
+function clonePlacedDecor(items: PlacedDecor[]): PlacedDecor[] {
+  return items.map((item) => ({
+    ...item,
+    footprint: { ...item.footprint }
+  }));
 }
 
 function Hud({
@@ -921,7 +988,10 @@ function StorageOverlay({
   stats,
   ownedRewardIds,
   selectedBackgroundId,
-  onSelectBackground
+  onSelectBackground,
+  layoutPresets,
+  onSaveLayoutPreset,
+  onLoadLayoutPreset
 }: {
   save: PrototypeSave;
   activeTheme: BackgroundTheme;
@@ -929,6 +999,9 @@ function StorageOverlay({
   ownedRewardIds: string[];
   selectedBackgroundId: string;
   onSelectBackground: (themeId: string) => void;
+  layoutPresets: LayoutPreset[];
+  onSaveLayoutPreset: (slot: number) => void;
+  onLoadLayoutPreset: (slot: number) => void;
 }) {
   return (
     <section className="storage-sheet" aria-label="Storage and customization">
@@ -941,6 +1014,46 @@ function StorageOverlay({
         <span>+{stats.idleIncomePerSecond}/s</span>
         <span>{save.placedDecor.length} decor</span>
         <span>{save.gachaHistory.length} pulls</span>
+      </div>
+      <div className="layout-preset-panel">
+        <div className="mode-row compact">
+          <strong>Layout</strong>
+          <span>{activeTheme.label}</span>
+        </div>
+        <div className="layout-preset-list">
+          {layoutPresets.map((preset) => {
+            const theme =
+              backgroundThemes.find((item) => item.id === preset.selectedBackgroundId) ??
+              backgroundThemes[0];
+            const hasSave = Boolean(preset.updatedAt);
+
+            return (
+              <div key={preset.slot} className="layout-preset-card" data-empty={!hasSave}>
+                <strong>{preset.label}</strong>
+                <span>{hasSave ? theme.label : 'Empty'}</span>
+                <div className="preset-actions">
+                  <button
+                    className="preset-button save"
+                    type="button"
+                    onClick={() => onSaveLayoutPreset(preset.slot)}
+                    aria-label={`Save layout preset ${preset.slot}`}
+                  >
+                    Save
+                  </button>
+                  <button
+                    className="preset-button load"
+                    type="button"
+                    disabled={!hasSave}
+                    onClick={() => onLoadLayoutPreset(preset.slot)}
+                    aria-label={`Load layout preset ${preset.slot}`}
+                  >
+                    Load
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
       <div className="theme-panel">
         <div className="mode-row compact">

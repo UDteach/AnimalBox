@@ -23,6 +23,23 @@ describe('prototype save data', () => {
       selectedVariantId: 'blue-gray',
       selectedDeguShotId: '08',
       selectedBackgroundId: 'starlight-night',
+      layoutPresets: [
+        {
+          ...defaultSave.layoutPresets[0],
+          selectedBackgroundId: 'starlight-night',
+          placedDecor: [
+            {
+              instanceId: 'slot-clover',
+              itemId: 'clover-patch',
+              cellX: 0,
+              cellY: 3,
+              footprint: { w: 1, h: 1 }
+            }
+          ],
+          updatedAt: 1200
+        },
+        ...defaultSave.layoutPresets.slice(1)
+      ],
       progression: {
         ...defaultSave.progression,
         ownedUpgradeIds: ['seed-snack'],
@@ -34,6 +51,8 @@ describe('prototype save data', () => {
     expect(loadSave(storage).selectedDeguShotId).toBe('08');
     expect(loadSave(storage).selectedBackgroundId).toBe('starlight-night');
     expect(loadSave(storage).progression.ownedUpgradeIds).toEqual(['seed-snack']);
+    expect(loadSave(storage).layoutPresets[0].selectedBackgroundId).toBe('starlight-night');
+    expect(loadSave(storage).layoutPresets[0].placedDecor).toHaveLength(1);
   });
 
   it('falls back to the starter background for unknown theme ids', () => {
@@ -43,12 +62,13 @@ describe('prototype save data', () => {
   });
 
   it('migrates older saves without progression or pixel degu shot fields', () => {
-    const { progression, selectedDeguShotId, ...legacySave } = defaultSave;
+    const { progression, selectedDeguShotId, layoutPresets, ...legacySave } = defaultSave;
     const storage = memoryStorage(JSON.stringify(legacySave));
     const migrated = loadSave(storage);
 
     expect(migrated.selectedDeguShotId).toBe(defaultSave.selectedDeguShotId);
     expect(migrated.progression).toEqual(defaultSave.progression);
+    expect(migrated.layoutPresets).toEqual(defaultSave.layoutPresets);
   });
 
   it('sanitizes invalid saved decor placements', () => {
@@ -166,5 +186,67 @@ describe('prototype save data', () => {
     });
     expect(save.ownedRewardIds).toEqual(['hay-bed']);
     expect(save.gachaHistory).toEqual(['cloud-lamp']);
+  });
+
+  it('sanitizes layout preset backgrounds, timestamps, and decor placements', () => {
+    const storage = memoryStorage(
+      JSON.stringify({
+        ...defaultSave,
+        layoutPresets: [
+          {
+            slot: 1,
+            label: 'Injected label',
+            selectedBackgroundId: 'unknown-theme',
+            updatedAt: 123.9,
+            placedDecor: [
+              {
+                instanceId: 'slot-valid',
+                itemId: 'clover-patch',
+                cellX: 0,
+                cellY: 3,
+                footprint: { w: 1, h: 1 }
+              },
+              {
+                instanceId: 'slot-too-high',
+                itemId: 'hay-bed',
+                cellX: 0,
+                cellY: 0,
+                footprint: { w: 2, h: 1 }
+              }
+            ]
+          },
+          {
+            slot: 2,
+            selectedBackgroundId: 'starlight-night',
+            updatedAt: -10,
+            placedDecor: 'bad'
+          }
+        ]
+      })
+    );
+
+    const save = loadSave(storage);
+
+    expect(save.layoutPresets[0]).toEqual({
+      ...defaultSave.layoutPresets[0],
+      selectedBackgroundId: defaultSave.selectedBackgroundId,
+      updatedAt: 123,
+      placedDecor: [
+        {
+          instanceId: 'slot-valid',
+          itemId: 'clover-patch',
+          cellX: 0,
+          cellY: 3,
+          footprint: { w: 1, h: 1 }
+        }
+      ]
+    });
+    expect(save.layoutPresets[1]).toEqual({
+      ...defaultSave.layoutPresets[1],
+      selectedBackgroundId: 'starlight-night',
+      updatedAt: null,
+      placedDecor: []
+    });
+    expect(save.layoutPresets[2]).toEqual(defaultSave.layoutPresets[2]);
   });
 });
