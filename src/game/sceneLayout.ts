@@ -22,7 +22,7 @@ export const sceneLayout = {
   gridOriginX: 25,
   gridOriginY: 39,
   gridStepX: 7.2,
-  gridStepY: 5.4,
+  gridStepY: 5,
   minDecorWidth: 10.5,
   decorScale: 0.66,
   decorHeightRatioMin: 0.72,

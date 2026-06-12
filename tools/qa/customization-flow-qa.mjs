@@ -5,7 +5,21 @@ const baseUrl = process.env.ANIMALBOX_QA_URL ?? 'http://127.0.0.1:5173';
 const outDir = 'output/playwright/customization-flow-qa';
 const storageKey = 'animalbox.prototype.v1';
 
-const newDecorIds = ['short-wooden-fence', 'flower-patch', 'snack-tray', 'star-lantern'];
+const newDecorIds = [
+  'short-wooden-fence',
+  'flower-patch',
+  'snack-tray',
+  'star-lantern',
+  'mossy-log-hideout',
+  'seed-crate',
+  'grass-tuft-cluster',
+  'pebble-stepping-stones',
+  'flower-arch',
+  'carrot-basket',
+  'cloud-cushion-bench',
+  'tiny-burrow-mound'
+];
+const newAnimalIds = ['macaroni-mouse', 'chinchilla', 'gerbil', 'hamster', 'rabbit'];
 const newOutfitIds = ['cloud-puff', 'clover-charm', 'acorn-charm', 'seed-pouch-charm'];
 const floatingItemIds = [
   'cloud-puff',
@@ -66,6 +80,7 @@ const allRewardIds = [
   '08',
   '09',
   '10',
+  ...newAnimalIds,
   'clover-patch',
   'hay-bed',
   'angel-fountain',
@@ -107,7 +122,7 @@ const baseSave = {
   screen: 'wardrobe',
   selectedBackgroundId: 'floating-island',
   selectedVariantId: 'agouti',
-  selectedDeguShotId: '04',
+  selectedDeguShotId: 'rabbit',
   customDeguTone: { hue: 0, saturation: 100, brightness: 100 },
   selectedOutfitIds: ['straw-hat', ...newOutfitIds],
   accessoryPlacements: {},
@@ -205,7 +220,7 @@ try {
         await page.waitForTimeout(140);
       }
       const metrics = await page.evaluate(
-        ({ screen, newDecorIds, newOutfitIds }) => {
+        ({ screen, newDecorIds, newOutfitIds, newAnimalIds }) => {
           const save = JSON.parse(window.localStorage.getItem('animalbox.prototype.v1') ?? '{}');
           const phone = document.querySelector('.phone')?.getBoundingClientRect();
           const nav = document.querySelector('.bottom-nav')?.getBoundingClientRect();
@@ -225,6 +240,7 @@ try {
             strawHatPlacement: save.accessoryPlacements?.['straw-hat'] ?? null,
             newDecorCards: newDecorIds.filter((id) => cardImages.some((src) => src.endsWith(`${id}.png`))).length,
             newOutfitCards: newOutfitIds.filter((id) => cardImages.some((src) => src.endsWith(`${id}.png`))).length,
+            newAnimalCards: newAnimalIds.filter((id) => cardImages.some((src) => src.endsWith(`${id}.png`))).length,
             careButtons: [...document.querySelectorAll('.care-button')].map((node) => ({
               text: node.textContent ?? '',
               fits: node.scrollWidth <= node.clientWidth + 1
@@ -242,7 +258,7 @@ try {
             phone: phone ? { width: phone.width, height: phone.height } : null
           };
         },
-        { screen, newDecorIds, newOutfitIds }
+        { screen, newDecorIds, newOutfitIds, newAnimalIds }
       );
 
       if (screen === 'wardrobe') {
@@ -302,6 +318,7 @@ try {
   assert(wardrobe.strawHatPlacement?.x === 2, 'accessory move control did not persist x offset', wardrobe);
   assert(wardrobe.strawHatPlacement?.scale > 1, 'accessory scale control did not persist scale', wardrobe);
   assert(wardrobe.newOutfitCards === newOutfitIds.length, 'new outfit cards are missing', wardrobe);
+  assert(wardrobe.newAnimalCards === newAnimalIds.length, 'new animal choices are missing', wardrobe);
   assert(wardrobe.wardrobeGridBottomToNav >= 4, 'wardrobe grid collides with bottom nav', wardrobe);
   assert(wardrobe.shotRowBottomToGrid >= 4, 'wardrobe grid collides with shot row', wardrobe);
   assert(wardrobe.applyBottomToGrid >= 4, 'wardrobe grid collides with apply button', wardrobe);
@@ -318,6 +335,7 @@ try {
   const gacha = results.find((item) => item.screen === 'gacha');
   assert(gacha?.newDecorCards === newDecorIds.length, 'new decor rewards missing from gacha preview', gacha);
   assert(gacha?.newOutfitCards === newOutfitIds.length, 'new outfit rewards missing from gacha preview', gacha);
+  assert(gacha?.newAnimalCards === newAnimalIds.length, 'new animal rewards missing from gacha preview', gacha);
   assert(!gacha.hasAssetWarning, 'gacha asset warning', gacha);
   assert(/^Last: /.test(gacha.gachaHistoryText ?? ''), 'gacha did not show pull history', gacha);
   assert(gacha.gachaRevealCards >= 1, 'gacha reveal cards did not render', gacha);

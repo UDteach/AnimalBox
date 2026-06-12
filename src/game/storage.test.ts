@@ -21,7 +21,7 @@ describe('prototype save data', () => {
     const next = {
       ...defaultSave,
       selectedVariantId: 'blue-gray',
-      selectedDeguShotId: '08',
+      selectedDeguShotId: 'rabbit',
       selectedBackgroundId: 'starlight-night',
       layoutPresets: [
         {
@@ -48,7 +48,7 @@ describe('prototype save data', () => {
     };
     savePrototype(next, storage);
     expect(loadSave(storage).selectedVariantId).toBe('blue-gray');
-    expect(loadSave(storage).selectedDeguShotId).toBe('08');
+    expect(loadSave(storage).selectedDeguShotId).toBe('rabbit');
     expect(loadSave(storage).selectedBackgroundId).toBe('starlight-night');
     expect(loadSave(storage).progression.ownedUpgradeIds).toEqual(['seed-snack']);
     expect(loadSave(storage).layoutPresets[0].selectedBackgroundId).toBe('starlight-night');

@@ -13,6 +13,14 @@ interface PixelDeguStageProps {
   mode: 'island' | 'wardrobe';
 }
 
+function shotChipLabel(id: string, label: string): string {
+  if (/^\d+$/.test(id)) return id;
+  return label
+    .split(/\s+/)
+    .map((part) => part.slice(0, 3))
+    .join('.');
+}
+
 export function PixelDeguStage({
   selectedShotId,
   selectedVariantId,
@@ -31,7 +39,7 @@ export function PixelDeguStage({
     <section
       className={`pixel-degu-stage pixel-degu-stage--${mode}`}
       style={{ '--degu-filter': customFilter ?? variant.filter } as CSSProperties}
-      aria-label={`Pixel degu ${shot.label}`}
+      aria-label={`Pixel animal ${shot.label}`}
     >
       <div className="pixel-degu-aura" />
       <img className="pixel-degu-image" src={shot.src} alt="" draggable={false} />
@@ -47,7 +55,7 @@ export function PixelDeguStage({
           draggable={false}
         />
       ))}
-      <span className="pixel-shot-chip">{shot.id}</span>
+      <span className="pixel-shot-chip">{shotChipLabel(shot.id, shot.label)}</span>
     </section>
   );
 }

@@ -912,6 +912,136 @@
       ],
       "source": "assets/source/imagegen/floating-items/floating-items-pack-002__source.png",
       "status": "active-accessory-floating-item"
+    },
+    {
+      "id": "macaroni-mouse",
+      "src": "/images/runtime/characters/animals/macaroni-mouse.png",
+      "source": "assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png",
+      "status": "imagegen-batch-004-animal-unlock",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "chinchilla",
+      "src": "/images/runtime/characters/animals/chinchilla.png",
+      "source": "assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png",
+      "status": "imagegen-batch-004-animal-unlock",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "gerbil",
+      "src": "/images/runtime/characters/animals/gerbil.png",
+      "source": "assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png",
+      "status": "imagegen-batch-004-animal-unlock",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "hamster",
+      "src": "/images/runtime/characters/animals/hamster.png",
+      "source": "assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png",
+      "status": "imagegen-batch-004-animal-unlock",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "rabbit",
+      "src": "/images/runtime/characters/animals/rabbit.png",
+      "source": "assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png",
+      "status": "imagegen-batch-004-animal-unlock",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "mossy-log-hideout",
+      "src": "/images/runtime/decor/mossy-log-hideout.png",
+      "source": "assets/source/imagegen/decor-batch-004/decor-batch-004__source.png",
+      "status": "imagegen-batch-004-decor",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "seed-crate",
+      "src": "/images/runtime/decor/seed-crate.png",
+      "source": "assets/source/imagegen/decor-batch-004/decor-batch-004__source.png",
+      "status": "imagegen-batch-004-decor",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "grass-tuft-cluster",
+      "src": "/images/runtime/decor/grass-tuft-cluster.png",
+      "source": "assets/source/imagegen/decor-batch-004/decor-batch-004__source.png",
+      "status": "imagegen-batch-004-decor",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "pebble-stepping-stones",
+      "src": "/images/runtime/decor/pebble-stepping-stones.png",
+      "source": "assets/source/imagegen/decor-batch-004/decor-batch-004__source.png",
+      "status": "imagegen-batch-004-decor",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "flower-arch",
+      "src": "/images/runtime/decor/flower-arch.png",
+      "source": "assets/source/imagegen/decor-batch-004/decor-batch-004__source.png",
+      "status": "imagegen-batch-004-decor",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "carrot-basket",
+      "src": "/images/runtime/decor/carrot-basket.png",
+      "source": "assets/source/imagegen/decor-batch-004/decor-batch-004__source.png",
+      "status": "imagegen-batch-004-decor",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "cloud-cushion-bench",
+      "src": "/images/runtime/decor/cloud-cushion-bench.png",
+      "source": "assets/source/imagegen/decor-batch-004/decor-batch-004__source.png",
+      "status": "imagegen-batch-004-decor",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "id": "tiny-burrow-mound",
+      "src": "/images/runtime/decor/tiny-burrow-mound.png",
+      "source": "assets/source/imagegen/decor-batch-004/decor-batch-004__source.png",
+      "status": "imagegen-batch-004-decor",
+      "size": [
+        320,
+        320
+      ]
     }
   ]
 }

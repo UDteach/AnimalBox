@@ -192,16 +192,48 @@ export const deguVariants: DeguVariant[] = [
   }
 ];
 
-export const pixelDeguShots: PixelDeguShot[] = Array.from({ length: 10 }, (_, index) => {
-  const number = String(index + 1).padStart(2, '0');
+export const pixelDeguShots: PixelDeguShot[] = [
+  ...Array.from({ length: 10 }, (_, index) => {
+    const number = String(index + 1).padStart(2, '0');
 
-  return {
-    id: number,
-    label: `Shot ${number}`,
-    src: `/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-${number}.png`,
-    source: `assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-${number}.png`
-  };
-});
+    return {
+      id: number,
+      label: `Shot ${number}`,
+      src: `/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-${number}.png`,
+      source: `assets/source/imagegen/pixel-degu-designs/v5-rounded-side-style/rounded-side-pixel-degu-shot-${number}.png`
+    };
+  }),
+  {
+    id: 'macaroni-mouse',
+    label: 'Macaroni mouse',
+    src: '/images/runtime/characters/animals/macaroni-mouse.png',
+    source: 'assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png'
+  },
+  {
+    id: 'chinchilla',
+    label: 'Chinchilla',
+    src: '/images/runtime/characters/animals/chinchilla.png',
+    source: 'assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png'
+  },
+  {
+    id: 'gerbil',
+    label: 'Gerbil',
+    src: '/images/runtime/characters/animals/gerbil.png',
+    source: 'assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png'
+  },
+  {
+    id: 'hamster',
+    label: 'Hamster',
+    src: '/images/runtime/characters/animals/hamster.png',
+    source: 'assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png'
+  },
+  {
+    id: 'rabbit',
+    label: 'Rabbit',
+    src: '/images/runtime/characters/animals/rabbit.png',
+    source: 'assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png'
+  }
+];
 
 export const wearableItems: FloatingItem[] = [
   { id: 'straw-hat', label: 'Straw hat', slot: 'head', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/straw-hat.png' },
@@ -406,6 +438,70 @@ export const decorItems: DecorItem[] = [
     footprint: { w: 1, h: 2 },
     src: '/images/runtime/decor/star-lantern.png',
     scene: { x: 72, y: 46, w: 17 },
+    bonusPerSecond: 8
+  },
+  {
+    id: 'mossy-log-hideout',
+    label: 'Mossy log',
+    footprint: { w: 2, h: 1 },
+    src: '/images/runtime/decor/mossy-log-hideout.png',
+    scene: { x: 17, y: 57, w: 20 },
+    bonusPerSecond: 10
+  },
+  {
+    id: 'seed-crate',
+    label: 'Seed crate',
+    footprint: { w: 1, h: 1 },
+    src: '/images/runtime/decor/seed-crate.png',
+    scene: { x: 30, y: 61, w: 15 },
+    bonusPerSecond: 6
+  },
+  {
+    id: 'grass-tuft-cluster',
+    label: 'Grass tuft',
+    footprint: { w: 1, h: 1 },
+    src: '/images/runtime/decor/grass-tuft-cluster.png',
+    scene: { x: 52, y: 58, w: 14 },
+    bonusPerSecond: 5
+  },
+  {
+    id: 'pebble-stepping-stones',
+    label: 'Pebble stones',
+    footprint: { w: 2, h: 1 },
+    src: '/images/runtime/decor/pebble-stepping-stones.png',
+    scene: { x: 43, y: 64, w: 18 },
+    bonusPerSecond: 4
+  },
+  {
+    id: 'flower-arch',
+    label: 'Flower arch',
+    footprint: { w: 2, h: 2 },
+    src: '/images/runtime/decor/flower-arch.png',
+    scene: { x: 70, y: 50, w: 18 },
+    bonusPerSecond: 12
+  },
+  {
+    id: 'carrot-basket',
+    label: 'Carrot basket',
+    footprint: { w: 1, h: 1 },
+    src: '/images/runtime/decor/carrot-basket.png',
+    scene: { x: 62, y: 63, w: 15 },
+    bonusPerSecond: 7
+  },
+  {
+    id: 'cloud-cushion-bench',
+    label: 'Cloud bench',
+    footprint: { w: 2, h: 1 },
+    src: '/images/runtime/decor/cloud-cushion-bench.png',
+    scene: { x: 55, y: 56, w: 19 },
+    bonusPerSecond: 9
+  },
+  {
+    id: 'tiny-burrow-mound',
+    label: 'Tiny burrow',
+    footprint: { w: 1, h: 1 },
+    src: '/images/runtime/decor/tiny-burrow-mound.png',
+    scene: { x: 77, y: 61, w: 15 },
     bonusPerSecond: 8
   }
 ];

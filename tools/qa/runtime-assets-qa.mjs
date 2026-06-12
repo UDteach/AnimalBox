@@ -48,6 +48,7 @@ async function readPngInfo(filePath) {
 function requiresAlpha(asset) {
   return (
     asset.src.includes('/decor/') ||
+    asset.src.includes('/characters/animals/') ||
     asset.src.includes('/wardrobe/') ||
     asset.src.includes('/floating-items/') ||
     asset.src.includes('/ui/') ||

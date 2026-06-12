@@ -1,6 +1,6 @@
 import { spendCurrency, type EconomyState } from './economy';
 
-export type RewardType = 'decor' | 'outfit' | 'degu_variant' | 'background' | 'currency';
+export type RewardType = 'decor' | 'outfit' | 'degu_variant' | 'animal' | 'background' | 'currency';
 export type Rarity = 'common' | 'rare' | 'special';
 
 export interface GachaEntry {
@@ -43,6 +43,13 @@ export const skyGiftBanner: GachaBanner = {
     { rewardId: 'short-wooden-fence', rewardType: 'decor', rarity: 'common', weight: 18, duplicateShardValue: 2 },
     { rewardId: 'flower-patch', rewardType: 'decor', rarity: 'common', weight: 18, duplicateShardValue: 2 },
     { rewardId: 'snack-tray', rewardType: 'decor', rarity: 'common', weight: 16, duplicateShardValue: 2 },
+    { rewardId: 'seed-crate', rewardType: 'decor', rarity: 'common', weight: 18, duplicateShardValue: 2 },
+    { rewardId: 'grass-tuft-cluster', rewardType: 'decor', rarity: 'common', weight: 18, duplicateShardValue: 2 },
+    { rewardId: 'pebble-stepping-stones', rewardType: 'decor', rarity: 'common', weight: 16, duplicateShardValue: 2 },
+    { rewardId: 'carrot-basket', rewardType: 'decor', rarity: 'common', weight: 16, duplicateShardValue: 2 },
+    { rewardId: 'macaroni-mouse', rewardType: 'animal', rarity: 'common', weight: 10, duplicateShardValue: 2 },
+    { rewardId: 'gerbil', rewardType: 'animal', rarity: 'common', weight: 10, duplicateShardValue: 2 },
+    { rewardId: 'hamster', rewardType: 'animal', rarity: 'common', weight: 10, duplicateShardValue: 2 },
     { rewardId: 'clover-charm', rewardType: 'outfit', rarity: 'common', weight: 16, duplicateShardValue: 2 },
     { rewardId: 'acorn-charm', rewardType: 'outfit', rarity: 'common', weight: 16, duplicateShardValue: 2 },
     { rewardId: 'seed-pouch-charm', rewardType: 'outfit', rarity: 'common', weight: 16, duplicateShardValue: 2 },
@@ -64,6 +71,12 @@ export const skyGiftBanner: GachaBanner = {
     { rewardId: 'cloud-bridge', rewardType: 'decor', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
     { rewardId: 'bellflower-planter', rewardType: 'decor', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
     { rewardId: 'star-lantern', rewardType: 'decor', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
+    { rewardId: 'mossy-log-hideout', rewardType: 'decor', rarity: 'rare', weight: 9, duplicateShardValue: 8 },
+    { rewardId: 'flower-arch', rewardType: 'decor', rarity: 'rare', weight: 8, duplicateShardValue: 8 },
+    { rewardId: 'cloud-cushion-bench', rewardType: 'decor', rarity: 'rare', weight: 9, duplicateShardValue: 8 },
+    { rewardId: 'tiny-burrow-mound', rewardType: 'decor', rarity: 'rare', weight: 9, duplicateShardValue: 8 },
+    { rewardId: 'chinchilla', rewardType: 'animal', rarity: 'rare', weight: 8, duplicateShardValue: 8 },
+    { rewardId: 'rabbit', rewardType: 'animal', rarity: 'rare', weight: 8, duplicateShardValue: 8 },
     { rewardId: 'cotton-flower-puff', rewardType: 'outfit', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
     { rewardId: 'crystal-shard-float', rewardType: 'outfit', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
     { rewardId: 'sky-moth', rewardType: 'outfit', rarity: 'rare', weight: 10, duplicateShardValue: 8 },
@@ -96,6 +109,10 @@ export const premiumSkyGiftBanner: GachaBanner = {
     { rewardId: 'cloud-cap', rewardType: 'outfit', rarity: 'rare', weight: 12, duplicateShardValue: 10 },
     { rewardId: 'leaf-cape', rewardType: 'outfit', rarity: 'rare', weight: 10, duplicateShardValue: 10 },
     { rewardId: 'picnic-blanket-cape', rewardType: 'outfit', rarity: 'rare', weight: 10, duplicateShardValue: 10 },
+    { rewardId: 'chinchilla', rewardType: 'animal', rarity: 'rare', weight: 10, duplicateShardValue: 10 },
+    { rewardId: 'rabbit', rewardType: 'animal', rarity: 'rare', weight: 10, duplicateShardValue: 10 },
+    { rewardId: 'flower-arch', rewardType: 'decor', rarity: 'rare', weight: 10, duplicateShardValue: 10 },
+    { rewardId: 'cloud-cushion-bench', rewardType: 'decor', rarity: 'rare', weight: 10, duplicateShardValue: 10 },
     { rewardId: 'star-lantern-float', rewardType: 'outfit', rarity: 'rare', weight: 12, duplicateShardValue: 10 },
     { rewardId: 'moon-bell', rewardType: 'outfit', rarity: 'rare', weight: 12, duplicateShardValue: 10 },
     { rewardId: 'crystal-shard-float', rewardType: 'outfit', rarity: 'rare', weight: 10, duplicateShardValue: 10 },

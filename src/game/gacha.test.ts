@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { accessoryItems, backgroundThemes, decorItems, deguVariants } from './content';
+import { accessoryItems, backgroundThemes, decorItems, deguVariants, pixelDeguShots } from './content';
 import { initialEconomy } from './economy';
 import { premiumSkyGiftBanner, runPulls, seededRandom, skyGiftBanner } from './gacha';
 
@@ -61,6 +61,7 @@ describe('free gacha', () => {
       ...decorItems.map((item) => item.id),
       ...accessoryItems.map((item) => item.id),
       ...deguVariants.map((item) => item.id),
+      ...pixelDeguShots.map((item) => item.id),
       ...backgroundThemes.map((item) => item.id)
     ]);
 

@@ -12,6 +12,7 @@ import {
   type BackgroundTheme,
   type DecorItem,
   type FloatingItem,
+  type PixelDeguShot,
   type ScreenId
 } from './game/content';
 import { addIdleIncome, formatNumber, spendCurrency, tapForCoins, type EconomyState } from './game/economy';
@@ -70,7 +71,12 @@ const grid = { width: 6, height: 6 };
 const firstOpenCell: Cell = { x: 0, y: 2 };
 
 function deguShotUnlockCost(shotId: string): number {
-  return 650 + Math.max(0, Number.parseInt(shotId, 10) - 1) * 260;
+  const numericIndex = Number.parseInt(shotId, 10);
+  const catalogIndex = Number.isFinite(numericIndex)
+    ? numericIndex - 1
+    : pixelDeguShots.findIndex((shot) => shot.id === shotId);
+
+  return 650 + Math.max(0, catalogIndex) * 260;
 }
 
 function deguToneFilter(tone: DeguTone, baseFilter: string): string {
@@ -413,7 +419,7 @@ export function App() {
 
     if (isRewardOwned(saveRef.current.ownedRewardIds, shotId)) {
       setSave(nextSave((currentSave) => ({ ...currentSave, selectedDeguShotId: shotId })));
-      setStatus(`Pose: ${shotId}`);
+      setStatus(`Animal: ${shot.label}`);
       return;
     }
 
@@ -430,7 +436,7 @@ export function App() {
         };
       })
     );
-    setStatus(saveRef.current.economy.coins >= cost ? `Unlocked pose ${shotId}` : `Need ${formatNumber(cost)} coins`);
+    setStatus(saveRef.current.economy.coins >= cost ? `Unlocked ${shot.label}` : `Need ${formatNumber(cost)} coins`);
   }
 
   function selectDecor(decorId: string) {
@@ -817,6 +823,15 @@ function rewardImage(rewardId: string): string {
     pixelDeguShots.find((item) => item.id === rewardId)?.src ??
     runtimeAssets.ticket
   );
+}
+
+function animalChoiceBadge(shot: PixelDeguShot, owned: boolean): string {
+  if (!owned) return formatNumber(deguShotUnlockCost(shot.id));
+  if (/^\d+$/.test(shot.id)) return shot.id;
+  return shot.label
+    .split(/\s+/)
+    .map((part) => part.slice(0, 3))
+    .join('.');
 }
 
 function Hud({
@@ -1233,21 +1248,24 @@ function WardrobeScreen({
         accessoryPlacements={accessoryPlacements}
         customFilter={customFilter}
       />
-      <div className="shot-row" aria-label="Degu shot choices">
-        {pixelDeguShots.map((shot) => (
-          <button
-            key={shot.id}
-            className="shot-button"
-            type="button"
-            data-active={shot.id === selectedDeguShotId}
-            data-locked={!isRewardOwned(ownedRewardIds, shot.id)}
-            onClick={() => onSelectDeguShot(shot.id)}
-            aria-label={`${isRewardOwned(ownedRewardIds, shot.id) ? 'Select' : 'Unlock'} degu pose ${shot.id}`}
-          >
-            <img src={shot.src} alt="" draggable={false} />
-            <span>{isRewardOwned(ownedRewardIds, shot.id) ? shot.id : formatNumber(deguShotUnlockCost(shot.id))}</span>
-          </button>
-        ))}
+      <div className="shot-row" aria-label="Animal choices">
+        {pixelDeguShots.map((shot) => {
+          const owned = isRewardOwned(ownedRewardIds, shot.id);
+          return (
+            <button
+              key={shot.id}
+              className="shot-button"
+              type="button"
+              data-active={shot.id === selectedDeguShotId}
+              data-locked={!owned}
+              onClick={() => onSelectDeguShot(shot.id)}
+              aria-label={`${owned ? 'Select' : 'Unlock'} animal ${shot.label}`}
+            >
+              <img src={shot.src} alt="" draggable={false} />
+              <span>{animalChoiceBadge(shot, owned)}</span>
+            </button>
+          );
+        })}
       </div>
       <div className="variant-row">
         {deguVariants.map((variant) => {
@@ -1384,13 +1402,26 @@ function GachaScreen({
     decorItems.find((item) => item.id === 'flower-patch'),
     decorItems.find((item) => item.id === 'snack-tray'),
     decorItems.find((item) => item.id === 'star-lantern'),
+    decorItems.find((item) => item.id === 'mossy-log-hideout'),
+    decorItems.find((item) => item.id === 'seed-crate'),
+    decorItems.find((item) => item.id === 'grass-tuft-cluster'),
+    decorItems.find((item) => item.id === 'pebble-stepping-stones'),
+    decorItems.find((item) => item.id === 'flower-arch'),
+    decorItems.find((item) => item.id === 'carrot-basket'),
+    decorItems.find((item) => item.id === 'cloud-cushion-bench'),
+    decorItems.find((item) => item.id === 'tiny-burrow-mound'),
+    pixelDeguShots.find((item) => item.id === 'macaroni-mouse'),
+    pixelDeguShots.find((item) => item.id === 'chinchilla'),
+    pixelDeguShots.find((item) => item.id === 'gerbil'),
+    pixelDeguShots.find((item) => item.id === 'hamster'),
+    pixelDeguShots.find((item) => item.id === 'rabbit'),
     decorItems.find((item) => item.id === 'angel-fountain'),
     accessoryItems.find((item) => item.id === 'cloud-sheep'),
     accessoryItems.find((item) => item.id === 'sun-bell'),
     accessoryItems.find((item) => item.id === 'water-drop-buddy'),
     accessoryItems.find((item) => item.id === 'teacup-cloud'),
     accessoryItems.find((item) => item.id === 'lavender-puff')
-  ].filter(Boolean) as Array<DecorItem | FloatingItem | BackgroundTheme>;
+  ].filter(Boolean) as Array<DecorItem | FloatingItem | BackgroundTheme | PixelDeguShot>;
   const historySummary = history.slice(0, 3).map(rewardLabel).join(', ');
 
   return (

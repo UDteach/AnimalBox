@@ -25,7 +25,27 @@ const backgroundIds = [
   'flower-cloud-terrace',
   'moonlit-hay-field'
 ];
-const deguIds = ['agouti', 'blue-gray', 'sandy', 'cream-patch', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
+const deguIds = [
+  'agouti',
+  'blue-gray',
+  'sandy',
+  'cream-patch',
+  '01',
+  '02',
+  '03',
+  '04',
+  '05',
+  '06',
+  '07',
+  '08',
+  '09',
+  '10',
+  'macaroni-mouse',
+  'chinchilla',
+  'gerbil',
+  'hamster',
+  'rabbit'
+];
 const decorIds = [
   'clover-patch',
   'hay-bed',
@@ -44,7 +64,15 @@ const decorIds = [
   'short-wooden-fence',
   'flower-patch',
   'snack-tray',
-  'star-lantern'
+  'star-lantern',
+  'mossy-log-hideout',
+  'seed-crate',
+  'grass-tuft-cluster',
+  'pebble-stepping-stones',
+  'flower-arch',
+  'carrot-basket',
+  'cloud-cushion-bench',
+  'tiny-burrow-mound'
 ];
 const accessoryIds = [
   'straw-hat',
@@ -104,7 +132,7 @@ const baseSave = {
   screen: 'home',
   selectedBackgroundId: 'sunset-clover-isle',
   selectedVariantId: 'agouti',
-  selectedDeguShotId: '04',
+  selectedDeguShotId: 'rabbit',
   customDeguTone: { hue: 0, saturation: 100, brightness: 100 },
   selectedOutfitIds: ['straw-hat', 'cloud-puff', 'clover-charm', 'acorn-charm', 'seed-pouch-charm'],
   accessoryPlacements: {},

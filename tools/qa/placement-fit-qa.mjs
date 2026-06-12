@@ -21,7 +21,21 @@ const backgroundThemes = [
   'moonlit-hay-field'
 ];
 
-const newDecorIds = ['short-wooden-fence', 'flower-patch', 'snack-tray', 'star-lantern'];
+const newDecorIds = [
+  'short-wooden-fence',
+  'flower-patch',
+  'snack-tray',
+  'star-lantern',
+  'mossy-log-hideout',
+  'seed-crate',
+  'grass-tuft-cluster',
+  'pebble-stepping-stones',
+  'flower-arch',
+  'carrot-basket',
+  'cloud-cushion-bench',
+  'tiny-burrow-mound'
+];
+const newAnimalIds = ['macaroni-mouse', 'chinchilla', 'gerbil', 'hamster', 'rabbit'];
 const newOutfitIds = ['cloud-cap', 'clover-necklace', 'picnic-blanket-cape', 'tiny-cheek-sticker'];
 const floatingItemIds = [
   'cloud-puff',
@@ -74,6 +88,7 @@ const allRewardIds = [
   '08',
   '09',
   '10',
+  ...newAnimalIds,
   'clover-patch',
   'hay-bed',
   'angel-fountain',
@@ -112,7 +127,7 @@ const baseSave = {
   screen: 'home',
   selectedBackgroundId: 'floating-island',
   selectedVariantId: 'agouti',
-  selectedDeguShotId: '04',
+  selectedDeguShotId: 'rabbit',
   customDeguTone: { hue: 0, saturation: 100, brightness: 100 },
   selectedOutfitIds: ['acorn-beret', 'mint-scarf'],
   accessoryPlacements: {},
