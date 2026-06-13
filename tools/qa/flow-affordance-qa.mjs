@@ -17,7 +17,7 @@ const primarySelectors = {
   placement: ['.cell-button[data-valid="true"]', '.action.confirm', '.action.rotate'],
   wardrobe: ['.apply-button', '.shot-button[data-active="true"]', '.shot-row', '.wardrobe-grid'],
   gacha: ['.pull-button.single', '.pull-button.ten', '.pull-button.premium'],
-  storage: ['.storage-sheet', '.theme-card[data-active="true"]', '.layout-preset-card:first-child .preset-button']
+  storage: ['.storage-sheet', '.collection-card', '.market-offer-card']
 };
 
 const overlapSelectors = {
@@ -40,6 +40,11 @@ const textSelectors = [
   '.guide-task span',
   '.guide-task strong',
   '.guide-task small',
+  '.collection-card strong',
+  '.collection-card span',
+  '.collection-card small',
+  '.market-offer-card strong',
+  '.market-offer-card span',
   '.next-upgrade-button span',
   '.next-upgrade-button strong'
 ];
@@ -135,6 +140,8 @@ async function collect(page, screen) {
         guideTasks: many('.guide-task'),
         placementUndo: one('.action.undo'),
         placementTitle: one('.placement-sheet .mode-row strong'),
+        collectionCards: many('.collection-card'),
+        marketOffers: many('.market-offer-card'),
         footprintCells: many('.footprint-cell'),
         primary: primarySelectors[screen].flatMap((selector) => many(selector)),
         overlapTargets: overlapSelectors[screen].map((selector) => ({ selector, rect: one(selector) })),
@@ -225,6 +232,14 @@ function audit(metrics, scenario) {
       if (guideTask.width < 34 || guideTask.height < 34) {
         issues.push(fail('home guide task target too small', { ...scenario, guideTask }));
       }
+    }
+  }
+  if (metrics.screen === 'storage') {
+    if (metrics.collectionCards.length !== 6) {
+      issues.push(fail('storage collection progress cards missing', { ...scenario, count: metrics.collectionCards.length }));
+    }
+    if (metrics.marketOffers.length !== 2) {
+      issues.push(fail('storage market offers missing', { ...scenario, count: metrics.marketOffers.length }));
     }
   }
   for (const target of metrics.primary) {

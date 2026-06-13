@@ -322,7 +322,9 @@ async function collectMetrics(page, screen) {
       historyChip: rectOf('.history-chip'),
       storageSheet: rectOf('.storage-sheet'),
       presetCards: allRects('.layout-preset-card'),
-      themeCards: allRects('.theme-card')
+      themeCards: allRects('.theme-card'),
+      collectionCards: allRects('.collection-card'),
+      marketOfferCards: allRects('.market-offer-card')
     };
   }, screen);
 }
@@ -466,6 +468,8 @@ function auditGacha(metrics, scenario) {
 function auditStorage(metrics, scenario) {
   const issues = [];
   if (!metrics.storageSheet) issues.push(fail('storage sheet missing', scenario));
+  if (metrics.collectionCards.length !== 6) issues.push(fail('storage collection cards missing', { ...scenario, count: metrics.collectionCards.length }));
+  if (metrics.marketOfferCards.length !== 2) issues.push(fail('storage market offers missing', { ...scenario, count: metrics.marketOfferCards.length }));
   if (metrics.presetCards.length !== 3) issues.push(fail('storage preset cards missing', { ...scenario, count: metrics.presetCards.length }));
   if (metrics.themeCards.length !== backgroundIds.length) issues.push(fail('storage theme cards missing', { ...scenario, count: metrics.themeCards.length }));
   if (metrics.storageSheet && metrics.nav) {

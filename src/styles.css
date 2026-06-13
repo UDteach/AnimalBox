@@ -1669,6 +1669,105 @@ button {
   padding-top: 0.18rem;
 }
 
+.collection-panel,
+.market-panel {
+  display: grid;
+  gap: 0.32rem;
+}
+
+.collection-grid,
+.market-offer-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.36rem;
+}
+
+.collection-card,
+.market-offer-card {
+  display: grid;
+  min-width: 0;
+  gap: 0.24rem;
+  padding: 0.42rem;
+  border-radius: 0.72rem;
+  color: #4b331a;
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow:
+    inset 0 0 0 1px rgba(143, 91, 29, 0.14),
+    0 0.34rem 0.68rem rgba(54, 35, 20, 0.1);
+}
+
+.collection-card[data-complete="true"] {
+  background: rgba(214, 245, 213, 0.8);
+}
+
+.collection-card div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  gap: 0.3rem;
+}
+
+.collection-card strong,
+.collection-card span,
+.collection-card small,
+.market-offer-card strong,
+.market-offer-card span {
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collection-card strong,
+.market-offer-card strong {
+  font-size: 0.62rem;
+  font-weight: 1000;
+}
+
+.collection-card div > span,
+.market-offer-card span {
+  font-size: 0.52rem;
+  font-weight: 900;
+  opacity: 0.76;
+}
+
+.collection-card small {
+  font-size: 0.5rem;
+  font-weight: 900;
+  opacity: 0.68;
+}
+
+.collection-meter {
+  display: block;
+  height: 0.32rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(84, 61, 35, 0.14);
+}
+
+.collection-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9be887, #ffd76d);
+}
+
+.market-offer-card {
+  min-height: 2.62rem;
+  text-align: left;
+}
+
+.market-offer-card[data-affordable="true"] {
+  background: rgba(255, 226, 122, 0.86);
+}
+
+.market-offer-card:disabled {
+  opacity: 0.52;
+  filter: grayscale(0.18);
+}
+
 .layout-preset-panel {
   display: grid;
   gap: 0.32rem;

@@ -250,6 +250,9 @@ try {
             affection: save.progression?.affection ?? null,
             careStreak: save.progression?.careStreak ?? null,
             placementGhostRotation: ghost ? window.getComputedStyle(ghost).getPropertyValue('--decor-rotation').trim() : null,
+            collectionCards: document.querySelectorAll('.collection-card').length,
+            marketOfferButtons: document.querySelectorAll('.market-offer-card').length,
+            affordableMarketOffers: document.querySelectorAll('.market-offer-card[data-affordable="true"]').length,
             gamePanelBottomToNav: gamePanel && nav ? nav.top - gamePanel.bottom : null,
             wardrobeGridBottomToNav: gridRect && nav ? nav.top - gridRect.bottom : null,
             shotRowBottomToGrid: shotRow && gridRect ? gridRect.top - shotRow.bottom : null,
@@ -287,6 +290,16 @@ try {
         metrics.premiumRevealCards = await page.locator('.gacha-reveal[data-banner="premium-sky-gift-01"] .gacha-result-card').count();
       }
       if (screen === 'storage') {
+        const beforeTrade = await page.evaluate(() => JSON.parse(window.localStorage.getItem('animalbox.prototype.v1') ?? '{}'));
+        await page.getByRole('button', { name: 'Trade shards for 1 sky ticket' }).click();
+        await page.waitForTimeout(120);
+        const afterTrade = await page.evaluate(() => JSON.parse(window.localStorage.getItem('animalbox.prototype.v1') ?? '{}'));
+        metrics.marketTrade = {
+          beforeTickets: beforeTrade.economy?.tickets ?? null,
+          afterTickets: afterTrade.economy?.tickets ?? null,
+          beforeShards: beforeTrade.economy?.shards ?? null,
+          afterShards: afterTrade.economy?.shards ?? null
+        };
         await page.getByRole('button', { name: 'Clear layout preset 1' }).click();
         await page.waitForTimeout(120);
         metrics.clearPresetDisablesLoad = await page
@@ -344,6 +357,11 @@ try {
 
   const storage = results.find((item) => item.screen === 'storage');
   assert(!storage?.hasAssetWarning, 'storage asset warning', storage);
+  assert(storage?.collectionCards === 6, 'storage collection progress cards missing', storage);
+  assert(storage?.marketOfferButtons === 2, 'storage market offers missing', storage);
+  assert(storage?.affordableMarketOffers >= 1, 'storage has no affordable market offer', storage);
+  assert(storage?.marketTrade?.afterTickets === storage.marketTrade.beforeTickets + 1, 'market trade did not add a ticket', storage);
+  assert(storage?.marketTrade?.afterShards === storage.marketTrade.beforeShards - 12, 'market trade did not spend shards', storage);
   assert(storage?.clearPresetDisablesLoad, 'storage clear preset did not disable load', storage);
 
   console.log(JSON.stringify({ ok: true, baseUrl, outDir, results }, null, 2));

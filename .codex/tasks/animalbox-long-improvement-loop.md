@@ -31,9 +31,9 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 ### P2 Game-Loop Guidance
 
 - [ ] Surface the loop from tap coins -> care/level -> tickets -> gifts -> unlocks.
-- [ ] Show unlock progress for animals, poses, themes, floating items, and accessories.
-- [ ] Improve inventory/store/market affordances so locked/owned/tradeable states are understandable.
-- [ ] Add tests or QA coverage for any new progression routing.
+- [x] Show unlock progress for animals, poses, themes, floating items, and accessories.
+- [x] Improve inventory/store/market affordances so locked/owned/tradeable states are understandable.
+- [x] Add tests or QA coverage for any new progression routing.
 
 ### P3 Polish And Feedback
 
@@ -76,4 +76,9 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 - completed: Committed and pushed `4c187ac Improve guide flow and placement affordances` to GitHub `main`.
 - completed: Deployed Cloudflare Pages at `https://d33bd139.animalbox.pages.dev`.
 - completed: Live-smoked Cloudflare Pages: HTTP 200 for deployment and production URLs, `ANIMALBOX_PRODUCTION_URL=https://d33bd139.animalbox.pages.dev npm run qa:visual`, and `ANIMALBOX_QA_URL=https://d33bd139.animalbox.pages.dev npm run qa:flow`.
-- pending: Next loop should improve unlock progress surfaces for animals, poses, themes, floating items, and market/trade affordances.
+- completed: Added Storage Collection progress cards for themes, colors, poses, animals, decor, and items.
+- completed: Added a local Market exchange that spends duplicate shards for earned tickets without adding paid monetization or an external database.
+- completed: Updated QA coverage for Collection cards, Market offers, and the shard-to-ticket exchange.
+- completed: Local QA passed for the second loop: `npm run typecheck`, `npm test -- --run`, `npm run qa:assets`, `npm run qa:customization`, `npm run qa:flow`, `npm run qa:ui`, `npm run qa:motion`, `npm run qa:placement`, `npm run qa:dense-placement` after a parallel-run retry, `npm run build`, and `npm run qa:visual`.
+- completed: Short-screen Storage screenshot review moved Market above Collection so exchange cards are visible in the first viewport.
+- note: In-app Browser smoke was attempted, but the Browser runtime path was unavailable in the current Node REPL; Playwright screenshots and QA scripts were used as the fallback rendered evidence.

@@ -84,9 +84,41 @@ interface GuideTask {
   ready: boolean;
 }
 
+interface CollectionGroup {
+  id: string;
+  label: string;
+  owned: number;
+  total: number;
+  nextLabel: string;
+}
+
+interface MarketOffer {
+  id: string;
+  label: string;
+  detail: string;
+  costShards: number;
+  rewardTickets: number;
+}
+
 const screenSet = new Set<ScreenId>(navOrder);
 const grid = { width: 6, height: 6 };
 const firstOpenCell: Cell = { x: 0, y: 2 };
+const marketOffers: MarketOffer[] = [
+  {
+    id: 'ticket-1',
+    label: 'Sky ticket',
+    detail: '12 shards -> ticket',
+    costShards: 12,
+    rewardTickets: 1
+  },
+  {
+    id: 'ticket-5',
+    label: 'Gift bundle',
+    detail: '52 shards -> 5 tix',
+    costShards: 52,
+    rewardTickets: 5
+  }
+];
 
 function deguShotUnlockCost(shotId: string): number {
   const numericIndex = Number.parseInt(shotId, 10);
@@ -145,6 +177,32 @@ function buildGuideTasks(save: PrototypeSave, stats: GameStats): GuideTask[] {
   ];
 }
 
+function buildCollectionGroups(ownedRewardIds: string[]): CollectionGroup[] {
+  const owned = new Set(ownedRewardIds);
+  const poses = pixelDeguShots.filter((shot) => /^\d+$/.test(shot.id));
+  const animals = pixelDeguShots.filter((shot) => !/^\d+$/.test(shot.id));
+  const groups = [
+    { id: 'themes', label: 'Themes', items: backgroundThemes },
+    { id: 'colors', label: 'Colors', items: deguVariants },
+    { id: 'poses', label: 'Poses', items: poses },
+    { id: 'animals', label: 'Animals', items: animals },
+    { id: 'decor', label: 'Decor', items: decorItems },
+    { id: 'items', label: 'Items', items: accessoryItems }
+  ];
+
+  return groups.map((group) => {
+    const ownedCount = group.items.filter((item) => owned.has(item.id)).length;
+    const nextLocked = group.items.find((item) => !owned.has(item.id));
+    return {
+      id: group.id,
+      label: group.label,
+      owned: ownedCount,
+      total: group.items.length,
+      nextLabel: nextLocked?.label ?? 'Complete'
+    };
+  });
+}
+
 function coerceScreen(value: string): ScreenId {
   return screenSet.has(value as ScreenId) ? (value as ScreenId) : 'home';
 }
@@ -178,6 +236,10 @@ export function App() {
   const gameStats = deriveGameStats(economy.incomePerSecond, save.progression);
   const nextUpgrade = getNextUpgrade(save.progression);
   const guideTasks = useMemo(() => buildGuideTasks(save, gameStats), [gameStats, save]);
+  const collectionGroups = useMemo(
+    () => buildCollectionGroups(save.ownedRewardIds),
+    [save.ownedRewardIds]
+  );
   const selectedBackgroundId = isRewardOwned(save.ownedRewardIds, save.selectedBackgroundId)
     ? save.selectedBackgroundId
     : 'floating-island';
@@ -760,6 +822,32 @@ export function App() {
     setScreen('gacha');
   }
 
+  function tradeMarketOffer(offerId: string) {
+    const offer = marketOffers.find((item) => item.id === offerId);
+    if (!offer) return;
+    const optimistic = spendCurrency(saveRef.current.economy, 'shards', offer.costShards);
+
+    setSave(
+      nextSave((currentSave) => {
+        const paid = spendCurrency(currentSave.economy, 'shards', offer.costShards);
+        if (!paid) return currentSave;
+
+        return {
+          ...currentSave,
+          economy: {
+            ...paid,
+            tickets: paid.tickets + offer.rewardTickets
+          }
+        };
+      })
+    );
+    setStatus(
+      optimistic
+        ? `Market trade: +${offer.rewardTickets} ticket${offer.rewardTickets === 1 ? '' : 's'}`
+        : 'Need shards for market'
+    );
+  }
+
   const style = useMemo(
     () =>
       ({
@@ -895,12 +983,15 @@ export function App() {
             activeTheme={activeTheme}
             stats={gameStats}
             ownedRewardIds={save.ownedRewardIds}
+            collectionGroups={collectionGroups}
+            marketOffers={marketOffers}
             selectedBackgroundId={selectedBackgroundId}
             onSelectBackground={selectBackground}
             layoutPresets={save.layoutPresets}
             onSaveLayoutPreset={saveLayoutPreset}
             onLoadLayoutPreset={loadLayoutPreset}
             onClearLayoutPreset={clearLayoutPreset}
+            onMarketTrade={tradeMarketOffer}
           />
         )}
 
@@ -1815,23 +1906,29 @@ function StorageOverlay({
   activeTheme,
   stats,
   ownedRewardIds,
+  collectionGroups,
+  marketOffers,
   selectedBackgroundId,
   onSelectBackground,
   layoutPresets,
   onSaveLayoutPreset,
   onLoadLayoutPreset,
-  onClearLayoutPreset
+  onClearLayoutPreset,
+  onMarketTrade
 }: {
   save: PrototypeSave;
   activeTheme: BackgroundTheme;
   stats: GameStats;
   ownedRewardIds: string[];
+  collectionGroups: CollectionGroup[];
+  marketOffers: MarketOffer[];
   selectedBackgroundId: string;
   onSelectBackground: (themeId: string) => void;
   layoutPresets: LayoutPreset[];
   onSaveLayoutPreset: (slot: number) => void;
   onLoadLayoutPreset: (slot: number) => void;
   onClearLayoutPreset: (slot: number) => void;
+  onMarketTrade: (offerId: string) => void;
 }) {
   return (
     <section className="storage-sheet" aria-label="Storage and customization">
@@ -1844,6 +1941,56 @@ function StorageOverlay({
         <span>+{stats.idleIncomePerSecond}/s</span>
         <span>{save.placedDecor.length} decor</span>
         <span>{save.gachaHistory.length} pulls</span>
+      </div>
+      <div className="market-panel" aria-label="Market exchange">
+        <div className="mode-row compact">
+          <strong>Market</strong>
+          <span>{save.economy.shards} shards</span>
+        </div>
+        <div className="market-offer-list">
+          {marketOffers.map((offer) => {
+            const affordable = save.economy.shards >= offer.costShards;
+            return (
+              <button
+                key={offer.id}
+                className="market-offer-card"
+                type="button"
+                disabled={!affordable}
+                data-affordable={affordable}
+                onClick={() => onMarketTrade(offer.id)}
+                aria-label={`Trade shards for ${offer.rewardTickets} sky ticket${offer.rewardTickets === 1 ? '' : 's'}`}
+              >
+                <strong>{offer.label}</strong>
+                <span>{offer.detail}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="collection-panel" aria-label="Unlock progress">
+        <div className="mode-row compact">
+          <strong>Collection</strong>
+          <span>{ownedRewardIds.length} owned</span>
+        </div>
+        <div className="collection-grid">
+          {collectionGroups.map((group) => {
+            const pct = Math.round((group.owned / Math.max(1, group.total)) * 100);
+            return (
+              <div key={group.id} className="collection-card" data-complete={group.owned === group.total}>
+                <div>
+                  <strong>{group.label}</strong>
+                  <span>
+                    {group.owned}/{group.total}
+                  </span>
+                </div>
+                <span className="collection-meter" aria-label={`${group.label} unlock progress`}>
+                  <span style={{ width: `${pct}%` }} />
+                </span>
+                <small>{group.nextLabel}</small>
+              </div>
+            );
+          })}
+        </div>
       </div>
       <div className="layout-preset-panel">
         <div className="mode-row compact">
