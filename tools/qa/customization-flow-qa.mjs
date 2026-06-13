@@ -203,20 +203,31 @@ try {
     try {
       await gotoSeeded(page, screen);
       if (screen === 'home') {
-        await page.getByRole('button', { name: 'Brush degu' }).click();
+        await page.locator('.care-button').nth(0).click();
         await page.waitForTimeout(120);
-        await page.getByRole('button', { name: 'Feed degu' }).click();
+        await page.locator('.care-button').nth(1).click();
         await page.waitForTimeout(120);
       }
       if (screen === 'placement') {
-        await page.getByRole('button', { name: 'Rotate placement' }).click();
+        await page.locator('.action.rotate').click();
         await page.waitForTimeout(120);
-        await page.getByRole('button', { name: 'Undo last decor' }).click();
+        const beforeNudge = await page.locator('.cell-button[data-selected="true"]').evaluate((node) => ({
+          x: node.getAttribute('data-cell-x'),
+          y: node.getAttribute('data-cell-y')
+        }));
+        await page.locator('.nudge-button.right').click();
         await page.waitForTimeout(120);
+        const afterNudge = await page.locator('.cell-button[data-selected="true"]').evaluate((node) => ({
+          x: node.getAttribute('data-cell-x'),
+          y: node.getAttribute('data-cell-y')
+        }));
+        await page.locator('.action.undo').click();
+        await page.waitForTimeout(120);
+        page.__animalboxNudgeMoved = beforeNudge.x !== afterNudge.x || beforeNudge.y !== afterNudge.y;
       }
       if (screen === 'wardrobe') {
-        await page.getByRole('button', { name: 'Move accessory right' }).click();
-        await page.getByRole('button', { name: 'Scale accessory up' }).click();
+        await page.locator('.accessory-tool-grid button').nth(3).click();
+        await page.locator('.accessory-tool-grid button').nth(4).click();
         await page.waitForTimeout(140);
       }
       const metrics = await page.evaluate(
@@ -251,6 +262,7 @@ try {
             careStreak: save.progression?.careStreak ?? null,
             placementGhostRotation: ghost ? window.getComputedStyle(ghost).getPropertyValue('--decor-rotation').trim() : null,
             mapChips: document.querySelectorAll('.map-chip').length,
+            nudgeButtons: document.querySelectorAll('.nudge-button').length,
             lockedMapChips: document.querySelectorAll('.map-chip[data-locked="true"]').length,
             collectionCards: document.querySelectorAll('.collection-card').length,
             marketOfferButtons: document.querySelectorAll('.market-offer-card').length,
@@ -265,35 +277,36 @@ try {
         },
         { screen, newDecorIds, newOutfitIds, newAnimalIds }
       );
+      if (screen === 'placement') metrics.nudgeMoved = Boolean(page.__animalboxNudgeMoved);
 
       if (screen === 'wardrobe') {
         await page.screenshot({ path: `${outDir}/wardrobe-batch003.png`, fullPage: true });
       }
 
       if (screen === 'home') {
-        await page.getByRole('button', { name: 'Settings' }).click();
+        await page.locator('.hud .round-button:not(.locale-button)').click();
         await page.waitForSelector('.storage-sheet', { timeout: 5000 });
         metrics.settingsOpensStorage = true;
       }
       if (screen === 'wardrobe') {
-        await page.getByRole('button', { name: 'Apply accessories' }).click();
+        await page.locator('.apply-button').click();
         await page.waitForSelector('.game-loop-panel', { timeout: 5000 });
         metrics.applyReturnsHome = true;
       }
       if (screen === 'gacha') {
-        await page.getByRole('button', { name: 'Open one sky gift' }).click();
+        await page.locator('.pull-button.single').click();
         await page.waitForSelector('.gacha-reveal', { timeout: 5000 });
         await page.waitForTimeout(160);
         metrics.gachaRevealCards = await page.locator('.gacha-result-card').count();
         metrics.gachaOpeningState = await page.locator('.gacha-screen').getAttribute('data-opening');
         metrics.gachaHistoryText = await page.locator('.history-chip').textContent();
-        await page.getByRole('button', { name: 'Open premium sky gift' }).click();
+        await page.locator('.pull-button.premium').click();
         await page.waitForSelector('.gacha-reveal[data-banner="premium-sky-gift-01"]', { timeout: 5000 });
         metrics.premiumRevealCards = await page.locator('.gacha-reveal[data-banner="premium-sky-gift-01"] .gacha-result-card').count();
       }
       if (screen === 'storage') {
         const beforeTrade = await page.evaluate(() => JSON.parse(window.localStorage.getItem('animalbox.prototype.v1') ?? '{}'));
-        await page.getByRole('button', { name: 'Trade shards for 1 sky ticket' }).click();
+        await page.locator('.market-offer-card').nth(0).click();
         await page.waitForTimeout(120);
         const afterTrade = await page.evaluate(() => JSON.parse(window.localStorage.getItem('animalbox.prototype.v1') ?? '{}'));
         metrics.marketTrade = {
@@ -302,11 +315,9 @@ try {
           beforeShards: beforeTrade.economy?.shards ?? null,
           afterShards: afterTrade.economy?.shards ?? null
         };
-        await page.getByRole('button', { name: 'Clear layout preset 1' }).click();
+        await page.locator('.preset-clear-button').nth(0).click();
         await page.waitForTimeout(120);
-        metrics.clearPresetDisablesLoad = await page
-          .getByRole('button', { name: 'Load layout preset 1' })
-          .isDisabled();
+        metrics.clearPresetDisablesLoad = await page.locator('.preset-button.load').nth(0).isDisabled();
       }
       results.push(metrics);
     } catch (error) {
@@ -345,6 +356,8 @@ try {
   assert(!placement.hasAssetWarning, 'placement asset warning', placement);
   assert(placement.placementGhostRotation === '90deg', 'placement rotate did not update ghost rotation', placement);
   assert(placement.mapChips === 3, 'placement map chips missing', placement);
+  assert(placement.nudgeButtons === 4, 'placement nudge controls missing', placement);
+  assert(placement.nudgeMoved, 'placement nudge control did not move the selected cell', placement);
   assert(placement.placedDecorCount === 0, 'placement undo did not remove the last decor', placement);
   assert(placement.incomePerSecond < baseSave.economy.incomePerSecond, 'placement undo did not reduce decor income', placement);
 
@@ -353,7 +366,7 @@ try {
   assert(gacha?.newOutfitCards === newOutfitIds.length, 'new outfit rewards missing from gacha preview', gacha);
   assert(gacha?.newAnimalCards === newAnimalIds.length, 'new animal rewards missing from gacha preview', gacha);
   assert(!gacha.hasAssetWarning, 'gacha asset warning', gacha);
-  assert(/^Last: /.test(gacha.gachaHistoryText ?? ''), 'gacha did not show pull history', gacha);
+  assert(/^(Last:|最近:)/.test(gacha.gachaHistoryText ?? ''), 'gacha did not show pull history', gacha);
   assert(gacha.gachaRevealCards >= 1, 'gacha reveal cards did not render', gacha);
   assert(gacha.premiumRevealCards >= 1, 'premium earned-ticket reveal cards did not render', gacha);
   assert(!/[a-z]+-[a-z]+/.test(gacha.gachaHistoryText ?? ''), 'gacha history still shows raw reward ids', gacha);

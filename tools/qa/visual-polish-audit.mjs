@@ -287,7 +287,7 @@ try {
           }, { timeout: 15000 })
           .catch(() => undefined);
         if (screen === 'gacha') {
-          await page.getByRole('button', { name: 'Open one sky gift' }).click();
+          await page.locator('.pull-button.single').click();
           await page.waitForSelector('.gacha-reveal', { timeout: 5000 });
         }
         await page.waitForTimeout(screen === 'gacha' ? 900 : 500);

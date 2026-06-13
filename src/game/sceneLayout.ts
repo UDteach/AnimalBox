@@ -18,26 +18,38 @@ export interface SceneBounds {
   bottom: number;
 }
 
+export interface GridMeshLine {
+  id: string;
+  kind: 'row' | 'column';
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  length: number;
+  angle: number;
+}
+
 export const sceneLayout = {
-  gridOriginX: 17,
-  gridOriginY: 36,
-  gridStepX: 6,
-  gridStepY: 3,
-  minDecorWidth: 8.4,
-  decorScale: 0.54,
+  gridOriginX: 9.2,
+  gridOriginY: 42.4,
+  gridStepX: 4.18,
+  gridStepY: 1.35,
+  gridDepthX: 1.16,
+  minDecorWidth: 6.15,
+  decorScale: 0.42,
   decorHeightRatioMin: 0.72,
   decorHeightRatioMax: 1.1,
   decorSafe: {
-    minX: 9,
-    maxX: 91,
-    minY: 34,
-    maxY: 51.5
+    minX: 7,
+    maxX: 94,
+    minY: 35,
+    maxY: 55
   },
   deguKeepout: {
-    minX: 37,
-    maxX: 63,
-    minY: 38,
-    maxY: 52
+    minX: 40,
+    maxX: 62,
+    minY: 43,
+    maxY: 53
   }
 };
 
@@ -54,7 +66,7 @@ export function gridToScene(cell: Cell, decor: DecorItem): SceneRect {
   const anchorY = cell.y + decor.footprint.h - 1;
 
   return {
-    x: sceneLayout.gridOriginX + anchorX * sceneLayout.gridStepX,
+    x: sceneLayout.gridOriginX + anchorX * sceneLayout.gridStepX + anchorY * sceneLayout.gridDepthX,
     y: sceneLayout.gridOriginY + anchorY * sceneLayout.gridStepY,
     w: Math.max(sceneLayout.minDecorWidth, decor.scene.w * sceneLayout.decorScale)
   };
@@ -85,8 +97,40 @@ export function decorSceneBounds(cell: Cell, decor: DecorItem): SceneBounds {
 
 export function gridCellAnchor(cell: Cell): Pick<SceneRect, 'x' | 'y'> {
   return {
-    x: sceneLayout.gridOriginX + cell.x * sceneLayout.gridStepX,
+    x: sceneLayout.gridOriginX + cell.x * sceneLayout.gridStepX + cell.y * sceneLayout.gridDepthX,
     y: sceneLayout.gridOriginY + cell.y * sceneLayout.gridStepY
+  };
+}
+
+export function gridMeshLines(grid: GridSize): GridMeshLine[] {
+  const lines: GridMeshLine[] = [];
+
+  for (let y = 0; y < grid.height; y += 1) {
+    lines.push(createGridMeshLine('row', `row-${y}`, { x: 0, y }, { x: grid.width - 1, y }));
+  }
+
+  for (let x = 0; x < grid.width; x += 1) {
+    lines.push(createGridMeshLine('column', `column-${x}`, { x, y: 0 }, { x, y: grid.height - 1 }));
+  }
+
+  return lines;
+}
+
+function createGridMeshLine(kind: GridMeshLine['kind'], id: string, start: Cell, end: Cell): GridMeshLine {
+  const from = gridCellAnchor(start);
+  const to = gridCellAnchor(end);
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+
+  return {
+    id,
+    kind,
+    x1: from.x,
+    y1: from.y,
+    x2: to.x,
+    y2: to.y,
+    length: Math.hypot(dx, dy),
+    angle: Math.atan2(dy, dx) * (180 / Math.PI)
   };
 }
 

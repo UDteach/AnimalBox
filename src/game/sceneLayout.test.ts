@@ -62,7 +62,7 @@ describe('scene layout contracts', () => {
   it('rejects decor that would sit under the degu keepout area', () => {
     const clover = decorItems.find((item) => item.id === 'clover-patch');
     expect(clover).toBeDefined();
-    expect(canPlaceDecorInScene(grid, [], 5, 2, clover!)).toBe(false);
+    expect(canPlaceDecorInScene(grid, [], 8, 4, clover!)).toBe(false);
   });
 
   it('uses bottom-center anchors for multi-cell decor footprints', () => {
@@ -70,7 +70,9 @@ describe('scene layout contracts', () => {
     expect(hayBed).toBeDefined();
 
     const scene = gridToScene({ x: 2, y: 3 }, hayBed!);
-    expect(scene.x).toBeCloseTo(sceneLayout.gridOriginX + 2.5 * sceneLayout.gridStepX);
+    expect(scene.x).toBeCloseTo(
+      sceneLayout.gridOriginX + 2.5 * sceneLayout.gridStepX + 3 * sceneLayout.gridDepthX
+    );
     expect(scene.y).toBeCloseTo(sceneLayout.gridOriginY + 3 * sceneLayout.gridStepY);
   });
 });

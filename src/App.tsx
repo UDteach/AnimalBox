@@ -25,6 +25,18 @@ import {
   type PullResult
 } from './game/gacha';
 import {
+  detectInitialLocale,
+  localizedName,
+  mapDetail,
+  mapLabel,
+  persistLocale,
+  screenLabel,
+  text,
+  toggleLocale,
+  collectionLabels,
+  type Locale
+} from './game/i18n';
+import {
   gardenMapCatalog,
   getGardenMapDefinition,
   isGardenMapUnlocked,
@@ -33,7 +45,7 @@ import {
 } from './game/maps';
 import { PixelDeguStage } from './game/pixel/PixelDeguStage';
 import { normalizeRotation, type Cell, type PlacedDecor, withRotatedFootprint } from './game/placement';
-import { assetStyle, canPlaceDecorInScene, gridCellAnchor, gridToScene } from './game/sceneLayout';
+import { assetStyle, canPlaceDecorInScene, gridCellAnchor, gridMeshLines, gridToScene } from './game/sceneLayout';
 import {
   applyIdleProgress,
   applyTapProgress,
@@ -110,23 +122,27 @@ interface MarketOffer {
 
 const screenSet = new Set<ScreenId>(navOrder);
 const grid = placementGrid;
+const meshLines = gridMeshLines(grid);
 const firstOpenCell: Cell = { x: 0, y: 2 };
-const marketOffers: MarketOffer[] = [
-  {
-    id: 'ticket-1',
-    label: 'Sky ticket',
-    detail: '12 shards -> ticket',
-    costShards: 12,
-    rewardTickets: 1
-  },
-  {
-    id: 'ticket-5',
-    label: 'Gift bundle',
-    detail: '52 shards -> 5 tix',
-    costShards: 52,
-    rewardTickets: 5
-  }
-];
+
+function buildMarketOffers(locale: Locale): MarketOffer[] {
+  return [
+    {
+      id: 'ticket-1',
+      label: text(locale, 'Sky ticket', '空チケット'),
+      detail: text(locale, '12 shards -> ticket', 'かけら12 -> 1枚'),
+      costShards: 12,
+      rewardTickets: 1
+    },
+    {
+      id: 'ticket-5',
+      label: text(locale, 'Gift bundle', 'ギフト束'),
+      detail: text(locale, '52 shards -> 5 tix', 'かけら52 -> 5枚'),
+      costShards: 52,
+      rewardTickets: 5
+    }
+  ];
+}
 
 function deguShotUnlockCost(shotId: string): number {
   const numericIndex = Number.parseInt(shotId, 10);
@@ -145,57 +161,61 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function buildGuideTasks(save: PrototypeSave, stats: GameStats): GuideTask[] {
+function buildGuideTasks(save: PrototypeSave, stats: GameStats, locale: Locale): GuideTask[] {
   const availableTickets = save.economy.tickets + stats.claimableTickets;
   const placedByPlayer = Math.max(0, save.placedDecor.length - 1);
 
   return [
     {
       id: 'tap',
-      label: 'Tap',
+      label: text(locale, 'Tap', 'タップ'),
       value: `+${stats.tapPower}`,
-      action: 'Earn',
+      action: text(locale, 'Earn', '稼ぐ'),
       done: save.progression.xp > 0,
       ready: true
     },
     {
       id: 'care',
-      label: 'Care',
-      value: `Bond ${stats.affectionLevel}`,
-      action: 'Brush',
+      label: text(locale, 'Care', 'お世話'),
+      value: text(locale, `Bond ${stats.affectionLevel}`, `なかよし ${stats.affectionLevel}`),
+      action: text(locale, 'Brush', 'ブラシ'),
       done: save.progression.careStreak > 0,
       ready: true
     },
     {
       id: 'decor',
-      label: 'Decor',
-      value: `${placedByPlayer} placed`,
-      action: 'Place',
+      label: text(locale, 'Decor', '配置'),
+      value: text(locale, `${placedByPlayer} placed`, `${placedByPlayer}個`),
+      action: text(locale, 'Place', '置く'),
       done: placedByPlayer > 0,
       ready: true
     },
     {
       id: 'gift',
-      label: 'Gift',
-      value: `${availableTickets} ticket${availableTickets === 1 ? '' : 's'}`,
-      action: availableTickets > 0 ? 'Open' : 'Charge',
+      label: text(locale, 'Gift', 'ギフト'),
+      value: text(
+        locale,
+        `${availableTickets} ticket${availableTickets === 1 ? '' : 's'}`,
+        `チケット${availableTickets}枚`
+      ),
+      action: availableTickets > 0 ? text(locale, 'Open', '開ける') : text(locale, 'Charge', 'ためる'),
       done: save.gachaHistory.length > 0,
       ready: availableTickets > 0
     }
   ];
 }
 
-function buildCollectionGroups(ownedRewardIds: string[]): CollectionGroup[] {
+function buildCollectionGroups(ownedRewardIds: string[], locale: Locale): CollectionGroup[] {
   const owned = new Set(ownedRewardIds);
   const poses = pixelDeguShots.filter((shot) => /^\d+$/.test(shot.id));
   const animals = pixelDeguShots.filter((shot) => !/^\d+$/.test(shot.id));
   const groups = [
-    { id: 'themes', label: 'Themes', items: backgroundThemes },
-    { id: 'colors', label: 'Colors', items: deguVariants },
-    { id: 'poses', label: 'Poses', items: poses },
-    { id: 'animals', label: 'Animals', items: animals },
-    { id: 'decor', label: 'Decor', items: decorItems },
-    { id: 'items', label: 'Items', items: accessoryItems }
+    { id: 'themes', label: collectionLabels[locale].themes, items: backgroundThemes },
+    { id: 'colors', label: collectionLabels[locale].colors, items: deguVariants },
+    { id: 'poses', label: collectionLabels[locale].poses, items: poses },
+    { id: 'animals', label: collectionLabels[locale].animals, items: animals },
+    { id: 'decor', label: collectionLabels[locale].decor, items: decorItems },
+    { id: 'items', label: collectionLabels[locale].items, items: accessoryItems }
   ];
 
   return groups.map((group) => {
@@ -206,7 +226,7 @@ function buildCollectionGroups(ownedRewardIds: string[]): CollectionGroup[] {
       label: group.label,
       owned: ownedCount,
       total: group.items.length,
-      nextLabel: nextLocked?.label ?? 'Complete'
+      nextLabel: nextLocked ? localizedName(locale, nextLocked.id, nextLocked.label) : text(locale, 'Complete', 'コンプリート')
     };
   });
 }
@@ -289,13 +309,14 @@ function isBackgroundAvailable(themeId: string, ownedRewardIds: string[], level:
 export function App() {
   const [save, setSave] = useState<PrototypeSave>(() => loadSave());
   const saveRef = useRef(save);
+  const [locale, setLocale] = useState<Locale>(() => detectInitialLocale());
   const [screen, setScreenState] = useState<ScreenId>(() => getInitialScreen());
   const [bursts, setBursts] = useState<Burst[]>([]);
   const [selectedDecorId, setSelectedDecorId] = useState('hay-bed');
   const [selectedAccessoryId, setSelectedAccessoryId] = useState('straw-hat');
   const [selectedCell, setSelectedCell] = useState<Cell>(firstOpenCell);
   const [rotation, setRotation] = useState(0);
-  const [status, setStatus] = useState('Runtime parts prototype');
+  const [status, setStatus] = useState(() => text(detectInitialLocale(), 'Runtime parts prototype', 'プロトタイプ準備中'));
   const [missingAssets, setMissingAssets] = useState<string[]>([]);
   const [gachaReveal, setGachaReveal] = useState<GachaReveal | null>(null);
   const [gachaOpening, setGachaOpening] = useState(false);
@@ -307,11 +328,12 @@ export function App() {
   const activeMap = getGardenMapFromSave(save);
   const activeMapDefinition = getGardenMapDefinition(activeMap.id);
   const nextUpgrade = getNextUpgrade(save.progression);
-  const guideTasks = useMemo(() => buildGuideTasks(save, gameStats), [gameStats, save]);
+  const guideTasks = useMemo(() => buildGuideTasks(save, gameStats, locale), [gameStats, locale, save]);
   const collectionGroups = useMemo(
-    () => buildCollectionGroups(save.ownedRewardIds),
-    [save.ownedRewardIds]
+    () => buildCollectionGroups(save.ownedRewardIds, locale),
+    [locale, save.ownedRewardIds]
   );
+  const marketOffers = useMemo(() => buildMarketOffers(locale), [locale]);
   const selectedBackgroundId = isBackgroundAvailable(
     activeMap.selectedBackgroundId,
     save.ownedRewardIds,
@@ -370,6 +392,10 @@ export function App() {
     saveRef.current = save;
     savePrototype(save);
   }, [save]);
+
+  useEffect(() => {
+    persistLocale(locale);
+  }, [locale]);
 
   useEffect(() => {
     if (canPlaceDecorInScene(grid, save.placedDecor, selectedCell.x, selectedCell.y, placementDecor)) {
@@ -445,7 +471,13 @@ export function App() {
   function setScreen(next: ScreenId) {
     setScreenState(next);
     setSave(nextSave((currentSave) => ({ ...currentSave, screen: next })));
-    setStatus(`${screens[next].label} screen`);
+    setStatus(text(locale, `${screens[next].label} screen`, `${screenLabel(locale, next)}を開きました`));
+  }
+
+  function switchLocale() {
+    const next = toggleLocale(locale);
+    setLocale(next);
+    setStatus(text(next, 'Language: English', '日本語表示にしました'));
   }
 
   function tapDegu() {
@@ -468,7 +500,7 @@ export function App() {
       ...items,
       { id: Date.now(), label: `+${stats.tapPower}`, x: 52 + Math.random() * 4, y: 49 + Math.random() * 4 }
     ]);
-    setStatus(`Degu tap +${stats.tapPower} coins`);
+    setStatus(text(locale, `Degu tap +${stats.tapPower} coins`, `デグーをタップ +${stats.tapPower}コイン`));
   }
 
   function buyUpgrade(upgradeId: string) {
@@ -489,7 +521,11 @@ export function App() {
         };
       })
     );
-    setStatus(optimistic ? `Upgrade: ${optimistic.upgrade.label}` : 'Need coins or shards');
+    setStatus(
+      optimistic
+        ? text(locale, `Upgrade: ${optimistic.upgrade.label}`, `強化: ${optimistic.upgrade.label}`)
+        : text(locale, 'Need coins or shards', 'コインかかけらが足りません')
+    );
   }
 
   function claimEarnedTickets() {
@@ -508,8 +544,12 @@ export function App() {
     );
     setStatus(
       optimistic.claimed > 0
-        ? `Claimed ${optimistic.claimed} ticket${optimistic.claimed === 1 ? '' : 's'}`
-        : 'Ticket meter charging'
+        ? text(
+            locale,
+            `Claimed ${optimistic.claimed} ticket${optimistic.claimed === 1 ? '' : 's'}`,
+            `チケット${optimistic.claimed}枚を受け取りました`
+          )
+        : text(locale, 'Ticket meter charging', 'チケットをためています')
     );
   }
 
@@ -537,8 +577,12 @@ export function App() {
     );
     setStatus(
       optimistic
-        ? `${optimistic.action.label}: +${optimistic.action.affectionReward} bond`
-        : 'Need coins for care'
+        ? text(
+            locale,
+            `${optimistic.action.label}: +${optimistic.action.affectionReward} bond`,
+            `${optimistic.action.label}: なかよし +${optimistic.action.affectionReward}`
+          )
+        : text(locale, 'Need coins for care', 'お世話のコインが足りません')
     );
   }
 
@@ -546,7 +590,7 @@ export function App() {
     const theme = backgroundThemes.find((item) => item.id === themeId);
     if (!theme) return;
     if (!isBackgroundAvailable(theme.id, save.ownedRewardIds, gameStats.level)) {
-      setStatus(`${theme.label} locked`);
+      setStatus(text(locale, `${theme.label} locked`, `${localizedName(locale, theme.id, theme.label)}は未解放です`));
       return;
     }
 
@@ -555,18 +599,24 @@ export function App() {
         updateActiveGardenMap(currentSave, { selectedBackgroundId: theme.id })
       )
     );
-    setStatus(`Theme: ${theme.label}`);
+    setStatus(text(locale, `Theme: ${theme.label}`, `背景: ${localizedName(locale, theme.id, theme.label)}`));
   }
 
   function selectMap(mapId: GardenMapId) {
     const definition = getGardenMapDefinition(mapId);
     if (!isGardenMapUnlocked(gameStats.level, definition)) {
-      setStatus(`${definition.label} unlocks at Lv ${definition.unlockLevel}`);
+      setStatus(
+        text(
+          locale,
+          `${definition.label} unlocks at Lv ${definition.unlockLevel}`,
+          `${mapLabel(locale, definition)}はLv${definition.unlockLevel}で解放`
+        )
+      );
       return;
     }
 
     setSave(nextSave((currentSave) => activateGardenMap(currentSave, mapId)));
-    setStatus(`Map: ${definition.label}`);
+    setStatus(text(locale, `Map: ${definition.label}`, `MAP: ${mapLabel(locale, definition)}`));
   }
 
   function saveLayoutPreset(slot: number) {
@@ -588,13 +638,13 @@ export function App() {
         };
       })
     );
-    setStatus(`Saved layout ${slot}`);
+    setStatus(text(locale, `Saved layout ${slot}`, `レイアウト${slot}を保存しました`));
   }
 
   function loadLayoutPreset(slot: number) {
     const preset = saveRef.current.layoutPresets.find((item) => item.slot === slot);
     if (!preset?.updatedAt) {
-      setStatus(`Layout ${slot} empty`);
+      setStatus(text(locale, `Layout ${slot} empty`, `レイアウト${slot}は空です`));
       return;
     }
 
@@ -607,7 +657,7 @@ export function App() {
     );
 
     if (hasLockedBackground || hasLockedDecor) {
-      setStatus(`Layout ${slot} has locked items`);
+      setStatus(text(locale, `Layout ${slot} has locked items`, `レイアウト${slot}に未解放アイテムがあります`));
       return;
     }
 
@@ -622,7 +672,7 @@ export function App() {
         });
       })
     );
-    setStatus(`Loaded layout ${slot}`);
+    setStatus(text(locale, `Loaded layout ${slot}`, `レイアウト${slot}を読み込みました`));
   }
 
   function clearLayoutPreset(slot: number) {
@@ -637,19 +687,19 @@ export function App() {
         )
       }))
     );
-    setStatus(`Cleared layout ${slot}`);
+    setStatus(text(locale, `Cleared layout ${slot}`, `レイアウト${slot}を消しました`));
   }
 
   function selectVariant(variantId: string) {
     const variant = deguVariants.find((item) => item.id === variantId);
     if (!variant) return;
     if (!isRewardOwned(save.ownedRewardIds, variant.id)) {
-      setStatus(`${variant.label} locked`);
+      setStatus(text(locale, `${variant.label} locked`, `${localizedName(locale, variant.id, variant.label)}は未解放です`));
       return;
     }
 
     setSave(nextSave((currentSave) => ({ ...currentSave, selectedVariantId: variantId })));
-    setStatus(`Variant: ${variantId}`);
+    setStatus(text(locale, `Variant: ${variantId}`, `毛色: ${localizedName(locale, variant.id, variant.label)}`));
   }
 
   function selectDeguShot(shotId: string) {
@@ -658,7 +708,7 @@ export function App() {
 
     if (isRewardOwned(saveRef.current.ownedRewardIds, shotId)) {
       setSave(nextSave((currentSave) => ({ ...currentSave, selectedDeguShotId: shotId })));
-      setStatus(`Animal: ${shot.label}`);
+      setStatus(text(locale, `Animal: ${shot.label}`, `どうぶつ: ${localizedName(locale, shot.id, shot.label)}`));
       return;
     }
 
@@ -675,7 +725,11 @@ export function App() {
         };
       })
     );
-    setStatus(saveRef.current.economy.coins >= cost ? `Unlocked ${shot.label}` : `Need ${formatNumber(cost)} coins`);
+    setStatus(
+      saveRef.current.economy.coins >= cost
+        ? text(locale, `Unlocked ${shot.label}`, `${localizedName(locale, shot.id, shot.label)}を解放しました`)
+        : text(locale, `Need ${formatNumber(cost)} coins`, `${formatNumber(cost)}コイン必要です`)
+    );
   }
 
   function selectDecor(decorId: string) {
@@ -685,14 +739,32 @@ export function App() {
 
     const nextCell = findFirstSceneSafeCell(withRotatedFootprint(decor, rotation), saveRef.current.placedDecor);
     if (nextCell) setSelectedCell(nextCell);
-    setStatus(`Decor: ${decor.label}`);
+    setStatus(text(locale, `Decor: ${decor.label}`, `家具: ${localizedName(locale, decor.id, decor.label)}`));
+  }
+
+  function movePlacementCell(dx: number, dy: number) {
+    const nextCell = findDirectionalSceneSafeCell(
+      placementDecor,
+      saveRef.current.placedDecor,
+      selectedCell,
+      dx,
+      dy
+    );
+
+    if (!nextCell) {
+      setStatus(text(locale, 'No open spot in that direction', 'その方向に空きマスがありません'));
+      return;
+    }
+
+    setSelectedCell(nextCell);
+    setStatus(text(locale, `Cell ${nextCell.x + 1}-${nextCell.y + 1}`, `マス ${nextCell.x + 1}-${nextCell.y + 1}`));
   }
 
   function toggleFloatingItem(itemId: string) {
     const item = accessoryItems.find((candidate) => candidate.id === itemId);
     if (!item) return;
     if (!isRewardOwned(save.ownedRewardIds, item.id)) {
-      setStatus(`${item.label} locked`);
+      setStatus(text(locale, `${item.label} locked`, `${localizedName(locale, item.id, item.label)}は未解放です`));
       return;
     }
 
@@ -705,7 +777,7 @@ export function App() {
       })
     );
     setSelectedAccessoryId(itemId);
-    setStatus(`Accessory: ${item.label}`);
+    setStatus(text(locale, `Accessory: ${item.label}`, `おとも: ${localizedName(locale, item.id, item.label)}`));
   }
 
   function adjustAccessory(itemId: string, patch: Partial<AccessoryPlacement>) {
@@ -734,7 +806,7 @@ export function App() {
         };
       })
     );
-    setStatus(`Adjusted ${item.label}`);
+    setStatus(text(locale, `Adjusted ${item.label}`, `${localizedName(locale, item.id, item.label)}の位置を調整しました`));
   }
 
   function resetAccessory(itemId: string) {
@@ -745,7 +817,7 @@ export function App() {
         return { ...currentSave, accessoryPlacements: nextPlacements };
       })
     );
-    setStatus('Accessory reset');
+    setStatus(text(locale, 'Accessory reset', 'おとも位置をリセットしました'));
   }
 
   function changeDeguTone(nextTone: Partial<DeguTone>) {
@@ -759,12 +831,12 @@ export function App() {
         }
       }))
     );
-    setStatus('Color tuned');
+    setStatus(text(locale, 'Color tuned', '毛色を調整しました'));
   }
 
   function placeSelectedDecor() {
     if (!isRewardOwned(save.ownedRewardIds, selectedDecor.id)) {
-      setStatus(`${selectedDecor.label} locked`);
+      setStatus(text(locale, `${selectedDecor.label} locked`, `${localizedName(locale, selectedDecor.id, selectedDecor.label)}は未解放です`));
       return;
     }
 
@@ -778,7 +850,7 @@ export function App() {
     };
 
     if (!canPlaceDecorInScene(grid, save.placedDecor, candidate.cellX, candidate.cellY, placementDecor)) {
-      setStatus('That cell is blocked');
+      setStatus(text(locale, 'That cell is blocked', 'そのマスには置けません'));
       return;
     }
 
@@ -796,7 +868,13 @@ export function App() {
         )
       )
     );
-    setStatus(`Placed ${selectedDecor.label}${rotation === 0 ? '' : ` ${rotation}deg`}`);
+    setStatus(
+      text(
+        locale,
+        `Placed ${selectedDecor.label}${rotation === 0 ? '' : ` ${rotation}deg`}`,
+        `${localizedName(locale, selectedDecor.id, selectedDecor.label)}を置きました${rotation === 0 ? '' : ` ${rotation}度`}`
+      )
+    );
   }
 
   function rotatePlacement() {
@@ -809,13 +887,19 @@ export function App() {
 
     setRotation(nextRotation);
     if (nextCell) setSelectedCell(nextCell);
-    setStatus(`Rotated ${selectedDecor.label} ${nextRotation}deg`);
+    setStatus(
+      text(
+        locale,
+        `Rotated ${selectedDecor.label} ${nextRotation}deg`,
+        `${localizedName(locale, selectedDecor.id, selectedDecor.label)}を${nextRotation}度回転`
+      )
+    );
   }
 
   function undoLastPlacedDecor() {
     const lastPlaced = saveRef.current.placedDecor.at(-1);
     if (!lastPlaced) {
-      setStatus('No decor to undo');
+      setStatus(text(locale, 'No decor to undo', '戻せる家具がありません'));
       return;
     }
 
@@ -839,12 +923,18 @@ export function App() {
         );
       })
     );
-    setStatus(`Removed ${optimisticDecor?.label ?? 'decor'}`);
+    setStatus(
+      text(
+        locale,
+        `Removed ${optimisticDecor?.label ?? 'decor'}`,
+        `${optimisticDecor ? localizedName(locale, optimisticDecor.id, optimisticDecor.label) : '家具'}を戻しました`
+      )
+    );
   }
 
   function runGacha(count: 1 | 10, banner: GachaBanner = skyGiftBanner) {
     if (gachaBusyRef.current) {
-      setStatus('Gift is opening');
+      setStatus(text(locale, 'Gift is opening', 'ギフト演出中です'));
       return;
     }
 
@@ -880,6 +970,7 @@ export function App() {
       })
     );
     const label = banner.id.startsWith('premium') ? 'premium gift' : 'sky gift';
+    const localizedGiftLabel = banner.id.startsWith('premium') ? 'プレミアムギフト' : '空ギフト';
     setGachaReveal(
       optimistic
         ? {
@@ -891,7 +982,11 @@ export function App() {
     );
     if (optimistic) gachaBusyRef.current = true;
     setGachaOpening(Boolean(optimistic));
-    setStatus(optimistic ? `${count} ${label}${count === 1 ? '' : 's'} opened` : 'Need earned tickets');
+    setStatus(
+      optimistic
+        ? text(locale, `${count} ${label}${count === 1 ? '' : 's'} opened`, `${localizedGiftLabel}を${count}回開けました`)
+        : text(locale, 'Need earned tickets', 'チケットが足りません')
+    );
   }
 
   function runGuideAction(taskId: GuideTaskId) {
@@ -939,8 +1034,12 @@ export function App() {
     );
     setStatus(
       optimistic
-        ? `Market trade: +${offer.rewardTickets} ticket${offer.rewardTickets === 1 ? '' : 's'}`
-        : 'Need shards for market'
+        ? text(
+            locale,
+            `Market trade: +${offer.rewardTickets} ticket${offer.rewardTickets === 1 ? '' : 's'}`,
+            `交換: チケット +${offer.rewardTickets}`
+          )
+        : text(locale, 'Need shards for market', '交換用のかけらが足りません')
     );
   }
 
@@ -955,8 +1054,8 @@ export function App() {
   );
 
   return (
-    <main className="app" data-view={screen}>
-      <section className="phone" style={style} aria-label={`AnimalBox ${current.label}`}>
+    <main className="app" data-view={screen} lang={locale}>
+      <section className="phone" style={style} aria-label={`AnimalBox ${screenLabel(locale, screen)}`}>
         <img
           className="scene-background"
           src={activeTheme.src}
@@ -969,15 +1068,18 @@ export function App() {
         <div className="sky-vignette" />
 
         <Hud
+          locale={locale}
           economy={economy}
           stats={gameStats}
           status={status}
           activeTheme={activeTheme}
           missingAssets={missingAssets}
+          onToggleLocale={switchLocale}
           onSettings={() => setScreen('storage')}
         />
 
         <ScreenCue
+          locale={locale}
           screen={screen}
           economy={economy}
           stats={gameStats}
@@ -991,6 +1093,7 @@ export function App() {
 
         {(screen === 'home' || screen === 'placement' || screen === 'storage') && (
           <IslandScene
+            locale={locale}
             save={save}
             selectedDecor={placementDecor}
             selectedCell={selectedCell}
@@ -1004,11 +1107,13 @@ export function App() {
             customDeguFilter={customDeguFilter}
             onTapDegu={tapDegu}
             onSelectCell={setSelectedCell}
+            onMoveCell={movePlacementCell}
           />
         )}
 
         {screen === 'placement' && (
           <PlacementPanel
+            locale={locale}
             selectedDecorId={selectedDecorId}
             selectedCell={selectedCell}
             rotation={rotation}
@@ -1022,7 +1127,7 @@ export function App() {
             onSelectDecor={selectDecor}
             onRotate={rotatePlacement}
             onConfirm={placeSelectedDecor}
-            onCancel={() => setStatus('Placement cancelled')}
+            onCancel={() => setStatus(text(locale, 'Placement cancelled', '配置をキャンセルしました'))}
             onUndo={undoLastPlacedDecor}
             canUndo={save.placedDecor.length > 0}
           />
@@ -1030,6 +1135,7 @@ export function App() {
 
         {screen === 'home' && (
           <GameLoopPanel
+            locale={locale}
             economy={economy}
             progression={save.progression}
             stats={gameStats}
@@ -1044,6 +1150,7 @@ export function App() {
 
         {screen === 'wardrobe' && (
           <WardrobeScreen
+            locale={locale}
             selectedVariantId={selectedVariantId}
             selectedDeguShotId={save.selectedDeguShotId}
             selectedOutfitIds={selectedOutfitIds}
@@ -1060,13 +1167,14 @@ export function App() {
             onChangeDeguTone={changeDeguTone}
             onApply={() => {
               setScreen('home');
-              setStatus('Accessories saved');
+              setStatus(text(locale, 'Accessories saved', 'おともを保存しました'));
             }}
           />
         )}
 
         {screen === 'gacha' && (
           <GachaScreen
+            locale={locale}
             ownedRewardIds={save.ownedRewardIds}
             history={save.gachaHistory}
             reveal={gachaReveal}
@@ -1079,6 +1187,7 @@ export function App() {
 
         {screen === 'storage' && (
           <StorageOverlay
+            locale={locale}
             save={save}
             activeTheme={activeTheme}
             stats={gameStats}
@@ -1108,7 +1217,7 @@ export function App() {
           </span>
         ))}
 
-        <NavBar active={screen} onNavigate={(next) => (next === screen && next !== 'home' ? setScreen('home') : setScreen(next))} />
+        <NavBar locale={locale} active={screen} onNavigate={(next) => (next === screen && next !== 'home' ? setScreen('home') : setScreen(next))} />
       </section>
     </main>
   );
@@ -1126,6 +1235,37 @@ function findFirstSceneSafeCell(decor: DecorItem, placedDecor: PlacedDecor[]): C
   return null;
 }
 
+function findDirectionalSceneSafeCell(
+  decor: DecorItem,
+  placedDecor: PlacedDecor[],
+  from: Cell,
+  dx: number,
+  dy: number
+): Cell | null {
+  for (let step = 1; step <= Math.max(grid.width, grid.height); step += 1) {
+    const x = from.x + dx * step;
+    const y = from.y + dy * step;
+    if (x < 0 || y < 0 || x >= grid.width || y >= grid.height) break;
+    if (canPlaceDecorInScene(grid, placedDecor, x, y, decor)) return { x, y };
+  }
+
+  let best: { cell: Cell; score: number } | null = null;
+  for (let y = 0; y < grid.height; y += 1) {
+    for (let x = 0; x < grid.width; x += 1) {
+      if (!canPlaceDecorInScene(grid, placedDecor, x, y, decor)) continue;
+      const deltaX = x - from.x;
+      const deltaY = y - from.y;
+      const primary = dx !== 0 ? deltaX * dx : deltaY * dy;
+      if (primary <= 0) continue;
+      const perpendicular = dx !== 0 ? Math.abs(deltaY) : Math.abs(deltaX);
+      const score = perpendicular * 20 + primary;
+      if (!best || score < best.score) best = { cell: { x, y }, score };
+    }
+  }
+
+  return best?.cell ?? null;
+}
+
 function clonePlacedDecor(items: PlacedDecor[]): PlacedDecor[] {
   return items.map((item) => ({
     ...item,
@@ -1133,15 +1273,16 @@ function clonePlacedDecor(items: PlacedDecor[]): PlacedDecor[] {
   }));
 }
 
-function rewardLabel(rewardId: string): string {
-  return (
+function rewardLabel(locale: Locale, rewardId: string): string {
+  const fallback =
     backgroundThemes.find((item) => item.id === rewardId)?.label ??
     decorItems.find((item) => item.id === rewardId)?.label ??
     accessoryItems.find((item) => item.id === rewardId)?.label ??
     deguVariants.find((item) => item.id === rewardId)?.label ??
     pixelDeguShots.find((item) => item.id === rewardId)?.label ??
-    rewardId
-  );
+    rewardId;
+
+  return localizedName(locale, rewardId, fallback);
 }
 
 function rewardImage(rewardId: string): string {
@@ -1154,12 +1295,12 @@ function rewardImage(rewardId: string): string {
   );
 }
 
-function animalChoiceBadge(shot: PixelDeguShot, owned: boolean): string {
+function animalChoiceBadge(locale: Locale, shot: PixelDeguShot, owned: boolean): string {
   if (!owned) return compactUnlockCost(deguShotUnlockCost(shot.id));
   if (/^\d+$/.test(shot.id)) return shot.id;
-  return shot.label
+  return localizedName(locale, shot.id, shot.label)
     .split(/\s+/)
-    .map((part) => part.slice(0, 3))
+    .map((part) => part.slice(0, locale === 'ja' ? 4 : 3))
     .join('.');
 }
 
@@ -1169,6 +1310,7 @@ function compactUnlockCost(cost: number): string {
 }
 
 function getScreenCue({
+  locale,
   screen,
   economy,
   stats,
@@ -1179,6 +1321,7 @@ function getScreenCue({
   selectedOutfitCount,
   ownedRewardCount
 }: {
+  locale: Locale;
   screen: ScreenId;
   economy: EconomyState;
   stats: GameStats;
@@ -1191,49 +1334,50 @@ function getScreenCue({
 }): ScreenCueContent {
   if (screen === 'placement') {
     return {
-      title: 'Decor',
-      detail: `Place ${selectedDecor.label}`,
-      meta: `Cell ${selectedCell.x + 1}-${selectedCell.y + 1}`,
+      title: screenLabel(locale, 'placement'),
+      detail: text(locale, `Place ${selectedDecor.label}`, `${localizedName(locale, selectedDecor.id, selectedDecor.label)}を配置`),
+      meta: text(locale, `Cell ${selectedCell.x + 1}-${selectedCell.y + 1}`, `マス ${selectedCell.x + 1}-${selectedCell.y + 1}`),
       action: 'place-decor'
     };
   }
 
   if (screen === 'wardrobe') {
     return {
-      title: 'Animals',
-      detail: selectedAccessory ? 'Tune item' : 'Pick animal',
-      meta: `${selectedOutfitCount} active`,
+      title: screenLabel(locale, 'wardrobe'),
+      detail: selectedAccessory ? text(locale, 'Tune item', '位置を調整') : text(locale, 'Pick animal', 'どうぶつを選ぶ'),
+      meta: text(locale, `${selectedOutfitCount} active`, `${selectedOutfitCount}個つけてる`),
       action: 'style-animal'
     };
   }
 
   if (screen === 'gacha') {
     return {
-      title: 'Gift',
-      detail: 'Use earned tickets',
-      meta: `${formatHudNumber(economy.tickets)} tickets`,
+      title: screenLabel(locale, 'gacha'),
+      detail: text(locale, 'Use earned tickets', 'チケットで開ける'),
+      meta: text(locale, `${formatHudNumber(economy.tickets)} tickets`, `${formatHudNumber(economy.tickets)}枚`),
       action: 'open-gift'
     };
   }
 
   if (screen === 'storage') {
     return {
-      title: 'Storage',
-      detail: activeTheme.label,
-      meta: `${ownedRewardCount} rewards`,
+      title: screenLabel(locale, 'storage'),
+      detail: localizedName(locale, activeTheme.id, activeTheme.label),
+      meta: text(locale, `${ownedRewardCount} rewards`, `${ownedRewardCount}個所持`),
       action: 'save-layout'
     };
   }
 
   return {
-    title: 'Island',
-    detail: 'Tap, feed, claim',
+    title: screenLabel(locale, 'home'),
+    detail: text(locale, 'Tap, feed, claim', 'タップ・お世話・受け取り'),
     meta: `Lv ${stats.level} +${formatHudNumber(stats.idleIncomePerSecond)}/s`,
     action: 'care-loop'
   };
 }
 
 function ScreenCue({
+  locale,
   screen,
   economy,
   stats,
@@ -1244,6 +1388,7 @@ function ScreenCue({
   selectedOutfitCount,
   ownedRewardCount
 }: {
+  locale: Locale;
   screen: ScreenId;
   economy: EconomyState;
   stats: GameStats;
@@ -1255,6 +1400,7 @@ function ScreenCue({
   ownedRewardCount: number;
 }) {
   const cue = getScreenCue({
+    locale,
     screen,
     economy,
     stats,
@@ -1283,18 +1429,22 @@ function ScreenCue({
 }
 
 function Hud({
+  locale,
   economy,
   stats,
   status,
   activeTheme,
   missingAssets,
+  onToggleLocale,
   onSettings
 }: {
+  locale: Locale;
   economy: EconomyState;
   stats: GameStats;
   status: string;
   activeTheme: BackgroundTheme;
   missingAssets: string[];
+  onToggleLocale: () => void;
   onSettings: () => void;
 }) {
   return (
@@ -1312,16 +1462,24 @@ function Hud({
         <img src={runtimeAssets.shard} alt="" />
         <strong>{formatHudNumber(economy.shards)}</strong>
       </div>
-      <div className="theme-chip" aria-label={`Current theme ${activeTheme.label}`}>
+      <div className="theme-chip" aria-label={text(locale, `Current theme ${activeTheme.label}`, `現在の背景 ${localizedName(locale, activeTheme.id, activeTheme.label)}`)}>
         <span style={{ backgroundColor: activeTheme.swatch }} />
       </div>
-      <button className="round-button" type="button" aria-label="Settings" onClick={onSettings}>
+      <button
+        className="round-button locale-button"
+        type="button"
+        aria-label={text(locale, 'Switch language', '言語を切り替え')}
+        onClick={onToggleLocale}
+      >
+        {locale === 'ja' ? 'JP' : 'EN'}
+      </button>
+      <button className="round-button" type="button" aria-label={text(locale, 'Settings', '設定')} onClick={onSettings}>
         ...
       </button>
       <div className="sr-only" role="status">
-        {status}. {missingAssets.length > 0 ? `${missingAssets.length} assets failed to load.` : 'All runtime assets loaded.'}
+        {status}. {missingAssets.length > 0 ? text(locale, `${missingAssets.length} assets failed to load.`, `${missingAssets.length}個の素材が読み込めません。`) : text(locale, 'All runtime assets loaded.', 'すべての素材を読み込みました。')}
       </div>
-      {missingAssets.length > 0 && <div className="asset-warning">Asset load issue</div>}
+      {missingAssets.length > 0 && <div className="asset-warning">{text(locale, 'Asset load issue', '素材エラー')}</div>}
     </header>
   );
 }
@@ -1333,6 +1491,7 @@ function formatHudNumber(value: number): string {
 }
 
 function GameLoopPanel({
+  locale,
   economy,
   progression,
   stats,
@@ -1343,6 +1502,7 @@ function GameLoopPanel({
   onCareAction,
   onGuideAction
 }: {
+  locale: Locale;
   economy: EconomyState;
   progression: ProgressionState;
   stats: GameStats;
@@ -1362,7 +1522,9 @@ function GameLoopPanel({
     100,
     Math.round((stats.affectionIntoLevel / stats.affectionForNextLevel) * 100)
   );
-  const claimLabel = stats.claimableTickets > 0 ? `Claim x${stats.claimableTickets}` : 'Charging';
+  const claimLabel = stats.claimableTickets > 0
+    ? text(locale, `Claim x${stats.claimableTickets}`, `受取 x${stats.claimableTickets}`)
+    : text(locale, 'Charging', 'ため中');
   const careIcons: Record<CareActionId, string> = {
     brush: runtimeAssets.careBrush,
     snack: runtimeAssets.seedPouch
@@ -1370,18 +1532,18 @@ function GameLoopPanel({
   const currentGuideId = guideTasks.find((task) => !task.done)?.id ?? guideTasks[0]?.id;
 
   return (
-    <section className="game-loop-panel" aria-label="Progression">
+    <section className="game-loop-panel" aria-label={text(locale, 'Progression', '進行')}>
       <div className="loop-head">
         <div>
           <strong>Lv {stats.level}</strong>
           <span>{stats.xpIntoLevel}/{stats.xpForNextLevel}</span>
         </div>
         <div>
-          <strong>Tap +{stats.tapPower}</strong>
-          <span>{upgradeCatalog.length - progression.ownedUpgradeIds.length} upgrades</span>
+          <strong>{text(locale, `Tap +${stats.tapPower}`, `タップ +${stats.tapPower}`)}</strong>
+          <span>{text(locale, `${upgradeCatalog.length - progression.ownedUpgradeIds.length} upgrades`, `強化あと${upgradeCatalog.length - progression.ownedUpgradeIds.length}`)}</span>
         </div>
       </div>
-      <div className="guide-rail" aria-label="Next action guide">
+      <div className="guide-rail" aria-label={text(locale, 'Next action guide', '次の行動')}>
         {guideTasks.map((task) => (
           <button
             key={task.id}
@@ -1395,22 +1557,22 @@ function GameLoopPanel({
           >
             <span>{task.label}</span>
             <strong>{task.value}</strong>
-            <small>{task.done ? 'Done' : task.action}</small>
+            <small>{task.done ? text(locale, 'Done', '完了') : task.action}</small>
           </button>
         ))}
       </div>
       <div className="meter-row">
-        <span className="meter-track" aria-label="XP progress">
+        <span className="meter-track" aria-label={text(locale, 'XP progress', '経験値')}>
           <span style={{ width: `${xpPct}%` }} />
         </span>
-        <span className="meter-track ticket-meter" aria-label="Ticket progress">
+        <span className="meter-track ticket-meter" aria-label={text(locale, 'Ticket progress', 'チケット進行')}>
           <span style={{ width: `${ticketPct}%` }} />
         </span>
       </div>
-      <div className="care-row" aria-label="Care actions">
+      <div className="care-row" aria-label={text(locale, 'Care actions', 'お世話')}>
         <div className="care-meter">
-          <span>Bond {stats.affectionLevel}</span>
-          <span className="meter-track affection-meter" aria-label="Bond progress">
+          <span>{text(locale, `Bond ${stats.affectionLevel}`, `なかよし ${stats.affectionLevel}`)}</span>
+          <span className="meter-track affection-meter" aria-label={text(locale, 'Bond progress', 'なかよし進行')}>
             <span style={{ width: `${affectionPct}%` }} />
           </span>
         </div>
@@ -1420,7 +1582,7 @@ function GameLoopPanel({
             className="care-button"
             type="button"
             onClick={() => onCareAction(action.id)}
-            aria-label={`${action.label} degu`}
+            aria-label={text(locale, `${action.label} degu`, `デグーに${action.label}`)}
           >
             <img src={careIcons[action.id]} alt="" />
             <span>{action.label}</span>
@@ -1434,7 +1596,7 @@ function GameLoopPanel({
           data-ready={stats.claimableTickets > 0}
           disabled={stats.claimableTickets <= 0}
           onClick={onClaimTickets}
-          aria-label="Claim earned tickets"
+          aria-label={text(locale, 'Claim earned tickets', 'チケットを受け取る')}
         >
           <img src={runtimeAssets.ticket} alt="" />
           {claimLabel}
@@ -1445,21 +1607,21 @@ function GameLoopPanel({
             type="button"
             data-affordable={economy[nextUpgrade.cost.currency] >= nextUpgrade.cost.amount}
             onClick={() => onBuyUpgrade(nextUpgrade.id)}
-            aria-label={`Buy ${nextUpgrade.label}`}
+            aria-label={text(locale, `Buy ${nextUpgrade.label}`, `${nextUpgrade.label}を買う`)}
           >
             <span>{nextUpgrade.label}</span>
             <strong>
-              {nextUpgrade.cost.currency === 'shards' ? 'Shards' : 'Coins'} {formatNumber(nextUpgrade.cost.amount)}
+              {text(locale, nextUpgrade.cost.currency === 'shards' ? 'Shards' : 'Coins', nextUpgrade.cost.currency === 'shards' ? 'かけら' : 'コイン')} {formatNumber(nextUpgrade.cost.amount)}
             </strong>
           </button>
         ) : (
           <button className="next-upgrade-button" type="button" disabled>
-            <span>Upgrades</span>
-            <strong>Complete</strong>
+            <span>{text(locale, 'Upgrades', '強化')}</span>
+            <strong>{text(locale, 'Complete', '完了')}</strong>
           </button>
         )}
       </div>
-      <div className="upgrade-strip" aria-label="Upgrade list">
+      <div className="upgrade-strip" aria-label={text(locale, 'Upgrade list', '強化リスト')}>
         {upgradeCatalog.map((upgrade) => {
           const owned = progression.ownedUpgradeIds.includes(upgrade.id);
           const affordable = economy[upgrade.cost.currency] >= upgrade.cost.amount;
@@ -1472,10 +1634,10 @@ function GameLoopPanel({
               data-affordable={affordable}
               disabled={owned}
               onClick={() => onBuyUpgrade(upgrade.id)}
-              aria-label={`${owned ? 'Owned' : 'Buy'} ${upgrade.label}`}
+              aria-label={text(locale, `${owned ? 'Owned' : 'Buy'} ${upgrade.label}`, `${owned ? '所持中' : '購入'} ${upgrade.label}`)}
             >
               <span>{upgrade.label}</span>
-              <strong>{owned ? 'Owned' : formatNumber(upgrade.cost.amount)}</strong>
+              <strong>{owned ? text(locale, 'Owned', '所持') : formatNumber(upgrade.cost.amount)}</strong>
             </button>
           );
         })}
@@ -1485,6 +1647,7 @@ function GameLoopPanel({
 }
 
 function IslandScene({
+  locale,
   save,
   selectedDecor,
   selectedCell,
@@ -1497,8 +1660,10 @@ function IslandScene({
   accessoryPlacements,
   customDeguFilter,
   onTapDegu,
-  onSelectCell
+  onSelectCell,
+  onMoveCell
 }: {
+  locale: Locale;
   save: PrototypeSave;
   selectedDecor: DecorItem;
   selectedCell: Cell;
@@ -1512,6 +1677,7 @@ function IslandScene({
   customDeguFilter: string;
   onTapDegu: () => void;
   onSelectCell: (cell: Cell) => void;
+  onMoveCell: (dx: number, dy: number) => void;
 }) {
   const ghost = gridToScene(selectedCell, selectedDecor);
 
@@ -1546,7 +1712,24 @@ function IslandScene({
       })}
 
       {screen === 'placement' && (
-        <div className="placement-grid" aria-label="Placement cells">
+        <div className="placement-grid" aria-label={text(locale, 'Placement cells', '配置マス')}>
+          <div className="placement-grid-mesh" aria-hidden="true">
+            {meshLines.map((line) => (
+              <span
+                key={line.id}
+                className="grid-mesh-line"
+                data-kind={line.kind}
+                style={
+                  {
+                    left: `${line.x1}%`,
+                    top: `${line.y1}%`,
+                    width: `${line.length}%`,
+                    '--mesh-angle': `${line.angle}deg`
+                  } as React.CSSProperties
+                }
+              />
+            ))}
+          </div>
           {Array.from({ length: grid.width * grid.height }).map((_, index) => {
             const x = index % grid.width;
             const y = Math.floor(index / grid.width);
@@ -1564,7 +1747,7 @@ function IslandScene({
                 data-cell-x={x}
                 data-cell-y={y}
                 style={{ left: `${anchor.x}%`, top: `${anchor.y}%` }}
-                aria-label={`Select cell ${x + 1}, ${y + 1}`}
+                aria-label={text(locale, `Select cell ${x + 1}, ${y + 1}`, `マス ${x + 1}, ${y + 1}`)}
                 onClick={() => {
                   onSelectCell({ x, y });
                 }}
@@ -1602,10 +1785,11 @@ function IslandScene({
               } as React.CSSProperties
             }
           />
+          <PlacementNudge locale={locale} selectedCell={selectedCell} onMoveCell={onMoveCell} />
         </div>
       )}
 
-      <button className="degu-button" type="button" aria-label="Tap degu for coins" onClick={onTapDegu}>
+      <button className="degu-button" type="button" aria-label={text(locale, 'Tap degu for coins', 'デグーをタップしてコイン')} onClick={onTapDegu}>
         <PixelDeguStage
           mode="island"
           selectedShotId={selectedDeguShotId}
@@ -1619,19 +1803,51 @@ function IslandScene({
   );
 }
 
+function PlacementNudge({
+  locale,
+  selectedCell,
+  onMoveCell
+}: {
+  locale: Locale;
+  selectedCell: Cell;
+  onMoveCell: (dx: number, dy: number) => void;
+}) {
+  return (
+    <div className="placement-nudge" aria-label={text(locale, 'Move selected cell', '選択マスを移動')}>
+      <button type="button" className="nudge-button up" onClick={() => onMoveCell(0, -1)} aria-label={text(locale, 'Move up', '上へ移動')}>
+        ↑
+      </button>
+      <button type="button" className="nudge-button left" onClick={() => onMoveCell(-1, 0)} aria-label={text(locale, 'Move left', '左へ移動')}>
+        ←
+      </button>
+      <span className="nudge-readout" aria-hidden="true">
+        {selectedCell.x + 1}-{selectedCell.y + 1}
+      </span>
+      <button type="button" className="nudge-button right" onClick={() => onMoveCell(1, 0)} aria-label={text(locale, 'Move right', '右へ移動')}>
+        →
+      </button>
+      <button type="button" className="nudge-button down" onClick={() => onMoveCell(0, 1)} aria-label={text(locale, 'Move down', '下へ移動')}>
+        ↓
+      </button>
+    </div>
+  );
+}
+
 function MapSwitcher({
+  locale,
   activeMapId,
   maps,
   level,
   onSelectMap
 }: {
+  locale: Locale;
   activeMapId: GardenMapId;
   maps: GardenMapState[];
   level: number;
   onSelectMap: (id: GardenMapId) => void;
 }) {
   return (
-    <div className="map-switcher" aria-label="Garden maps">
+    <div className="map-switcher" aria-label={text(locale, 'Garden maps', '庭MAP')}>
       {gardenMapCatalog.map((definition) => {
         const map = maps.find((item) => item.id === definition.id);
         const unlocked = isGardenMapUnlocked(level, definition);
@@ -1648,12 +1864,13 @@ function MapSwitcher({
             onClick={() => onSelectMap(definition.id)}
             aria-label={
               unlocked
-                ? `Switch to ${definition.label}`
-                : `${definition.label} unlocks at level ${definition.unlockLevel}`
+                ? text(locale, `Switch to ${definition.label}`, `${mapLabel(locale, definition)}へ切替`)
+                : text(locale, `${definition.label} unlocks at level ${definition.unlockLevel}`, `${mapLabel(locale, definition)}はLv${definition.unlockLevel}で解放`)
             }
           >
-            <strong>{definition.label}</strong>
-            <span>{unlocked ? `${decorCount} decor` : `Lv ${definition.unlockLevel}`}</span>
+            <strong>{mapLabel(locale, definition)}</strong>
+            <span>{unlocked ? text(locale, `${decorCount} decor`, `${decorCount}個`) : `Lv ${definition.unlockLevel}`}</span>
+            <small>{mapDetail(locale, definition)}</small>
           </button>
         );
       })}
@@ -1662,6 +1879,7 @@ function MapSwitcher({
 }
 
 function PlacementPanel({
+  locale,
   selectedDecorId,
   selectedCell,
   rotation,
@@ -1679,6 +1897,7 @@ function PlacementPanel({
   onCancel,
   onUndo
 }: {
+  locale: Locale;
   selectedDecorId: string;
   selectedCell: Cell;
   rotation: number;
@@ -1699,24 +1918,25 @@ function PlacementPanel({
   const selectedDecor = decorItems.find((decor) => decor.id === selectedDecorId) ?? decorItems[0];
 
   return (
-    <section className="bottom-sheet placement-sheet" aria-label="Decor placement">
+    <section className="bottom-sheet placement-sheet" aria-label={text(locale, 'Decor placement', '家具配置')}>
       <div className="sheet-handle" />
       <MapSwitcher
+        locale={locale}
         activeMapId={activeMapId}
         maps={maps}
         level={level}
         onSelectMap={onSelectMap}
       />
       <div className="mode-row">
-        <strong>{selectedDecor.label}</strong>
+        <strong>{localizedName(locale, selectedDecor.id, selectedDecor.label)}</strong>
         <span>
-          {selectedDecor.footprint.w}x{selectedDecor.footprint.h} / cell {selectedCell.x + 1}-{selectedCell.y + 1} / {validCellCount} spots
+          {text(locale, `${selectedDecor.footprint.w}x${selectedDecor.footprint.h} / cell ${selectedCell.x + 1}-${selectedCell.y + 1} / ${validCellCount} spots`, `${selectedDecor.footprint.w}x${selectedDecor.footprint.h} / マス ${selectedCell.x + 1}-${selectedCell.y + 1} / 空き${validCellCount}`)}
         </span>
       </div>
-      <div className="placement-step-row" aria-label="Placement steps">
-        <span data-active="true">Pick</span>
-        <span data-active={validCellCount > 0}>Spot</span>
-        <span data-active={canConfirm}>Place</span>
+      <div className="placement-step-row" aria-label={text(locale, 'Placement steps', '配置ステップ')}>
+        <span data-active="true">{text(locale, 'Pick', '選ぶ')}</span>
+        <span data-active={validCellCount > 0}>{text(locale, 'Spot', '場所')}</span>
+        <span data-active={canConfirm}>{text(locale, 'Place', '置く')}</span>
       </div>
       <div className="decor-tray">
         {decorItems.map((decor) => {
@@ -1728,39 +1948,39 @@ function PlacementPanel({
               type="button"
               data-active={selectedDecorId === decor.id}
               data-locked={!owned}
-              aria-label={`${owned ? 'Select' : 'Locked'} ${decor.label}`}
+              aria-label={text(locale, `${owned ? 'Select' : 'Locked'} ${decor.label}`, `${owned ? '選択' : '未解放'} ${localizedName(locale, decor.id, decor.label)}`)}
               onClick={() => onSelectDecor(decor.id)}
             >
               <img src={decor.src} alt="" draggable={false} />
-              <span>{owned ? `+${decor.bonusPerSecond}/s` : 'Locked'}</span>
+              <span>{owned ? `+${decor.bonusPerSecond}/s` : text(locale, 'Locked', '未解放')}</span>
             </button>
           );
         })}
       </div>
       <div className="action-row">
-        <button className="action danger" type="button" onClick={onCancel} aria-label="Cancel placement">
-          Cancel
+        <button className="action danger" type="button" onClick={onCancel} aria-label={text(locale, 'Cancel placement', '配置をやめる')}>
+          {text(locale, 'Cancel', '閉じる')}
         </button>
         <button
           className="action undo"
           type="button"
           disabled={!canUndo}
           onClick={onUndo}
-          aria-label={canUndo ? 'Undo last decor' : 'No decor to undo'}
+          aria-label={canUndo ? text(locale, 'Undo last decor', '最後の家具を戻す') : text(locale, 'No decor to undo', '戻せる家具がありません')}
         >
-          Undo
+          {text(locale, 'Undo', '戻す')}
         </button>
-        <button className="action rotate" type="button" onClick={onRotate} aria-label="Rotate placement">
-          Turn
+        <button className="action rotate" type="button" onClick={onRotate} aria-label={text(locale, 'Rotate placement', '家具を回転')}>
+          {text(locale, 'Turn', '回転')}
         </button>
         <button
           className="action confirm"
           type="button"
           disabled={!canConfirm}
           onClick={onConfirm}
-          aria-label={canConfirm ? 'Confirm placement' : 'No valid placement spot'}
+          aria-label={canConfirm ? text(locale, 'Confirm placement', '配置を確定') : text(locale, 'No valid placement spot', '置ける場所がありません')}
         >
-          {canConfirm ? 'Place' : 'No spot'}
+          {canConfirm ? text(locale, 'Place', '置く') : text(locale, 'No spot', '空きなし')}
         </button>
       </div>
     </section>
@@ -1768,6 +1988,7 @@ function PlacementPanel({
 }
 
 function WardrobeScreen({
+  locale,
   selectedVariantId,
   selectedDeguShotId,
   selectedOutfitIds,
@@ -1784,6 +2005,7 @@ function WardrobeScreen({
   onChangeDeguTone,
   onApply
 }: {
+  locale: Locale;
   selectedVariantId: string;
   selectedDeguShotId: string;
   selectedOutfitIds: string[];
@@ -1809,7 +2031,7 @@ function WardrobeScreen({
   );
 
   return (
-    <section className="wardrobe-screen" aria-label="Floating companions">
+    <section className="wardrobe-screen" aria-label={text(locale, 'Floating companions', 'どうぶつとおとも')}>
       <PixelDeguStage
         mode="wardrobe"
         selectedShotId={selectedDeguShotId}
@@ -1818,7 +2040,7 @@ function WardrobeScreen({
         accessoryPlacements={accessoryPlacements}
         customFilter={customFilter}
       />
-      <div className="shot-row" aria-label="Animal choices">
+      <div className="shot-row" aria-label={text(locale, 'Animal choices', 'どうぶつ選択')}>
         {pixelDeguShots.map((shot) => {
           const owned = isRewardOwned(ownedRewardIds, shot.id);
           return (
@@ -1829,10 +2051,10 @@ function WardrobeScreen({
               data-active={shot.id === selectedDeguShotId}
               data-locked={!owned}
               onClick={() => onSelectDeguShot(shot.id)}
-              aria-label={`${owned ? 'Select' : 'Unlock'} animal ${shot.label}`}
+              aria-label={text(locale, `${owned ? 'Select' : 'Unlock'} animal ${shot.label}`, `${owned ? '選択' : '解放'} ${localizedName(locale, shot.id, shot.label)}`)}
             >
               <img src={shot.src} alt="" draggable={false} />
-              <span>{animalChoiceBadge(shot, owned)}</span>
+              <span>{animalChoiceBadge(locale, shot, owned)}</span>
             </button>
           );
         })}
@@ -1849,12 +2071,12 @@ function WardrobeScreen({
               data-active={variant.id === selectedVariantId}
               data-locked={!owned}
               onClick={() => onSelectVariant(variant.id)}
-              aria-label={`${owned ? 'Select' : 'Locked'} ${variant.label}`}
+              aria-label={text(locale, `${owned ? 'Select' : 'Locked'} ${variant.label}`, `${owned ? '選択' : '未解放'} ${localizedName(locale, variant.id, variant.label)}`)}
             />
           );
         })}
       </div>
-      <div className="tone-panel" aria-label="Degu color tuning">
+      <div className="tone-panel" aria-label={text(locale, 'Degu color tuning', '毛色調整')}>
         <label>
           H
           <input
@@ -1886,20 +2108,20 @@ function WardrobeScreen({
           />
         </label>
       </div>
-      <div className="accessory-tune-panel" aria-label="Accessory position tools" data-empty={!selectedAccessory}>
-        <strong>{selectedAccessory?.label ?? 'Select item'}</strong>
+      <div className="accessory-tune-panel" aria-label={text(locale, 'Accessory position tools', 'おとも位置調整')} data-empty={!selectedAccessory}>
+        <strong>{selectedAccessory ? localizedName(locale, selectedAccessory.id, selectedAccessory.label) : text(locale, 'Select item', 'おともを選択')}</strong>
         <div className="accessory-tool-grid">
-          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { y: -2 })} aria-label="Move accessory up">↑</button>
-          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { y: 2 })} aria-label="Move accessory down">↓</button>
-          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { x: -2 })} aria-label="Move accessory left">←</button>
-          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { x: 2 })} aria-label="Move accessory right">→</button>
-          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { scale: 0.08 })} aria-label="Scale accessory up">＋</button>
-          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { scale: -0.08 })} aria-label="Scale accessory down">－</button>
-          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { rotation: -5 })} aria-label="Rotate accessory left">↺</button>
-          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { rotation: 5 })} aria-label="Rotate accessory right">↻</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { y: -2 })} aria-label={text(locale, 'Move accessory up', 'おともを上へ')}>↑</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { y: 2 })} aria-label={text(locale, 'Move accessory down', 'おともを下へ')}>↓</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { x: -2 })} aria-label={text(locale, 'Move accessory left', 'おともを左へ')}>←</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { x: 2 })} aria-label={text(locale, 'Move accessory right', 'おともを右へ')}>→</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { scale: 0.08 })} aria-label={text(locale, 'Scale accessory up', 'おともを大きく')}>+</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { scale: -0.08 })} aria-label={text(locale, 'Scale accessory down', 'おともを小さく')}>-</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { rotation: -5 })} aria-label={text(locale, 'Rotate accessory left', 'おともを左回転')}>↺</button>
+          <button type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onAdjustAccessory(selectedAccessory.id, { rotation: 5 })} aria-label={text(locale, 'Rotate accessory right', 'おともを右回転')}>↻</button>
         </div>
-        <button className="accessory-reset" type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onResetAccessory(selectedAccessory.id)} aria-label="Reset accessory position">
-          reset
+        <button className="accessory-reset" type="button" disabled={!selectedAccessory} onClick={() => selectedAccessory && onResetAccessory(selectedAccessory.id)} aria-label={text(locale, 'Reset accessory position', 'おとも位置をリセット')}>
+          {text(locale, 'reset', 'リセット')}
         </button>
       </div>
       <div className="wardrobe-grid">
@@ -1917,22 +2139,23 @@ function WardrobeScreen({
                 onSelectAccessory(item.id);
                 onToggleOutfit(item.id);
               }}
-              aria-label={`${owned ? 'Toggle' : 'Locked'} ${item.label}`}
+              aria-label={text(locale, `${owned ? 'Toggle' : 'Locked'} ${item.label}`, `${owned ? '切替' : '未解放'} ${localizedName(locale, item.id, item.label)}`)}
             >
               <img src={item.src} alt="" draggable={false} />
-              {!owned && <span>Locked</span>}
+              {!owned && <span>{text(locale, 'Locked', '未解放')}</span>}
             </button>
           );
         })}
       </div>
-      <button className="apply-button" type="button" onClick={onApply} aria-label="Apply accessories">
-        Apply
+      <button className="apply-button" type="button" onClick={onApply} aria-label={text(locale, 'Apply accessories', 'おともを反映')}>
+        {text(locale, 'Apply', '決定')}
       </button>
     </section>
   );
 }
 
 function GachaScreen({
+  locale,
   ownedRewardIds,
   history,
   reveal,
@@ -1941,6 +2164,7 @@ function GachaScreen({
   onTen,
   onPremium
 }: {
+  locale: Locale;
   ownedRewardIds: string[];
   history: string[];
   reveal: GachaReveal | null;
@@ -1992,13 +2216,13 @@ function GachaScreen({
     accessoryItems.find((item) => item.id === 'teacup-cloud'),
     accessoryItems.find((item) => item.id === 'lavender-puff')
   ].filter(Boolean) as Array<DecorItem | FloatingItem | BackgroundTheme | PixelDeguShot>;
-  const historySummary = history.slice(0, 3).map(rewardLabel).join(', ');
+  const historySummary = history.slice(0, 3).map((id) => rewardLabel(locale, id)).join(', ');
 
   return (
-    <section className="gacha-screen" aria-label="Free sky gift" data-opening={isOpening} data-has-reveal={Boolean(reveal)}>
+    <section className="gacha-screen" aria-label={text(locale, 'Free sky gift', '無料の空ギフト')} data-opening={isOpening} data-has-reveal={Boolean(reveal)}>
       <img className="gacha-machine" src={runtimeAssets.skyGiftMachine} alt="" draggable={false} />
       <p className="free-label" aria-live="polite">
-        {isOpening ? 'Opening sky gift...' : 'Earned tickets only'}
+        {isOpening ? text(locale, 'Opening sky gift...', 'ギフトを開けています...') : text(locale, 'Earned tickets only', 'チケットだけで開ける')}
       </p>
       <div className="pull-row">
         <button
@@ -2006,7 +2230,7 @@ function GachaScreen({
           type="button"
           disabled={isOpening}
           onClick={onSingle}
-          aria-label="Open one sky gift"
+          aria-label={text(locale, 'Open one sky gift', '空ギフトを1回開ける')}
         >
           <img src={runtimeAssets.ticket} alt="" />
           <span>1</span>
@@ -2016,7 +2240,7 @@ function GachaScreen({
           type="button"
           disabled={isOpening}
           onClick={onTen}
-          aria-label="Open ten sky gifts"
+          aria-label={text(locale, 'Open ten sky gifts', '空ギフトを10回開ける')}
         >
           <img src={runtimeAssets.ticket} alt="" />
           <span>10</span>
@@ -2026,15 +2250,15 @@ function GachaScreen({
           type="button"
           disabled={isOpening}
           onClick={onPremium}
-          aria-label="Open premium sky gift"
+          aria-label={text(locale, 'Open premium sky gift', 'プレミアム空ギフトを開ける')}
         >
           <img src={runtimeAssets.ticket} alt="" />
           <span>5</span>
-          <small>rare+</small>
+          <small>{text(locale, 'rare+', 'レア+')}</small>
         </button>
       </div>
       {reveal && (
-        <div key={reveal.id} className="gacha-reveal" data-banner={reveal.bannerId} aria-label="Sky gift results">
+        <div key={reveal.id} className="gacha-reveal" data-banner={reveal.bannerId} aria-label={text(locale, 'Sky gift results', '空ギフト結果')}>
           {reveal.results.slice(0, 4).map((pull, index) => (
             <div
               key={`${pull.entry.rewardId}-${index}`}
@@ -2043,7 +2267,7 @@ function GachaScreen({
               data-duplicate={pull.duplicate}
             >
               <img src={rewardImage(pull.entry.rewardId)} alt="" draggable={false} />
-              <span>{rewardLabel(pull.entry.rewardId)}</span>
+              <span>{rewardLabel(locale, pull.entry.rewardId)}</span>
             </div>
           ))}
         </div>
@@ -2055,12 +2279,13 @@ function GachaScreen({
           </div>
         ))}
       </div>
-      <div className="history-chip">{history.length > 0 ? `Last: ${historySummary}` : 'No gifts opened yet'}</div>
+      <div className="history-chip">{history.length > 0 ? text(locale, `Last: ${historySummary}`, `最近: ${historySummary}`) : text(locale, 'No gifts opened yet', 'まだ開けていません')}</div>
     </section>
   );
 }
 
 function StorageOverlay({
+  locale,
   save,
   activeTheme,
   stats,
@@ -2078,6 +2303,7 @@ function StorageOverlay({
   onClearLayoutPreset,
   onMarketTrade
 }: {
+  locale: Locale;
   save: PrototypeSave;
   activeTheme: BackgroundTheme;
   stats: GameStats;
@@ -2096,28 +2322,28 @@ function StorageOverlay({
   onMarketTrade: (offerId: string) => void;
 }) {
   return (
-    <section className="storage-sheet" aria-label="Storage and customization">
+    <section className="storage-sheet" aria-label={text(locale, 'Storage and customization', '倉庫とカスタム')}>
       <div className="storage-head">
-        <strong>Storage</strong>
-        <span>{save.ownedRewardIds.length} rewards</span>
+        <strong>{screenLabel(locale, 'storage')}</strong>
+        <span>{text(locale, `${save.ownedRewardIds.length} rewards`, `${save.ownedRewardIds.length}個所持`)}</span>
       </div>
       <div className="storage-stats">
         <span>Lv {stats.level}</span>
         <span>+{stats.idleIncomePerSecond}/s</span>
-        <span>{save.placedDecor.length} decor</span>
-        <span>{save.gachaHistory.length} pulls</span>
+        <span>{text(locale, `${save.placedDecor.length} decor`, `配置${save.placedDecor.length}`)}</span>
+        <span>{text(locale, `${save.gachaHistory.length} pulls`, `ギフト${save.gachaHistory.length}`)}</span>
       </div>
-      <div className="map-panel" aria-label="Map unlocks">
+      <div className="map-panel" aria-label={text(locale, 'Map unlocks', 'MAP解放')}>
         <div className="mode-row compact">
-          <strong>Maps</strong>
-          <span>{gardenMapCatalog.filter((map) => isGardenMapUnlocked(stats.level, map)).length}/3 open</span>
+          <strong>MAP</strong>
+          <span>{text(locale, `${gardenMapCatalog.filter((map) => isGardenMapUnlocked(stats.level, map)).length}/3 open`, `${gardenMapCatalog.filter((map) => isGardenMapUnlocked(stats.level, map)).length}/3 解放`)}</span>
         </div>
-        <MapSwitcher activeMapId={activeMapId} maps={maps} level={stats.level} onSelectMap={onSelectMap} />
+        <MapSwitcher locale={locale} activeMapId={activeMapId} maps={maps} level={stats.level} onSelectMap={onSelectMap} />
       </div>
-      <div className="market-panel" aria-label="Market exchange">
+      <div className="market-panel" aria-label={text(locale, 'Market exchange', 'マーケット交換')}>
         <div className="mode-row compact">
-          <strong>Market</strong>
-          <span>{save.economy.shards} shards</span>
+          <strong>{text(locale, 'Market', '交換')}</strong>
+          <span>{text(locale, `${save.economy.shards} shards`, `かけら${save.economy.shards}`)}</span>
         </div>
         <div className="market-offer-list">
           {marketOffers.map((offer) => {
@@ -2130,7 +2356,7 @@ function StorageOverlay({
                 disabled={!affordable}
                 data-affordable={affordable}
                 onClick={() => onMarketTrade(offer.id)}
-                aria-label={`Trade shards for ${offer.rewardTickets} sky ticket${offer.rewardTickets === 1 ? '' : 's'}`}
+                aria-label={text(locale, `Trade shards for ${offer.rewardTickets} sky ticket${offer.rewardTickets === 1 ? '' : 's'}`, `かけらをチケット${offer.rewardTickets}枚に交換`)}
               >
                 <strong>{offer.label}</strong>
                 <span>{offer.detail}</span>
@@ -2139,10 +2365,10 @@ function StorageOverlay({
           })}
         </div>
       </div>
-      <div className="collection-panel" aria-label="Unlock progress">
+      <div className="collection-panel" aria-label={text(locale, 'Unlock progress', '解放進行')}>
         <div className="mode-row compact">
-          <strong>Collection</strong>
-          <span>{ownedRewardIds.length} owned</span>
+          <strong>{text(locale, 'Collection', 'コレクション')}</strong>
+          <span>{text(locale, `${ownedRewardIds.length} owned`, `${ownedRewardIds.length}所持`)}</span>
         </div>
         <div className="collection-grid">
           {collectionGroups.map((group) => {
@@ -2155,7 +2381,7 @@ function StorageOverlay({
                     {group.owned}/{group.total}
                   </span>
                 </div>
-                <span className="collection-meter" aria-label={`${group.label} unlock progress`}>
+                <span className="collection-meter" aria-label={text(locale, `${group.label} unlock progress`, `${group.label}解放進行`)}>
                   <span style={{ width: `${pct}%` }} />
                 </span>
                 <small>{group.nextLabel}</small>
@@ -2166,8 +2392,8 @@ function StorageOverlay({
       </div>
       <div className="layout-preset-panel">
         <div className="mode-row compact">
-          <strong>Layout</strong>
-          <span>{activeTheme.label}</span>
+          <strong>{text(locale, 'Layout', 'レイアウト')}</strong>
+          <span>{localizedName(locale, activeTheme.id, activeTheme.label)}</span>
         </div>
         <div className="layout-preset-list">
           {layoutPresets.map((preset) => {
@@ -2183,29 +2409,29 @@ function StorageOverlay({
                   type="button"
                   disabled={!hasSave}
                   onClick={() => onClearLayoutPreset(preset.slot)}
-                  aria-label={`Clear layout preset ${preset.slot}`}
+                  aria-label={text(locale, `Clear layout preset ${preset.slot}`, `レイアウト${preset.slot}を消す`)}
                 >
                   x
                 </button>
-                <strong>{preset.label}</strong>
-                <span>{hasSave ? theme.label : 'Empty'}</span>
+                <strong>{text(locale, preset.label, `スロット${preset.slot}`)}</strong>
+                <span>{hasSave ? localizedName(locale, theme.id, theme.label) : text(locale, 'Empty', '空')}</span>
                 <div className="preset-actions">
                   <button
                     className="preset-button save"
                     type="button"
                     onClick={() => onSaveLayoutPreset(preset.slot)}
-                    aria-label={`Save layout preset ${preset.slot}`}
+                    aria-label={text(locale, `Save layout preset ${preset.slot}`, `レイアウト${preset.slot}を保存`)}
                   >
-                    Save
+                  {text(locale, 'Save', '保存')}
                   </button>
                   <button
                     className="preset-button load"
                     type="button"
                     disabled={!hasSave}
                     onClick={() => onLoadLayoutPreset(preset.slot)}
-                    aria-label={`Load layout preset ${preset.slot}`}
+                    aria-label={text(locale, `Load layout preset ${preset.slot}`, `レイアウト${preset.slot}を読込`)}
                   >
-                    Load
+                  {text(locale, 'Load', '読込')}
                   </button>
                 </div>
               </div>
@@ -2215,8 +2441,8 @@ function StorageOverlay({
       </div>
       <div className="theme-panel">
         <div className="mode-row compact">
-          <strong>Theme</strong>
-          <span>{activeTheme.label}</span>
+          <strong>{text(locale, 'Theme', '背景')}</strong>
+          <span>{localizedName(locale, activeTheme.id, activeTheme.label)}</span>
         </div>
         <div className="theme-tray">
           {backgroundThemes.map((theme) => {
@@ -2229,11 +2455,11 @@ function StorageOverlay({
                 data-active={selectedBackgroundId === theme.id}
                 data-locked={!owned}
                 onClick={() => onSelectBackground(theme.id)}
-                aria-label={`${owned ? 'Switch background to' : 'Locked'} ${theme.label}`}
+                aria-label={text(locale, `${owned ? 'Switch background to' : 'Locked'} ${theme.label}`, `${owned ? '背景を切替' : '未解放'} ${localizedName(locale, theme.id, theme.label)}`)}
               >
                 <img src={theme.src} alt="" draggable={false} />
                 <span style={{ backgroundColor: theme.swatch }} />
-                {!owned && <strong>Locked</strong>}
+                {!owned && <strong>{text(locale, 'Locked', '未解放')}</strong>}
               </button>
             );
           })}
@@ -2244,9 +2470,11 @@ function StorageOverlay({
 }
 
 function NavBar({
+  locale,
   active,
   onNavigate
 }: {
+  locale: Locale;
   active: ScreenId;
   onNavigate: (screen: ScreenId) => void;
 }) {
@@ -2259,10 +2487,10 @@ function NavBar({
   };
 
   return (
-    <nav className="bottom-nav" aria-label="AnimalBox screens">
+    <nav className="bottom-nav" aria-label={text(locale, 'AnimalBox screens', 'AnimalBox画面')}>
       {navOrder.map((screenId) => {
         const isActive = active === screenId;
-        const label = screens[screenId].label;
+        const label = screenLabel(locale, screenId);
 
         return (
           <button
@@ -2271,7 +2499,7 @@ function NavBar({
             className="nav-item"
             data-active={isActive}
             aria-current={isActive ? 'page' : undefined}
-            aria-label={isActive && screenId !== 'home' ? `Close ${label}` : `Open ${label}`}
+            aria-label={isActive && screenId !== 'home' ? text(locale, `Close ${label}`, `${label}を閉じる`) : text(locale, `Open ${label}`, `${label}を開く`)}
             onClick={() => onNavigate(screenId)}
           >
             <img src={icons[screenId]} alt="" draggable={false} />

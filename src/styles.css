@@ -178,6 +178,10 @@ button {
   margin-left: auto;
 }
 
+.locale-button {
+  font-size: 0.68rem;
+}
+
 .theme-chip span {
   display: block;
   width: 1.08rem;
@@ -337,7 +341,7 @@ button {
   min-height: 2.14rem;
   align-content: center;
   gap: 0.06rem;
-  padding: 0.2rem 0.22rem;
+  padding: 0.2rem 0.18rem;
   border-radius: 0.72rem;
   color: #4b331a;
   background: rgba(255, 255, 255, 0.56);
@@ -379,7 +383,7 @@ button {
 }
 
 .guide-task strong {
-  font-size: 0.56rem;
+  font-size: 0.52rem;
   font-weight: 1000;
 }
 
@@ -595,9 +599,9 @@ button {
   position: absolute;
   z-index: 3;
   left: 50%;
-  top: 61.5%;
-  width: 66%;
-  aspect-ratio: 2.35 / 1;
+  top: 60.8%;
+  width: 76%;
+  aspect-ratio: 2.6 / 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background:
@@ -653,6 +657,7 @@ button {
 
 .degu-button:focus-visible,
 .cell-button:focus-visible,
+.nudge-button:focus-visible,
 .asset-card:focus-visible,
 .theme-card:focus-visible,
 .preset-button:focus-visible,
@@ -675,6 +680,7 @@ button {
 }
 
 .asset-card,
+.nudge-button,
 .action,
 .apply-button,
 .pull-button,
@@ -698,6 +704,7 @@ button {
 }
 
 .asset-card:active,
+.nudge-button:active,
 .action:active,
 .apply-button:active,
 .pull-button:active,
@@ -837,7 +844,12 @@ button {
   grid-auto-columns: minmax(5.8rem, 1fr);
   gap: 0.36rem;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding: 0.2rem;
+  scroll-snap-type: x proximity;
   scrollbar-width: none;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
 }
 
 .map-switcher::-webkit-scrollbar {
@@ -846,9 +858,10 @@ button {
 
 .map-chip {
   display: grid;
-  min-height: 2.52rem;
-  gap: 0.12rem;
-  padding: 0.32rem 0.46rem;
+  scroll-snap-align: start;
+  min-height: 2.72rem;
+  gap: 0.1rem;
+  padding: 0.3rem 0.44rem;
   align-content: center;
   border-radius: 0.82rem;
   color: #543719;
@@ -869,7 +882,8 @@ button {
 }
 
 .map-chip strong,
-.map-chip span {
+.map-chip span,
+.map-chip small {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -887,6 +901,12 @@ button {
   opacity: 0.72;
 }
 
+.map-chip small {
+  font-size: 0.46rem;
+  font-weight: 850;
+  opacity: 0.6;
+}
+
 .placement-grid {
   position: absolute;
   inset: 0;
@@ -894,9 +914,89 @@ button {
   pointer-events: none;
 }
 
+.placement-nudge {
+  position: absolute;
+  z-index: 90;
+  right: 5.4%;
+  top: 42.6%;
+  display: grid;
+  grid-template-areas:
+    ". up ."
+    "left readout right"
+    ". down .";
+  grid-template-columns: repeat(3, 2.18rem);
+  grid-template-rows: repeat(3, 2.18rem);
+  gap: 0.18rem;
+  padding: 0.28rem;
+  border-radius: 1rem;
+  background: rgba(47, 39, 31, 0.52);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 239, 187, 0.22),
+    0 0.62rem 1.1rem rgba(42, 35, 28, 0.16);
+  pointer-events: auto;
+}
+
+.nudge-button,
+.nudge-readout {
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  border-radius: 0.68rem;
+  color: #4a3219;
+  background: rgba(255, 247, 218, 0.95);
+  box-shadow: inset 0 0 0 1px rgba(140, 92, 30, 0.18);
+  font-size: 1rem;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.nudge-button.up {
+  grid-area: up;
+}
+
+.nudge-button.left {
+  grid-area: left;
+}
+
+.nudge-button.right {
+  grid-area: right;
+}
+
+.nudge-button.down {
+  grid-area: down;
+}
+
+.nudge-readout {
+  grid-area: readout;
+  color: #fff4cb;
+  background: rgba(31, 26, 29, 0.72);
+  font-size: 0.58rem;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.32);
+}
+
+.placement-grid-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 54;
+  pointer-events: none;
+}
+
+.grid-mesh-line {
+  position: absolute;
+  height: 1px;
+  transform: rotate(var(--mesh-angle));
+  transform-origin: left center;
+  background: rgba(40, 100, 60, 0.32);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+.grid-mesh-line[data-kind="column"] {
+  background: rgba(31, 86, 64, 0.26);
+}
+
 .cell-button {
   position: absolute;
-  width: max(4.7%, 1.55rem);
+  width: max(3.58%, 1.52rem);
   aspect-ratio: 1;
   padding: 0;
   transform: translate(-50%, -50%) rotate(45deg);
@@ -907,7 +1007,7 @@ button {
 .footprint-cell {
   position: absolute;
   z-index: 58;
-  width: max(4.2%, 1.38rem);
+  width: max(3.25%, 1.14rem);
   aspect-ratio: 1;
   border-radius: 38% 62% 40% 60%;
   transform: translate(-50%, -50%) rotate(45deg);
@@ -929,12 +1029,11 @@ button {
 
 .cell-button::before {
   position: absolute;
-  inset: 14%;
+  inset: 30%;
   border-radius: 46% 54% 45% 55%;
   background:
-    radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.56) 0 12%, transparent 13%),
-    repeating-linear-gradient(140deg, rgba(64, 128, 75, 0.34) 0 2px, transparent 2px 8px),
-    rgba(234, 255, 191, 0.34);
+    radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.58) 0 18%, transparent 19%),
+    rgba(234, 255, 191, 0.42);
   box-shadow:
     inset 0 0 0 1px rgba(54, 120, 66, 0.26),
     0 0.16rem 0.24rem rgba(67, 94, 51, 0.12);
@@ -955,6 +1054,7 @@ button {
   border-radius: 50%;
   transform: rotate(-12deg);
   content: "";
+  display: none;
 }
 
 .placement-ghost {
@@ -1073,8 +1173,13 @@ button {
   grid-auto-flow: column;
   grid-template-columns: none;
   overflow-x: auto;
-  padding: 0.04rem 0.04rem 0.2rem;
+  padding: 0.04rem 0.8rem 0.24rem 0.04rem;
+  overscroll-behavior-x: contain;
+  scroll-padding: 0.04rem;
+  scroll-snap-type: x proximity;
   scrollbar-width: none;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
 }
 
 .placement-sheet .decor-tray::-webkit-scrollbar {
@@ -1084,6 +1189,7 @@ button {
 .placement-sheet .asset-card {
   min-height: 3.34rem;
   border-radius: 0.66rem;
+  scroll-snap-align: start;
 }
 
 .placement-sheet .asset-card img {
@@ -1405,8 +1511,13 @@ button {
   grid-template-rows: repeat(2, minmax(0, 1fr));
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0.08rem 0.08rem 0.42rem;
+  padding: 0.08rem 0.9rem 0.44rem 0.08rem;
+  overscroll-behavior-x: contain;
+  scroll-padding: 0.08rem;
+  scroll-snap-type: x proximity;
   scrollbar-width: none;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
 }
 
 .wardrobe-grid::-webkit-scrollbar {
@@ -1415,6 +1526,7 @@ button {
 
 .outfit-card-ui {
   min-height: clamp(3.22rem, 8.8dvh, 4.15rem);
+  scroll-snap-align: start;
 }
 
 .outfit-card-ui img {
@@ -1613,8 +1725,13 @@ button {
   gap: 0.42rem;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0.1rem 0.08rem 0.38rem;
+  padding: 0.1rem 1rem 0.38rem 0.08rem;
+  overscroll-behavior-x: contain;
+  scroll-padding: 0.08rem;
+  scroll-snap-type: x proximity;
   scrollbar-width: none;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
 }
 
 .gacha-screen[data-has-reveal="true"] .reward-strip {
@@ -1634,6 +1751,7 @@ button {
   flex: 0 0 var(--reward-card-size);
   width: var(--reward-card-size);
   height: var(--reward-card-size);
+  scroll-snap-align: start;
   place-items: center;
   border-radius: 0.8rem;
   background: rgba(255, 247, 221, 0.82);
@@ -1699,6 +1817,10 @@ button {
   display: none;
 }
 
+.storage-sheet > * {
+  min-width: 0;
+}
+
 .storage-head,
 .storage-stats {
   display: flex;
@@ -1725,13 +1847,16 @@ button {
 }
 
 .theme-panel {
+  min-width: 0;
   padding-top: 0.18rem;
 }
 
 .collection-panel,
 .map-panel,
-.market-panel {
+.market-panel,
+.layout-preset-panel {
   display: grid;
+  min-width: 0;
   gap: 0.32rem;
 }
 
@@ -1850,6 +1975,7 @@ button {
   box-shadow:
     inset 0 0 0 1px rgba(143, 91, 29, 0.14),
     0 0.34rem 0.68rem rgba(54, 35, 20, 0.1);
+  scroll-snap-align: start;
 }
 
 .preset-clear-button {
@@ -1931,7 +2057,21 @@ button {
 }
 
 .theme-tray {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-columns: minmax(4.65rem, 31%);
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  overflow-x: auto;
+  padding: 0.02rem 1rem 0.24rem 0.02rem;
+  overscroll-behavior-x: contain;
+  scroll-padding: 0.02rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+.theme-tray::-webkit-scrollbar {
+  display: none;
 }
 
 .theme-card {
@@ -1944,6 +2084,7 @@ button {
   border-radius: 0.78rem;
   line-height: 0;
   background: rgba(255, 255, 255, 0.5);
+  scroll-snap-align: start;
   box-shadow:
     inset 0 0 0 1px rgba(143, 91, 29, 0.14),
     0 0.4rem 0.76rem rgba(54, 35, 20, 0.13);
@@ -2474,8 +2615,17 @@ button {
     font-size: 0.6rem;
   }
 
+  .placement-nudge {
+    right: 4.4%;
+    top: 38.8%;
+    grid-template-columns: repeat(3, 2.16rem);
+    grid-template-rows: repeat(3, 2.16rem);
+    gap: 0.14rem;
+    padding: 0.22rem;
+  }
+
   .reward-strip {
-    padding: 0.06rem 0.08rem 0.12rem;
+    padding: 0.06rem 0.84rem 0.12rem 0.08rem;
   }
 
   .reward-card {
@@ -2540,8 +2690,13 @@ button {
     grid-template-columns: none;
     overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: 0.12rem;
+    padding: 0 0.82rem 0.12rem 0;
+    overscroll-behavior-x: contain;
+    scroll-padding: 0;
+    scroll-snap-type: x proximity;
     scrollbar-width: none;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
   }
 
   .layout-preset-list::-webkit-scrollbar {

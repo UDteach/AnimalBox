@@ -71,4 +71,8 @@ Stop and ask before destructive file cleanup, credentials, paid services, produc
 - completed: Added ImageGen floating item runtime assets, combined wearable/floating accessory catalog, and adjustable accessory placement metadata.
 - completed: Added color tuning, coin-unlocked degu poses, earned-ticket premium gift, and gacha result animation.
 - completed: Updated unit tests and customization QA for Feed, accessory adjustment, and earned-ticket gacha reveals.
-- in_progress: Run full local rendered QA, fix visual/layout issues, then commit, push, deploy, and live-smoke.
+- completed: Added Japanese-first UI with JP/EN toggle, localized map labels, collection labels, item names, and gameplay statuses.
+- completed: Increased placement density from 12x8 to 18x10, added perspective grid mesh lines, and tuned island/degu/decor ratios for mobile.
+- completed: Added mobile placement nudge controls and improved horizontal scrolling/snap behavior for map, item, wardrobe, reward, theme, and preset trays.
+- completed: Local QA passed for typecheck, unit tests, asset manifest, customization, flow, UI, motion, placement, dense placement, visual audit, and build.
+- in_progress: Commit, push, deploy to Cloudflare Pages, and live-smoke the deployed build.

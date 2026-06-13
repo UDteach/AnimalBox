@@ -317,7 +317,7 @@ async function runHome(page, scenario) {
   });
 
   for (let i = 0; i < 4; i += 1) {
-    await page.getByRole('button', { name: 'Tap degu for coins' }).click();
+    await page.locator('.degu-button').click();
   }
   await page.waitForTimeout(120);
   const burstState = await metrics(page);
@@ -337,7 +337,7 @@ async function runPlacement(page, scenario) {
     ...scenario,
     undoDisabled: empty.undoDisabled
   });
-  await page.getByRole('button', { name: 'Rotate placement' }).click();
+  await page.locator('.action.rotate').click();
   await page.waitForTimeout(80);
   const rotated = await metrics(page);
   assert(rotated.ghostRotation === '90deg', 'placement ghost rotation not reflected', {
@@ -356,7 +356,7 @@ async function runPlacement(page, scenario) {
   });
   assert(selectedCell, 'placement has no valid cell after rotation', scenario);
   await page.waitForTimeout(80);
-  await page.getByRole('button', { name: 'Confirm placement' }).click();
+  await page.locator('.action.confirm').click();
   await page.waitForTimeout(90);
   const duringPop = await metrics(page);
   assert(duringPop.placedDecor, 'placed decor missing after confirm', scenario);
@@ -413,7 +413,7 @@ async function runWardrobe(page, scenario) {
     grid: first.wardrobeGrid
   });
   assert(first.firstAccessoryAnimation, 'wardrobe accessory animation missing', scenario);
-  await page.getByRole('button', { name: 'Move accessory down' }).click();
+  await page.locator('.accessory-tool-grid button').nth(1).click();
   await page.waitForTimeout(80);
   const adjusted = await metrics(page);
   assert(first.firstAccessoryTop !== adjusted.firstAccessoryTop, 'accessory move control did not affect rendered position', {
@@ -443,14 +443,14 @@ async function runGacha(page, scenario) {
     rewardStrip: first.rewardStrip
   });
 
-  await page.getByRole('button', { name: 'Open ten sky gifts' }).click();
+  await page.locator('.pull-button.ten').click();
   await page.waitForSelector('.gacha-reveal', { timeout: 5000 });
   assert(await page.locator('.pull-button.single').isDisabled(), 'gacha single pull is not locked during reveal', scenario);
   assert(await page.locator('.pull-button.ten').isDisabled(), 'gacha ten pull is not locked during reveal', scenario);
   assert(await page.locator('.pull-button.premium').isDisabled(), 'gacha premium pull is not locked during reveal', scenario);
   await page.waitForTimeout(220);
   const text = await page.locator('.history-chip').textContent();
-  assert(/^Last: /.test(text ?? ''), 'gacha history did not update after pull', { ...scenario, text });
+  assert(/^(Last:|最近:)/.test(text ?? ''), 'gacha history did not update after pull', { ...scenario, text });
   assert(!/[a-z]+-[a-z]+/.test(text ?? ''), 'gacha history exposes raw reward ids after pull', { ...scenario, text });
   const state = await metrics(page);
   assert(state.gachaReveal, 'gacha reveal panel missing after pull', scenario);
@@ -489,10 +489,10 @@ async function runStorage(page, scenario) {
     nav: state.nav,
     storageSheet: state.storageSheet
   });
-  await page.getByRole('button', { name: 'Save layout preset 1' }).click();
-  await page.getByRole('button', { name: 'Clear layout preset 1' }).click();
+  await page.locator('.preset-button.save').nth(0).click();
+  await page.locator('.preset-clear-button').nth(0).click();
   await page.waitForTimeout(100);
-  assert(await page.getByRole('button', { name: 'Load layout preset 1' }).isDisabled(), 'storage clear did not disable load', scenario);
+  assert(await page.locator('.preset-button.load').nth(0).isDisabled(), 'storage clear did not disable load', scenario);
   assertCommonNoOverlap(await metrics(page), scenario);
 }
 

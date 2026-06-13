@@ -14,7 +14,7 @@ const viewports = [
 
 const primarySelectors = {
   home: ['.degu-button', '.claim-button', '.next-upgrade-button', '.care-button'],
-  placement: ['.cell-button[data-valid="true"]', '.action.confirm', '.action.rotate'],
+  placement: ['.cell-button[data-valid="true"]', '.nudge-button', '.action.confirm', '.action.rotate'],
   wardrobe: ['.apply-button', '.shot-button[data-active="true"]', '.shot-row', '.wardrobe-grid'],
   gacha: ['.pull-button.single', '.pull-button.ten', '.pull-button.premium'],
   storage: ['.storage-sheet', '.collection-card', '.market-offer-card']

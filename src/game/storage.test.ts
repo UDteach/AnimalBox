@@ -112,8 +112,8 @@ describe('prototype save data', () => {
           {
             instanceId: 'overlap',
             itemId: 'cloud-lamp',
-            cellX: 2,
-            cellY: 2,
+            cellX: 0,
+            cellY: 3,
             footprint: { w: 1, h: 1 }
           },
           {
@@ -155,13 +155,6 @@ describe('prototype save data', () => {
             itemId: 'hay-bed',
             cellX: 0,
             cellY: 0,
-            footprint: { w: 2, h: 1 }
-          },
-          {
-            instanceId: 'too-low',
-            itemId: 'windmill',
-            cellX: 0,
-            cellY: 7,
             footprint: { w: 2, h: 1 }
           }
         ]
