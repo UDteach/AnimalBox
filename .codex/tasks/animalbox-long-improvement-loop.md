@@ -73,4 +73,7 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 - completed: Added flow QA coverage for the Home guide rail and placement title, plus motion QA coverage for gacha reveal button locking and empty-placement Undo disabled state.
 - completed: Tuned the Home progression panel bottom offset so the new guide does not collide with the degu, placed decor, or bottom nav across mobile QA viewports.
 - completed: Local QA passed: `npm run typecheck`, `npm test -- --run`, `npm run qa:assets`, `npm run qa:customization`, `npm run qa:flow`, `npm run qa:ui`, `npm run qa:motion`, `npm run qa:placement`, `npm run qa:dense-placement`, `npm run build`, and `npm run qa:visual`.
-- in_progress: Commit, push, deploy, and live-smoke Cloudflare Pages.
+- completed: Committed and pushed `4c187ac Improve guide flow and placement affordances` to GitHub `main`.
+- completed: Deployed Cloudflare Pages at `https://d33bd139.animalbox.pages.dev`.
+- completed: Live-smoked Cloudflare Pages: HTTP 200 for deployment and production URLs, `ANIMALBOX_PRODUCTION_URL=https://d33bd139.animalbox.pages.dev npm run qa:visual`, and `ANIMALBOX_QA_URL=https://d33bd139.animalbox.pages.dev npm run qa:flow`.
+- pending: Next loop should improve unlock progress surfaces for animals, poses, themes, floating items, and market/trade affordances.
