@@ -227,6 +227,9 @@ async function metrics(page) {
       homePanel: rect('.game-loop-panel'),
       placementSheet: rect('.placement-sheet'),
       placementGhost: rect('.placement-ghost'),
+      undoDisabled: document.querySelector('.action.undo') instanceof HTMLButtonElement
+        ? document.querySelector('.action.undo').disabled
+        : null,
       placedDecor: rect('.placed-decor'),
       wardrobeStage: rect('.pixel-degu-stage--wardrobe'),
       firstAccessory: rect('.pixel-degu-float-item'),
@@ -329,6 +332,11 @@ async function runHome(page, scenario) {
 
 async function runPlacement(page, scenario) {
   await gotoSeeded(page, 'placement', scenario.backgroundId, { placedDecor: [] });
+  const empty = await metrics(page);
+  assert(empty.undoDisabled === true, 'placement undo should be disabled when no decor is placed', {
+    ...scenario,
+    undoDisabled: empty.undoDisabled
+  });
   await page.getByRole('button', { name: 'Rotate placement' }).click();
   await page.waitForTimeout(80);
   const rotated = await metrics(page);
@@ -437,6 +445,9 @@ async function runGacha(page, scenario) {
 
   await page.getByRole('button', { name: 'Open ten sky gifts' }).click();
   await page.waitForSelector('.gacha-reveal', { timeout: 5000 });
+  assert(await page.locator('.pull-button.single').isDisabled(), 'gacha single pull is not locked during reveal', scenario);
+  assert(await page.locator('.pull-button.ten').isDisabled(), 'gacha ten pull is not locked during reveal', scenario);
+  assert(await page.locator('.pull-button.premium').isDisabled(), 'gacha premium pull is not locked during reveal', scenario);
   await page.waitForTimeout(220);
   const text = await page.locator('.history-chip').textContent();
   assert(/^Last: /.test(text ?? ''), 'gacha history did not update after pull', { ...scenario, text });

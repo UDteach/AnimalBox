@@ -37,6 +37,9 @@ const textSelectors = [
   '.apply-button',
   '.pull-button',
   '.claim-button',
+  '.guide-task span',
+  '.guide-task strong',
+  '.guide-task small',
   '.next-upgrade-button span',
   '.next-upgrade-button strong'
 ];
@@ -94,6 +97,9 @@ async function collect(page, screen) {
           ariaLabel: node.getAttribute('aria-label') ?? '',
           ariaCurrent: node.getAttribute('aria-current') ?? '',
           dataActive: node.getAttribute('data-active') ?? '',
+          dataCurrent: node.getAttribute('data-current') ?? '',
+          dataDone: node.getAttribute('data-done') ?? '',
+          dataReady: node.getAttribute('data-ready') ?? '',
           dataScreen: node.getAttribute('data-screen') ?? '',
           dataNextAction: node.getAttribute('data-next-action') ?? '',
           left: rect.left,
@@ -126,6 +132,9 @@ async function collect(page, screen) {
         cue: one('.screen-cue'),
         navItems: many('.nav-item'),
         activeNavItems: many('.nav-item[data-active="true"]'),
+        guideTasks: many('.guide-task'),
+        placementUndo: one('.action.undo'),
+        placementTitle: one('.placement-sheet .mode-row strong'),
         footprintCells: many('.footprint-cell'),
         primary: primarySelectors[screen].flatMap((selector) => many(selector)),
         overlapTargets: overlapSelectors[screen].map((selector) => ({ selector, rect: one(selector) })),
@@ -192,6 +201,31 @@ function audit(metrics, scenario) {
   }
   if (metrics.screen === 'placement' && metrics.footprintCells.length === 0) {
     issues.push(fail('placement missing footprint preview', scenario));
+  }
+  if (metrics.screen === 'placement') {
+    if (!metrics.placementTitle?.text) {
+      issues.push(fail('placement selected decor title is missing', { ...scenario, title: metrics.placementTitle }));
+    }
+    if (!metrics.placementUndo) {
+      issues.push(fail('placement undo control is missing', scenario));
+    }
+  }
+  if (metrics.screen === 'home') {
+    if (metrics.guideTasks.length !== 4) {
+      issues.push(fail('home guide should expose four next-action tasks', { ...scenario, count: metrics.guideTasks.length }));
+    }
+    const currentTasks = metrics.guideTasks.filter((task) => task.dataCurrent === 'true');
+    if (currentTasks.length !== 1) {
+      issues.push(fail('home guide should have one current task', { ...scenario, count: currentTasks.length }));
+    }
+    for (const guideTask of metrics.guideTasks) {
+      if (!inside(phone, guideTask)) {
+        issues.push(fail('home guide task escapes phone frame', { ...scenario, guideTask }));
+      }
+      if (guideTask.width < 34 || guideTask.height < 34) {
+        issues.push(fail('home guide task target too small', { ...scenario, guideTask }));
+      }
+    }
   }
   for (const target of metrics.primary) {
     if (!inside(phone, target)) {

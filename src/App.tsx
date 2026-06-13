@@ -73,6 +73,17 @@ interface ScreenCueContent {
   action: string;
 }
 
+type GuideTaskId = 'tap' | 'care' | 'decor' | 'gift';
+
+interface GuideTask {
+  id: GuideTaskId;
+  label: string;
+  value: string;
+  action: string;
+  done: boolean;
+  ready: boolean;
+}
+
 const screenSet = new Set<ScreenId>(navOrder);
 const grid = { width: 6, height: 6 };
 const firstOpenCell: Cell = { x: 0, y: 2 };
@@ -92,6 +103,46 @@ function deguToneFilter(tone: DeguTone, baseFilter: string): string {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+function buildGuideTasks(save: PrototypeSave, stats: GameStats): GuideTask[] {
+  const availableTickets = save.economy.tickets + stats.claimableTickets;
+  const placedByPlayer = Math.max(0, save.placedDecor.length - 1);
+
+  return [
+    {
+      id: 'tap',
+      label: 'Tap',
+      value: `+${stats.tapPower}`,
+      action: 'Earn',
+      done: save.progression.xp > 0,
+      ready: true
+    },
+    {
+      id: 'care',
+      label: 'Care',
+      value: `Bond ${stats.affectionLevel}`,
+      action: 'Brush',
+      done: save.progression.careStreak > 0,
+      ready: true
+    },
+    {
+      id: 'decor',
+      label: 'Decor',
+      value: `${placedByPlayer} placed`,
+      action: 'Place',
+      done: placedByPlayer > 0,
+      ready: true
+    },
+    {
+      id: 'gift',
+      label: 'Gift',
+      value: `${availableTickets} ticket${availableTickets === 1 ? '' : 's'}`,
+      action: availableTickets > 0 ? 'Open' : 'Charge',
+      done: save.gachaHistory.length > 0,
+      ready: availableTickets > 0
+    }
+  ];
 }
 
 function coerceScreen(value: string): ScreenId {
@@ -120,11 +171,13 @@ export function App() {
   const [missingAssets, setMissingAssets] = useState<string[]>([]);
   const [gachaReveal, setGachaReveal] = useState<GachaReveal | null>(null);
   const [gachaOpening, setGachaOpening] = useState(false);
+  const gachaBusyRef = useRef(false);
 
   const current = screens[screen];
   const economy = save.economy;
   const gameStats = deriveGameStats(economy.incomePerSecond, save.progression);
   const nextUpgrade = getNextUpgrade(save.progression);
+  const guideTasks = useMemo(() => buildGuideTasks(save, gameStats), [gameStats, save]);
   const selectedBackgroundId = isRewardOwned(save.ownedRewardIds, save.selectedBackgroundId)
     ? save.selectedBackgroundId
     : 'floating-island';
@@ -240,8 +293,14 @@ export function App() {
   }, [bursts]);
 
   useEffect(() => {
-    if (!gachaOpening) return;
-    const timer = window.setTimeout(() => setGachaOpening(false), 1050);
+    if (!gachaOpening) {
+      gachaBusyRef.current = false;
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setGachaOpening(false);
+      gachaBusyRef.current = false;
+    }, 1050);
     return () => window.clearTimeout(timer);
   }, [gachaOpening, gachaReveal?.id]);
 
@@ -626,6 +685,11 @@ export function App() {
   }
 
   function runGacha(count: 1 | 10, banner: GachaBanner = skyGiftBanner) {
+    if (gachaBusyRef.current) {
+      setStatus('Gift is opening');
+      return;
+    }
+
     const randomValues = Array.from({ length: count }, () => browserRandom());
     const randomFrom = (values: number[]) => {
       let index = 0;
@@ -667,8 +731,33 @@ export function App() {
           }
         : null
     );
+    if (optimistic) gachaBusyRef.current = true;
     setGachaOpening(Boolean(optimistic));
     setStatus(optimistic ? `${count} ${label}${count === 1 ? '' : 's'} opened` : 'Need earned tickets');
+  }
+
+  function runGuideAction(taskId: GuideTaskId) {
+    if (taskId === 'tap') {
+      tapDegu();
+      return;
+    }
+
+    if (taskId === 'care') {
+      careForDegu('brush');
+      return;
+    }
+
+    if (taskId === 'decor') {
+      setScreen('placement');
+      return;
+    }
+
+    const currentStats = deriveGameStats(
+      saveRef.current.economy.incomePerSecond,
+      saveRef.current.progression
+    );
+    if (currentStats.claimableTickets > 0) claimEarnedTickets();
+    setScreen('gacha');
   }
 
   const style = useMemo(
@@ -747,6 +836,7 @@ export function App() {
             onConfirm={placeSelectedDecor}
             onCancel={() => setStatus('Placement cancelled')}
             onUndo={undoLastPlacedDecor}
+            canUndo={save.placedDecor.length > 0}
           />
         )}
 
@@ -756,9 +846,11 @@ export function App() {
             progression={save.progression}
             stats={gameStats}
             nextUpgrade={nextUpgrade}
+            guideTasks={guideTasks}
             onBuyUpgrade={buyUpgrade}
             onClaimTickets={claimEarnedTickets}
             onCareAction={careForDegu}
+            onGuideAction={runGuideAction}
           />
         )}
 
@@ -1051,17 +1143,21 @@ function GameLoopPanel({
   progression,
   stats,
   nextUpgrade,
+  guideTasks,
   onBuyUpgrade,
   onClaimTickets,
-  onCareAction
+  onCareAction,
+  onGuideAction
 }: {
   economy: EconomyState;
   progression: ProgressionState;
   stats: GameStats;
   nextUpgrade: UpgradeDefinition | null;
+  guideTasks: GuideTask[];
   onBuyUpgrade: (id: string) => void;
   onClaimTickets: () => void;
   onCareAction: (id: CareActionId) => void;
+  onGuideAction: (id: GuideTaskId) => void;
 }) {
   const xpPct = Math.min(100, Math.round((stats.xpIntoLevel / stats.xpForNextLevel) * 100));
   const ticketPct = Math.min(
@@ -1077,6 +1173,7 @@ function GameLoopPanel({
     brush: runtimeAssets.careBrush,
     snack: runtimeAssets.seedPouch
   };
+  const currentGuideId = guideTasks.find((task) => !task.done)?.id ?? guideTasks[0]?.id;
 
   return (
     <section className="game-loop-panel" aria-label="Progression">
@@ -1089,6 +1186,24 @@ function GameLoopPanel({
           <strong>Tap +{stats.tapPower}</strong>
           <span>{upgradeCatalog.length - progression.ownedUpgradeIds.length} upgrades</span>
         </div>
+      </div>
+      <div className="guide-rail" aria-label="Next action guide">
+        {guideTasks.map((task) => (
+          <button
+            key={task.id}
+            className="guide-task"
+            type="button"
+            data-current={task.id === currentGuideId}
+            data-done={task.done}
+            data-ready={task.ready}
+            onClick={() => onGuideAction(task.id)}
+            aria-label={`${task.label}: ${task.action}`}
+          >
+            <span>{task.label}</span>
+            <strong>{task.value}</strong>
+            <small>{task.done ? 'Done' : task.action}</small>
+          </button>
+        ))}
       </div>
       <div className="meter-row">
         <span className="meter-track" aria-label="XP progress">
@@ -1316,6 +1431,7 @@ function PlacementPanel({
   rotation,
   validCellCount,
   canConfirm,
+  canUndo,
   ownedRewardIds,
   onSelectDecor,
   onRotate,
@@ -1328,6 +1444,7 @@ function PlacementPanel({
   rotation: number;
   validCellCount: number;
   canConfirm: boolean;
+  canUndo: boolean;
   ownedRewardIds: string[];
   onSelectDecor: (id: string) => void;
   onRotate: () => void;
@@ -1335,13 +1452,15 @@ function PlacementPanel({
   onCancel: () => void;
   onUndo: () => void;
 }) {
+  const selectedDecor = decorItems.find((decor) => decor.id === selectedDecorId) ?? decorItems[0];
+
   return (
     <section className="bottom-sheet placement-sheet" aria-label="Decor placement">
       <div className="sheet-handle" />
       <div className="mode-row">
-        <strong>Decor</strong>
+        <strong>{selectedDecor.label}</strong>
         <span>
-          cell {selectedCell.x + 1}-{selectedCell.y + 1} / {rotation} deg / {validCellCount} spots
+          {selectedDecor.footprint.w}x{selectedDecor.footprint.h} / cell {selectedCell.x + 1}-{selectedCell.y + 1} / {validCellCount} spots
         </span>
       </div>
       <div className="placement-step-row" aria-label="Placement steps">
@@ -1372,7 +1491,13 @@ function PlacementPanel({
         <button className="action danger" type="button" onClick={onCancel} aria-label="Cancel placement">
           Cancel
         </button>
-        <button className="action undo" type="button" onClick={onUndo} aria-label="Undo last decor">
+        <button
+          className="action undo"
+          type="button"
+          disabled={!canUndo}
+          onClick={onUndo}
+          aria-label={canUndo ? 'Undo last decor' : 'No decor to undo'}
+        >
           Undo
         </button>
         <button className="action rotate" type="button" onClick={onRotate} aria-label="Rotate placement">
@@ -1622,17 +1747,37 @@ function GachaScreen({
   return (
     <section className="gacha-screen" aria-label="Free sky gift" data-opening={isOpening} data-has-reveal={Boolean(reveal)}>
       <img className="gacha-machine" src={runtimeAssets.skyGiftMachine} alt="" draggable={false} />
-      <p className="free-label">Earned tickets only</p>
+      <p className="free-label" aria-live="polite">
+        {isOpening ? 'Opening sky gift...' : 'Earned tickets only'}
+      </p>
       <div className="pull-row">
-        <button className="pull-button single" type="button" onClick={onSingle} aria-label="Open one sky gift">
+        <button
+          className="pull-button single"
+          type="button"
+          disabled={isOpening}
+          onClick={onSingle}
+          aria-label="Open one sky gift"
+        >
           <img src={runtimeAssets.ticket} alt="" />
           <span>1</span>
         </button>
-        <button className="pull-button ten" type="button" onClick={onTen} aria-label="Open ten sky gifts">
+        <button
+          className="pull-button ten"
+          type="button"
+          disabled={isOpening}
+          onClick={onTen}
+          aria-label="Open ten sky gifts"
+        >
           <img src={runtimeAssets.ticket} alt="" />
           <span>10</span>
         </button>
-        <button className="pull-button premium" type="button" onClick={onPremium} aria-label="Open premium sky gift">
+        <button
+          className="pull-button premium"
+          type="button"
+          disabled={isOpening}
+          onClick={onPremium}
+          aria-label="Open premium sky gift"
+        >
           <img src={runtimeAssets.ticket} alt="" />
           <span>5</span>
           <small>rare+</small>
