@@ -6,7 +6,7 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 
 ## Current Constraints
 
-- The built-in Goal is occupied by an old blocked DragonBones task, so this file is the active long-session ledger.
+- The built-in Goal tracks the current autonomous improvement loop; this file is the persistent task ledger.
 - Continue the pixel PNG replacement direction; do not return to DragonBones in this loop.
 - GitHub push and Cloudflare Pages deploy are in scope after stable milestones.
 - Stop before paid monetization, external database adoption, destructive cleanup, or a large character-design decision.
@@ -16,7 +16,7 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 
 ### P0 Visual Breakage
 
-- [ ] Verify local and Cloudflare mobile screens are nonblank and image assets decode before screenshots.
+- [x] Verify local and Cloudflare mobile screens are nonblank and image assets decode before screenshots.
 - [ ] Keep the island size stable across background/theme changes.
 - [ ] Prevent placement UI, bottom nav, and decor ghosts from appearing in the sky or under fixed controls.
 - [ ] Keep degu/background/decor scale consistent enough that the garden reads as one pixel-art system.
@@ -30,7 +30,7 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 
 ### P2 Game-Loop Guidance
 
-- [ ] Surface the loop from tap coins -> care/level -> tickets -> gifts -> unlocks.
+- [x] Surface the loop from tap coins -> care/level -> tickets -> gifts -> unlocks.
 - [x] Show unlock progress for animals, poses, themes, floating items, and accessories.
 - [x] Improve inventory/store/market affordances so locked/owned/tradeable states are understandable.
 - [x] Add tests or QA coverage for any new progression routing.
@@ -82,3 +82,7 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 - completed: Local QA passed for the second loop: `npm run typecheck`, `npm test -- --run`, `npm run qa:assets`, `npm run qa:customization`, `npm run qa:flow`, `npm run qa:ui`, `npm run qa:motion`, `npm run qa:placement`, `npm run qa:dense-placement` after a parallel-run retry, `npm run build`, and `npm run qa:visual`.
 - completed: Short-screen Storage screenshot review moved Market above Collection so exchange cards are visible in the first viewport.
 - note: In-app Browser smoke was attempted, but the Browser runtime path was unavailable in the current Node REPL; Playwright screenshots and QA scripts were used as the fallback rendered evidence.
+- completed: Checked primary placement/touch references for the next placement direction: MDN/W3C Pointer Events for unified touch/mouse input, Apple/Android drag-and-drop docs for clear drag/drop affordances, and Unity Grid Snapping docs for visible configurable grid/snap behavior.
+- completed: Committed and pushed `d42d953 Add collection progress and market exchange` to GitHub `main`.
+- completed: Deployed Cloudflare Pages at `https://1cb71b22.animalbox.pages.dev`.
+- completed: Live-smoked Cloudflare Pages: HTTP 200 for deployment and production URLs, `ANIMALBOX_PRODUCTION_URL=https://1cb71b22.animalbox.pages.dev npm run qa:visual`, and `ANIMALBOX_QA_URL=https://1cb71b22.animalbox.pages.dev npm run qa:flow`.
