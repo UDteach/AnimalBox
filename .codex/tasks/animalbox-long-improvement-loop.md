@@ -92,3 +92,6 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 - completed: Added Placement/Storage map switcher chips with locked-state affordances and QA coverage.
 - completed: Strengthened dense placement QA from 8 decor to 16 decor across 7 backgrounds and 3 viewports.
 - completed: Local QA passed for the map/tile loop: `npm run typecheck`, `npm test -- --run`, `npm run qa:assets`, `npm run qa:customization`, `npm run qa:flow`, `npm run qa:ui`, `npm run qa:motion`, `npm run qa:placement`, `npm run qa:dense-placement`, `npm run build`, and `npm run qa:visual`.
+- completed: Committed and pushed `b017448 Add dense maps and level unlocks` to GitHub `main`.
+- completed: Deployed Cloudflare Pages at `https://3ddb489e.animalbox.pages.dev`.
+- completed: Live-smoked Cloudflare Pages: HTTP 200 for deployment and production URLs, `ANIMALBOX_PRODUCTION_URL=https://3ddb489e.animalbox.pages.dev npm run qa:visual`, and `ANIMALBOX_QA_URL=https://3ddb489e.animalbox.pages.dev npm run qa:flow`.
