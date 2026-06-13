@@ -131,7 +131,7 @@ const baseSave = {
       instanceId: 'qa-fence',
       itemId: 'short-wooden-fence',
       cellX: 0,
-      cellY: 2,
+      cellY: 3,
       footprint: { w: 2, h: 1 }
     }
   ],
@@ -156,7 +156,7 @@ const baseSave = {
               instanceId: 'slot-fence',
               itemId: 'short-wooden-fence',
               cellX: 0,
-              cellY: 2,
+              cellY: 3,
               footprint: { w: 2, h: 1 }
             }
           ]
@@ -250,6 +250,8 @@ try {
             affection: save.progression?.affection ?? null,
             careStreak: save.progression?.careStreak ?? null,
             placementGhostRotation: ghost ? window.getComputedStyle(ghost).getPropertyValue('--decor-rotation').trim() : null,
+            mapChips: document.querySelectorAll('.map-chip').length,
+            lockedMapChips: document.querySelectorAll('.map-chip[data-locked="true"]').length,
             collectionCards: document.querySelectorAll('.collection-card').length,
             marketOfferButtons: document.querySelectorAll('.market-offer-card').length,
             affordableMarketOffers: document.querySelectorAll('.market-offer-card[data-affordable="true"]').length,
@@ -342,6 +344,7 @@ try {
   assert(placement?.newDecorCards === newDecorIds.length, 'new decor cards are missing', placement);
   assert(!placement.hasAssetWarning, 'placement asset warning', placement);
   assert(placement.placementGhostRotation === '90deg', 'placement rotate did not update ghost rotation', placement);
+  assert(placement.mapChips === 3, 'placement map chips missing', placement);
   assert(placement.placedDecorCount === 0, 'placement undo did not remove the last decor', placement);
   assert(placement.incomePerSecond < baseSave.economy.incomePerSecond, 'placement undo did not reduce decor income', placement);
 
@@ -358,6 +361,8 @@ try {
   const storage = results.find((item) => item.screen === 'storage');
   assert(!storage?.hasAssetWarning, 'storage asset warning', storage);
   assert(storage?.collectionCards === 6, 'storage collection progress cards missing', storage);
+  assert(storage?.mapChips === 3, 'storage map chips missing', storage);
+  assert(storage?.lockedMapChips >= 1, 'storage should show locked map progression at this level', storage);
   assert(storage?.marketOfferButtons === 2, 'storage market offers missing', storage);
   assert(storage?.affordableMarketOffers >= 1, 'storage has no affordable market offer', storage);
   assert(storage?.marketTrade?.afterTickets === storage.marketTrade.beforeTickets + 1, 'market trade did not add a ticket', storage);

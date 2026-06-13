@@ -18,7 +18,7 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 
 - [x] Verify local and Cloudflare mobile screens are nonblank and image assets decode before screenshots.
 - [ ] Keep the island size stable across background/theme changes.
-- [ ] Prevent placement UI, bottom nav, and decor ghosts from appearing in the sky or under fixed controls.
+- [x] Prevent placement UI, bottom nav, and decor ghosts from appearing in the sky or under fixed controls.
 - [ ] Keep degu/background/decor scale consistent enough that the garden reads as one pixel-art system.
 
 ### P1 UI And Touch Flow
@@ -26,7 +26,7 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 - [x] Add a compact home guide so the player understands the next useful actions without a tutorial wall.
 - [x] Make gift/gacha buttons resistant to rapid repeated taps during reveal animation.
 - [x] Make placement status clearer: selected item, valid spot count, confirm state, undo/move affordance.
-- [ ] Keep lower menus reopen/close behavior predictable and avoid panel/nav interference.
+- [x] Keep lower menus reopen/close behavior predictable and avoid panel/nav interference.
 
 ### P2 Game-Loop Guidance
 
@@ -38,7 +38,7 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 ### P3 Polish And Feedback
 
 - [ ] Add useful micro-feedback for tap, placement, undo, level/ticket claim, and gift reveal states.
-- [ ] Stress-test filled island layouts and ugly inventory states.
+- [x] Stress-test filled island layouts and ugly inventory states.
 - [ ] Consider more runtime assets only after layout and scale QA stays green.
 
 ## First Milestone
@@ -86,3 +86,9 @@ Improve AnimalBox as a mobile-first 2D box-garden/idler prototype, focusing on v
 - completed: Committed and pushed `d42d953 Add collection progress and market exchange` to GitHub `main`.
 - completed: Deployed Cloudflare Pages at `https://1cb71b22.animalbox.pages.dev`.
 - completed: Live-smoked Cloudflare Pages: HTTP 200 for deployment and production URLs, `ANIMALBOX_PRODUCTION_URL=https://1cb71b22.animalbox.pages.dev npm run qa:visual`, and `ANIMALBOX_QA_URL=https://1cb71b22.animalbox.pages.dev npm run qa:flow`.
+- completed: Checked current primary references for map/tile direction: Tiled JSON maps, Phaser Tilemap, PixiJS pointer events, MDN/W3C Pointer Events. Kept the React/Vite stack and adapted the data model instead of adding a runtime engine dependency.
+- completed: Added a first-class 3-map model (`Sky Pasture`, `Clover Terrace`, `Moon Garden`) with level unlocks at Lv 1/3/6, while preserving legacy top-level `placedDecor` and `selectedBackgroundId` as the active-map mirror.
+- completed: Changed placement from a 6x6 grid to a 12x8 dense grid, tightened scene safe bands and degu keepout, and tuned the placement sheet for short mobile screens.
+- completed: Added Placement/Storage map switcher chips with locked-state affordances and QA coverage.
+- completed: Strengthened dense placement QA from 8 decor to 16 decor across 7 backgrounds and 3 viewports.
+- completed: Local QA passed for the map/tile loop: `npm run typecheck`, `npm test -- --run`, `npm run qa:assets`, `npm run qa:customization`, `npm run qa:flow`, `npm run qa:ui`, `npm run qa:motion`, `npm run qa:placement`, `npm run qa:dense-placement`, `npm run build`, and `npm run qa:visual`.

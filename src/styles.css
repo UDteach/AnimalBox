@@ -657,6 +657,7 @@ button {
 .theme-card:focus-visible,
 .preset-button:focus-visible,
 .preset-clear-button:focus-visible,
+.map-chip:focus-visible,
 .nav-item:focus-visible,
 .pull-button:focus-visible,
 .variant-button:focus-visible,
@@ -687,6 +688,7 @@ button {
 .theme-card,
 .preset-button,
 .preset-clear-button,
+.map-chip,
 .shot-button,
 .variant-button {
   transition:
@@ -709,6 +711,7 @@ button {
 .theme-card:active,
 .preset-button:active,
 .preset-clear-button:active,
+.map-chip:active,
 .shot-button:active,
 .variant-button:active {
   transform: translateY(0.08rem) scale(0.97);
@@ -828,6 +831,62 @@ button {
   display: none;
 }
 
+.map-switcher {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(5.8rem, 1fr);
+  gap: 0.36rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.map-switcher::-webkit-scrollbar {
+  display: none;
+}
+
+.map-chip {
+  display: grid;
+  min-height: 2.52rem;
+  gap: 0.12rem;
+  padding: 0.32rem 0.46rem;
+  align-content: center;
+  border-radius: 0.82rem;
+  color: #543719;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(133, 87, 28, 0.16);
+  text-align: left;
+}
+
+.map-chip[data-active="true"] {
+  background: rgba(255, 226, 122, 0.88);
+  box-shadow:
+    inset 0 0 0 2px rgba(143, 91, 29, 0.24),
+    0 0.3rem 0.55rem rgba(74, 91, 43, 0.14);
+}
+
+.map-chip[data-locked="true"] {
+  opacity: 0.64;
+}
+
+.map-chip strong,
+.map-chip span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-chip strong {
+  font-size: 0.58rem;
+  font-weight: 1000;
+}
+
+.map-chip span {
+  font-size: 0.5rem;
+  font-weight: 900;
+  opacity: 0.72;
+}
+
 .placement-grid {
   position: absolute;
   inset: 0;
@@ -837,7 +896,7 @@ button {
 
 .cell-button {
   position: absolute;
-  width: max(7.4%, 2.72rem);
+  width: max(4.7%, 1.55rem);
   aspect-ratio: 1;
   padding: 0;
   transform: translate(-50%, -50%) rotate(45deg);
@@ -848,7 +907,7 @@ button {
 .footprint-cell {
   position: absolute;
   z-index: 58;
-  width: max(6.5%, 2.22rem);
+  width: max(4.2%, 1.38rem);
   aspect-ratio: 1;
   border-radius: 38% 62% 40% 60%;
   transform: translate(-50%, -50%) rotate(45deg);
@@ -1670,6 +1729,7 @@ button {
 }
 
 .collection-panel,
+.map-panel,
 .market-panel {
   display: grid;
   gap: 0.32rem;
@@ -2387,7 +2447,7 @@ button {
   }
 
   .placement-sheet {
-    bottom: calc(4.88rem + env(safe-area-inset-bottom));
+    bottom: calc(4.85rem + env(safe-area-inset-bottom));
     gap: 0.2rem;
     padding: 0.3rem 0.42rem 0.34rem;
   }
@@ -2497,21 +2557,21 @@ button {
 
 @media (min-height: 641px) and (max-width: 340px) {
   .placement-sheet {
-    bottom: calc(6.25rem + env(safe-area-inset-bottom));
-    gap: 0.42rem;
-    padding: 0.46rem 0.52rem 0.56rem;
+    bottom: calc(4.85rem + env(safe-area-inset-bottom));
+    gap: 0.22rem;
+    padding: 0.32rem 0.44rem 0.36rem;
   }
 
   .placement-sheet .asset-card {
-    min-height: 3.34rem;
+    min-height: 2.52rem;
   }
 
   .placement-sheet .asset-card img {
-    height: 2.1rem;
+    height: 1.56rem;
   }
 
   .placement-sheet .action-row {
-    gap: 0.42rem;
+    gap: 0.28rem;
   }
 }
 

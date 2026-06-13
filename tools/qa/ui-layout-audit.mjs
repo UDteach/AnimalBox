@@ -321,6 +321,7 @@ async function collectMetrics(page, screen) {
       rewardStrip: rectOf('.reward-strip'),
       historyChip: rectOf('.history-chip'),
       storageSheet: rectOf('.storage-sheet'),
+      mapChips: allRects('.map-chip'),
       presetCards: allRects('.layout-preset-card'),
       themeCards: allRects('.theme-card'),
       collectionCards: allRects('.collection-card'),
@@ -395,6 +396,7 @@ function auditPlacement(metrics, scenario) {
   if (!metrics.placementGhost) issues.push(fail('placement ghost missing', scenario));
   if (metrics.validCells <= 0) issues.push(fail('placement has no valid cells', scenario));
   if (metrics.lockedDecor > 0) issues.push(fail('seeded placement inventory still shows locked decor', { ...scenario, lockedDecor: metrics.lockedDecor }));
+  if (metrics.mapChips.length !== 3) issues.push(fail('placement map chips missing', { ...scenario, count: metrics.mapChips.length }));
   if (metrics.placementSheet && metrics.nav) {
     const gap = verticalClearance(metrics.placementSheet, metrics.nav);
     if (gap < 10) issues.push(fail('placement sheet too close to bottom nav', { ...scenario, gap }));
@@ -468,6 +470,7 @@ function auditGacha(metrics, scenario) {
 function auditStorage(metrics, scenario) {
   const issues = [];
   if (!metrics.storageSheet) issues.push(fail('storage sheet missing', scenario));
+  if (metrics.mapChips.length !== 3) issues.push(fail('storage map chips missing', { ...scenario, count: metrics.mapChips.length }));
   if (metrics.collectionCards.length !== 6) issues.push(fail('storage collection cards missing', { ...scenario, count: metrics.collectionCards.length }));
   if (metrics.marketOfferCards.length !== 2) issues.push(fail('storage market offers missing', { ...scenario, count: metrics.marketOfferCards.length }));
   if (metrics.presetCards.length !== 3) issues.push(fail('storage preset cards missing', { ...scenario, count: metrics.presetCards.length }));

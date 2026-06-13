@@ -24,6 +24,13 @@ import {
   type GachaBanner,
   type PullResult
 } from './game/gacha';
+import {
+  gardenMapCatalog,
+  getGardenMapDefinition,
+  isGardenMapUnlocked,
+  placementGrid,
+  type GardenMapId
+} from './game/maps';
 import { PixelDeguStage } from './game/pixel/PixelDeguStage';
 import { normalizeRotation, type Cell, type PlacedDecor, withRotatedFootprint } from './game/placement';
 import { assetStyle, canPlaceDecorInScene, gridCellAnchor, gridToScene } from './game/sceneLayout';
@@ -48,6 +55,7 @@ import {
   savePrototype,
   type AccessoryPlacement,
   type DeguTone,
+  type GardenMapState,
   type LayoutPreset,
   type PrototypeSave
 } from './game/storage';
@@ -101,7 +109,7 @@ interface MarketOffer {
 }
 
 const screenSet = new Set<ScreenId>(navOrder);
-const grid = { width: 6, height: 6 };
+const grid = placementGrid;
 const firstOpenCell: Cell = { x: 0, y: 2 };
 const marketOffers: MarketOffer[] = [
   {
@@ -216,6 +224,68 @@ function nextSave(updater: (save: PrototypeSave) => PrototypeSave) {
   return updater;
 }
 
+function materializeGardenMaps(save: PrototypeSave): GardenMapState[] {
+  return gardenMapCatalog.map((definition) => {
+    const existing = save.maps.find((map) => map.id === definition.id);
+    return {
+      id: definition.id,
+      label: definition.label,
+      unlockLevel: definition.unlockLevel,
+      selectedBackgroundId: existing?.selectedBackgroundId ?? definition.defaultBackgroundId,
+      placedDecor: clonePlacedDecor(existing?.placedDecor ?? [])
+    };
+  });
+}
+
+function getGardenMapFromSave(save: PrototypeSave, mapId: GardenMapId = save.activeMapId): GardenMapState {
+  const maps = materializeGardenMaps(save);
+  return maps.find((map) => map.id === mapId) ?? maps[0];
+}
+
+function activateGardenMap(save: PrototypeSave, mapId: GardenMapId): PrototypeSave {
+  const maps = materializeGardenMaps(save);
+  const target = maps.find((map) => map.id === mapId) ?? maps[0];
+
+  return {
+    ...save,
+    activeMapId: target.id,
+    selectedBackgroundId: target.selectedBackgroundId,
+    placedDecor: clonePlacedDecor(target.placedDecor),
+    maps
+  };
+}
+
+function updateActiveGardenMap(
+  save: PrototypeSave,
+  patch: Partial<Pick<GardenMapState, 'selectedBackgroundId' | 'placedDecor'>>
+): PrototypeSave {
+  const maps = materializeGardenMaps(save);
+  const active = maps.find((map) => map.id === save.activeMapId) ?? maps[0];
+  const nextActive: GardenMapState = {
+    ...active,
+    selectedBackgroundId: patch.selectedBackgroundId ?? active.selectedBackgroundId,
+    placedDecor: patch.placedDecor ? clonePlacedDecor(patch.placedDecor) : clonePlacedDecor(active.placedDecor)
+  };
+  const nextMaps = maps.map((map) => (map.id === nextActive.id ? nextActive : map));
+
+  return {
+    ...save,
+    activeMapId: nextActive.id,
+    selectedBackgroundId: nextActive.selectedBackgroundId,
+    placedDecor: clonePlacedDecor(nextActive.placedDecor),
+    maps: nextMaps
+  };
+}
+
+function isBackgroundAvailable(themeId: string, ownedRewardIds: string[], level: number): boolean {
+  return (
+    isRewardOwned(ownedRewardIds, themeId) ||
+    gardenMapCatalog.some(
+      (map) => map.defaultBackgroundId === themeId && isGardenMapUnlocked(level, map)
+    )
+  );
+}
+
 export function App() {
   const [save, setSave] = useState<PrototypeSave>(() => loadSave());
   const saveRef = useRef(save);
@@ -234,15 +304,21 @@ export function App() {
   const current = screens[screen];
   const economy = save.economy;
   const gameStats = deriveGameStats(economy.incomePerSecond, save.progression);
+  const activeMap = getGardenMapFromSave(save);
+  const activeMapDefinition = getGardenMapDefinition(activeMap.id);
   const nextUpgrade = getNextUpgrade(save.progression);
   const guideTasks = useMemo(() => buildGuideTasks(save, gameStats), [gameStats, save]);
   const collectionGroups = useMemo(
     () => buildCollectionGroups(save.ownedRewardIds),
     [save.ownedRewardIds]
   );
-  const selectedBackgroundId = isRewardOwned(save.ownedRewardIds, save.selectedBackgroundId)
-    ? save.selectedBackgroundId
-    : 'floating-island';
+  const selectedBackgroundId = isBackgroundAvailable(
+    activeMap.selectedBackgroundId,
+    save.ownedRewardIds,
+    gameStats.level
+  )
+    ? activeMap.selectedBackgroundId
+    : activeMapDefinition.defaultBackgroundId;
   const selectedVariantId = isRewardOwned(save.ownedRewardIds, save.selectedVariantId)
     ? save.selectedVariantId
     : 'agouti';
@@ -469,13 +545,28 @@ export function App() {
   function selectBackground(themeId: string) {
     const theme = backgroundThemes.find((item) => item.id === themeId);
     if (!theme) return;
-    if (!isRewardOwned(save.ownedRewardIds, theme.id)) {
+    if (!isBackgroundAvailable(theme.id, save.ownedRewardIds, gameStats.level)) {
       setStatus(`${theme.label} locked`);
       return;
     }
 
-    setSave(nextSave((currentSave) => ({ ...currentSave, selectedBackgroundId: theme.id })));
+    setSave(
+      nextSave((currentSave) =>
+        updateActiveGardenMap(currentSave, { selectedBackgroundId: theme.id })
+      )
+    );
     setStatus(`Theme: ${theme.label}`);
+  }
+
+  function selectMap(mapId: GardenMapId) {
+    const definition = getGardenMapDefinition(mapId);
+    if (!isGardenMapUnlocked(gameStats.level, definition)) {
+      setStatus(`${definition.label} unlocks at Lv ${definition.unlockLevel}`);
+      return;
+    }
+
+    setSave(nextSave((currentSave) => activateGardenMap(currentSave, mapId)));
+    setStatus(`Map: ${definition.label}`);
   }
 
   function saveLayoutPreset(slot: number) {
@@ -525,11 +616,10 @@ export function App() {
         const currentPreset = currentSave.layoutPresets.find((item) => item.slot === slot);
         if (!currentPreset?.updatedAt) return currentSave;
 
-        return {
-          ...currentSave,
+        return updateActiveGardenMap(currentSave, {
           selectedBackgroundId: currentPreset.selectedBackgroundId,
-          placedDecor: clonePlacedDecor(currentPreset.placedDecor)
-        };
+          placedDecor: currentPreset.placedDecor
+        });
       })
     );
     setStatus(`Loaded layout ${slot}`);
@@ -693,14 +783,18 @@ export function App() {
     }
 
     setSave(
-      nextSave((currentSave) => ({
-        ...currentSave,
-        economy: {
-          ...currentSave.economy,
-          incomePerSecond: currentSave.economy.incomePerSecond + selectedDecor.bonusPerSecond
-        },
-        placedDecor: [...currentSave.placedDecor, candidate]
-      }))
+      nextSave((currentSave) =>
+        updateActiveGardenMap(
+          {
+            ...currentSave,
+            economy: {
+              ...currentSave.economy,
+              incomePerSecond: currentSave.economy.incomePerSecond + selectedDecor.bonusPerSecond
+            }
+          },
+          { placedDecor: [...currentSave.placedDecor, candidate] }
+        )
+      )
     );
     setStatus(`Placed ${selectedDecor.label}${rotation === 0 ? '' : ` ${rotation}deg`}`);
   }
@@ -733,14 +827,16 @@ export function App() {
         const decor = decorItems.find((item) => item.id === last.itemId);
         const bonus = decor?.bonusPerSecond ?? 0;
 
-        return {
-          ...currentSave,
-          economy: {
-            ...currentSave.economy,
-            incomePerSecond: Math.max(0, currentSave.economy.incomePerSecond - bonus)
+        return updateActiveGardenMap(
+          {
+            ...currentSave,
+            economy: {
+              ...currentSave.economy,
+              incomePerSecond: Math.max(0, currentSave.economy.incomePerSecond - bonus)
+            }
           },
-          placedDecor: currentSave.placedDecor.slice(0, -1)
-        };
+          { placedDecor: currentSave.placedDecor.slice(0, -1) }
+        );
       })
     );
     setStatus(`Removed ${optimisticDecor?.label ?? 'decor'}`);
@@ -918,7 +1014,11 @@ export function App() {
             rotation={rotation}
             validCellCount={validPlacementCellCount}
             canConfirm={placementCanConfirm}
+            activeMapId={save.activeMapId}
+            maps={save.maps}
+            level={gameStats.level}
             ownedRewardIds={save.ownedRewardIds}
+            onSelectMap={selectMap}
             onSelectDecor={selectDecor}
             onRotate={rotatePlacement}
             onConfirm={placeSelectedDecor}
@@ -985,8 +1085,11 @@ export function App() {
             ownedRewardIds={save.ownedRewardIds}
             collectionGroups={collectionGroups}
             marketOffers={marketOffers}
+            activeMapId={save.activeMapId}
+            maps={save.maps}
             selectedBackgroundId={selectedBackgroundId}
             onSelectBackground={selectBackground}
+            onSelectMap={selectMap}
             layoutPresets={save.layoutPresets}
             onSaveLayoutPreset={saveLayoutPreset}
             onLoadLayoutPreset={loadLayoutPreset}
@@ -1516,6 +1619,48 @@ function IslandScene({
   );
 }
 
+function MapSwitcher({
+  activeMapId,
+  maps,
+  level,
+  onSelectMap
+}: {
+  activeMapId: GardenMapId;
+  maps: GardenMapState[];
+  level: number;
+  onSelectMap: (id: GardenMapId) => void;
+}) {
+  return (
+    <div className="map-switcher" aria-label="Garden maps">
+      {gardenMapCatalog.map((definition) => {
+        const map = maps.find((item) => item.id === definition.id);
+        const unlocked = isGardenMapUnlocked(level, definition);
+        const decorCount = map?.placedDecor.length ?? 0;
+
+        return (
+          <button
+            key={definition.id}
+            className="map-chip"
+            type="button"
+            data-active={activeMapId === definition.id}
+            data-locked={!unlocked}
+            disabled={!unlocked}
+            onClick={() => onSelectMap(definition.id)}
+            aria-label={
+              unlocked
+                ? `Switch to ${definition.label}`
+                : `${definition.label} unlocks at level ${definition.unlockLevel}`
+            }
+          >
+            <strong>{definition.label}</strong>
+            <span>{unlocked ? `${decorCount} decor` : `Lv ${definition.unlockLevel}`}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function PlacementPanel({
   selectedDecorId,
   selectedCell,
@@ -1523,7 +1668,11 @@ function PlacementPanel({
   validCellCount,
   canConfirm,
   canUndo,
+  activeMapId,
+  maps,
+  level,
   ownedRewardIds,
+  onSelectMap,
   onSelectDecor,
   onRotate,
   onConfirm,
@@ -1536,7 +1685,11 @@ function PlacementPanel({
   validCellCount: number;
   canConfirm: boolean;
   canUndo: boolean;
+  activeMapId: GardenMapId;
+  maps: GardenMapState[];
+  level: number;
   ownedRewardIds: string[];
+  onSelectMap: (id: GardenMapId) => void;
   onSelectDecor: (id: string) => void;
   onRotate: () => void;
   onConfirm: () => void;
@@ -1548,6 +1701,12 @@ function PlacementPanel({
   return (
     <section className="bottom-sheet placement-sheet" aria-label="Decor placement">
       <div className="sheet-handle" />
+      <MapSwitcher
+        activeMapId={activeMapId}
+        maps={maps}
+        level={level}
+        onSelectMap={onSelectMap}
+      />
       <div className="mode-row">
         <strong>{selectedDecor.label}</strong>
         <span>
@@ -1908,8 +2067,11 @@ function StorageOverlay({
   ownedRewardIds,
   collectionGroups,
   marketOffers,
+  activeMapId,
+  maps,
   selectedBackgroundId,
   onSelectBackground,
+  onSelectMap,
   layoutPresets,
   onSaveLayoutPreset,
   onLoadLayoutPreset,
@@ -1922,8 +2084,11 @@ function StorageOverlay({
   ownedRewardIds: string[];
   collectionGroups: CollectionGroup[];
   marketOffers: MarketOffer[];
+  activeMapId: GardenMapId;
+  maps: GardenMapState[];
   selectedBackgroundId: string;
   onSelectBackground: (themeId: string) => void;
+  onSelectMap: (id: GardenMapId) => void;
   layoutPresets: LayoutPreset[];
   onSaveLayoutPreset: (slot: number) => void;
   onLoadLayoutPreset: (slot: number) => void;
@@ -1941,6 +2106,13 @@ function StorageOverlay({
         <span>+{stats.idleIncomePerSecond}/s</span>
         <span>{save.placedDecor.length} decor</span>
         <span>{save.gachaHistory.length} pulls</span>
+      </div>
+      <div className="map-panel" aria-label="Map unlocks">
+        <div className="mode-row compact">
+          <strong>Maps</strong>
+          <span>{gardenMapCatalog.filter((map) => isGardenMapUnlocked(stats.level, map)).length}/3 open</span>
+        </div>
+        <MapSwitcher activeMapId={activeMapId} maps={maps} level={stats.level} onSelectMap={onSelectMap} />
       </div>
       <div className="market-panel" aria-label="Market exchange">
         <div className="mode-row compact">
@@ -2048,7 +2220,7 @@ function StorageOverlay({
         </div>
         <div className="theme-tray">
           {backgroundThemes.map((theme) => {
-            const owned = isRewardOwned(ownedRewardIds, theme.id);
+            const owned = isBackgroundAvailable(theme.id, ownedRewardIds, stats.level);
             return (
               <button
                 key={theme.id}

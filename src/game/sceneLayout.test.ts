@@ -1,17 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
 import { decorItems } from './content';
+import { placementGrid } from './maps';
 import { withRotatedFootprint } from './placement';
 import { canPlaceDecorInScene, decorSceneBounds, gridToScene, sceneLayout } from './sceneLayout';
 
-const grid = { width: 6, height: 6 };
+const grid = placementGrid;
 
 describe('scene layout contracts', () => {
   it('keeps at least one scene-safe placement for every decor item', () => {
     for (const decor of decorItems) {
       let validCells = 0;
-      for (let y = 0; y <= 6 - decor.footprint.h; y += 1) {
-        for (let x = 0; x <= 6 - decor.footprint.w; x += 1) {
+      for (let y = 0; y <= grid.height - decor.footprint.h; y += 1) {
+        for (let x = 0; x <= grid.width - decor.footprint.w; x += 1) {
           if (canPlaceDecorInScene(grid, [], x, y, decor)) validCells += 1;
         }
       }
@@ -25,8 +26,8 @@ describe('scene layout contracts', () => {
       for (const rotation of [0, 90, 180, 270]) {
         const oriented = withRotatedFootprint(decor, rotation);
         let validCells = 0;
-        for (let y = 0; y <= 6 - oriented.footprint.h; y += 1) {
-          for (let x = 0; x <= 6 - oriented.footprint.w; x += 1) {
+        for (let y = 0; y <= grid.height - oriented.footprint.h; y += 1) {
+          for (let x = 0; x <= grid.width - oriented.footprint.w; x += 1) {
             if (canPlaceDecorInScene(grid, [], x, y, oriented)) validCells += 1;
           }
         }
@@ -38,8 +39,8 @@ describe('scene layout contracts', () => {
 
   it('keeps every accepted decor placement inside the playable island scene band', () => {
     for (const decor of decorItems) {
-      for (let y = 0; y <= 6 - decor.footprint.h; y += 1) {
-        for (let x = 0; x <= 6 - decor.footprint.w; x += 1) {
+      for (let y = 0; y <= grid.height - decor.footprint.h; y += 1) {
+        for (let x = 0; x <= grid.width - decor.footprint.w; x += 1) {
           if (!canPlaceDecorInScene(grid, [], x, y, decor)) continue;
           const bounds = decorSceneBounds({ x, y }, decor);
           expect(bounds.x, `${decor.id} x ${x}:${y}`).toBeGreaterThanOrEqual(sceneLayout.decorSafe.minX);
@@ -51,17 +52,17 @@ describe('scene layout contracts', () => {
     }
   });
 
-  it('rejects bottom row decor that would visually collide with the lower UI band', () => {
-    const hayBed = decorItems.find((item) => item.id === 'hay-bed');
-    expect(hayBed).toBeDefined();
-    expect(canPlaceDecorInScene(grid, [], 0, 4, hayBed!)).toBe(false);
-    expect(canPlaceDecorInScene(grid, [], 0, 5, hayBed!)).toBe(false);
+  it('rejects decor below the dense playable grid', () => {
+    const windmill = decorItems.find((item) => item.id === 'windmill');
+    expect(windmill).toBeDefined();
+    expect(canPlaceDecorInScene(grid, [], 0, grid.height - 1, windmill!)).toBe(false);
+    expect(canPlaceDecorInScene(grid, [], 0, grid.height, windmill!)).toBe(false);
   });
 
   it('rejects decor that would sit under the degu keepout area', () => {
     const clover = decorItems.find((item) => item.id === 'clover-patch');
     expect(clover).toBeDefined();
-    expect(canPlaceDecorInScene(grid, [], 2, 3, clover!)).toBe(false);
+    expect(canPlaceDecorInScene(grid, [], 5, 2, clover!)).toBe(false);
   });
 
   it('uses bottom-center anchors for multi-cell decor footprints', () => {

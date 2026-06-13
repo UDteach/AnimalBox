@@ -159,9 +159,9 @@ describe('prototype save data', () => {
           },
           {
             instanceId: 'too-low',
-            itemId: 'hay-bed',
+            itemId: 'windmill',
             cellX: 0,
-            cellY: 5,
+            cellY: 7,
             footprint: { w: 2, h: 1 }
           }
         ]
@@ -303,5 +303,56 @@ describe('prototype save data', () => {
       placedDecor: []
     });
     expect(save.layoutPresets[2]).toEqual(defaultSave.layoutPresets[2]);
+  });
+
+  it('migrates older top-level layout into the first garden map', () => {
+    const { maps, activeMapId, ...legacySave } = defaultSave;
+    const storage = memoryStorage(
+      JSON.stringify({
+        ...legacySave,
+        selectedBackgroundId: 'morning-pasture',
+        placedDecor: [
+          {
+            instanceId: 'legacy-clover',
+            itemId: 'clover-patch',
+            cellX: 0,
+            cellY: 3,
+            footprint: { w: 1, h: 1 }
+          }
+        ]
+      })
+    );
+
+    const save = loadSave(storage);
+
+    expect(save.activeMapId).toBe('sky-pasture');
+    expect(save.selectedBackgroundId).toBe('morning-pasture');
+    expect(save.maps[0].selectedBackgroundId).toBe('morning-pasture');
+    expect(save.maps[0].placedDecor).toEqual([
+      {
+        instanceId: 'legacy-clover',
+        itemId: 'clover-patch',
+        cellX: 0,
+        cellY: 3,
+        footprint: { w: 1, h: 1 }
+      }
+    ]);
+  });
+
+  it('falls back to the starter map when saved active map is not level unlocked', () => {
+    const storage = memoryStorage(
+      JSON.stringify({
+        ...defaultSave,
+        activeMapId: 'moon-garden',
+        progression: { ...defaultSave.progression, xp: 0 },
+        selectedBackgroundId: 'starlight-night',
+        placedDecor: []
+      })
+    );
+
+    const save = loadSave(storage);
+
+    expect(save.activeMapId).toBe('sky-pasture');
+    expect(save.selectedBackgroundId).toBe('floating-island');
   });
 });

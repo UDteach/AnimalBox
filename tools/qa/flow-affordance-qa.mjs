@@ -45,6 +45,8 @@ const textSelectors = [
   '.collection-card small',
   '.market-offer-card strong',
   '.market-offer-card span',
+  '.map-chip strong',
+  '.map-chip span',
   '.next-upgrade-button span',
   '.next-upgrade-button strong'
 ];
@@ -142,6 +144,7 @@ async function collect(page, screen) {
         placementTitle: one('.placement-sheet .mode-row strong'),
         collectionCards: many('.collection-card'),
         marketOffers: many('.market-offer-card'),
+        mapChips: many('.map-chip'),
         footprintCells: many('.footprint-cell'),
         primary: primarySelectors[screen].flatMap((selector) => many(selector)),
         overlapTargets: overlapSelectors[screen].map((selector) => ({ selector, rect: one(selector) })),
@@ -216,6 +219,9 @@ function audit(metrics, scenario) {
     if (!metrics.placementUndo) {
       issues.push(fail('placement undo control is missing', scenario));
     }
+    if (metrics.mapChips.length !== 3) {
+      issues.push(fail('placement should expose three map chips', { ...scenario, count: metrics.mapChips.length }));
+    }
   }
   if (metrics.screen === 'home') {
     if (metrics.guideTasks.length !== 4) {
@@ -235,6 +241,9 @@ function audit(metrics, scenario) {
     }
   }
   if (metrics.screen === 'storage') {
+    if (metrics.mapChips.length !== 3) {
+      issues.push(fail('storage should expose three map chips', { ...scenario, count: metrics.mapChips.length }));
+    }
     if (metrics.collectionCards.length !== 6) {
       issues.push(fail('storage collection progress cards missing', { ...scenario, count: metrics.collectionCards.length }));
     }

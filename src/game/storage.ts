@@ -8,13 +8,23 @@ import {
   starterRewardIds
 } from './content';
 import { initialEconomy, type EconomyState } from './economy';
+import { gardenMapCatalog, placementGrid, type GardenMapId } from './maps';
 import { normalizeRotation, type PlacedDecor, withRotatedFootprint } from './placement';
-import { defaultProgression, sanitizeProgression, type ProgressionState } from './progression';
+import { defaultProgression, levelFromXp, sanitizeProgression, type ProgressionState } from './progression';
 import { canPlaceDecorInScene } from './sceneLayout';
 
 const STORAGE_KEY = 'animalbox.prototype.v1';
-const grid = { width: 6, height: 6 };
+const grid = placementGrid;
 const starterBackgroundId = 'floating-island';
+const starterPlacedDecor: PlacedDecor[] = [
+  {
+    instanceId: 'starter-clover-1',
+    itemId: 'clover-patch',
+    cellX: 0,
+    cellY: 3,
+    footprint: { w: 1, h: 1 }
+  }
+];
 const rewardIds = [
   ...backgroundThemes.map((item) => item.id),
   ...decorItems.map((item) => item.id),
@@ -34,6 +44,14 @@ export interface LayoutPreset {
   updatedAt: number | null;
 }
 
+export interface GardenMapState {
+  id: GardenMapId;
+  label: string;
+  unlockLevel: number;
+  selectedBackgroundId: string;
+  placedDecor: PlacedDecor[];
+}
+
 export interface PrototypeSave {
   economy: EconomyState;
   screen: string;
@@ -49,6 +67,8 @@ export interface PrototypeSave {
   pullsSinceRare: number;
   progression: ProgressionState;
   layoutPresets: LayoutPreset[];
+  activeMapId: GardenMapId;
+  maps: GardenMapState[];
 }
 
 export interface AccessoryPlacement {
@@ -74,6 +94,19 @@ export function createDefaultLayoutPresets(): LayoutPreset[] {
   }));
 }
 
+export function createDefaultGardenMaps(
+  firstMapDecor: PlacedDecor[] = starterPlacedDecor,
+  firstBackgroundId = starterBackgroundId
+): GardenMapState[] {
+  return gardenMapCatalog.map((map, index) => ({
+    id: map.id,
+    label: map.label,
+    unlockLevel: map.unlockLevel,
+    selectedBackgroundId: index === 0 ? firstBackgroundId : map.defaultBackgroundId,
+    placedDecor: index === 0 ? clonePlacedDecorList(firstMapDecor) : []
+  }));
+}
+
 export const defaultSave: PrototypeSave = {
   economy: initialEconomy,
   screen: 'home',
@@ -83,20 +116,14 @@ export const defaultSave: PrototypeSave = {
   customDeguTone: { hue: 0, saturation: 100, brightness: 100 },
   selectedOutfitIds: ['straw-hat', 'cloud-puff', 'sprout-buddy'],
   accessoryPlacements: {},
-  placedDecor: [
-    {
-      instanceId: 'starter-clover-1',
-      itemId: 'clover-patch',
-      cellX: 0,
-      cellY: 3,
-      footprint: { w: 1, h: 1 }
-    }
-  ],
+  placedDecor: clonePlacedDecorList(starterPlacedDecor),
   ownedRewardIds: starterRewardIds,
   gachaHistory: [],
   pullsSinceRare: 0,
   progression: defaultProgression,
-  layoutPresets: createDefaultLayoutPresets()
+  layoutPresets: createDefaultLayoutPresets(),
+  activeMapId: gardenMapCatalog[0].id,
+  maps: createDefaultGardenMaps()
 };
 
 export function loadSave(storage: Pick<Storage, 'getItem'> = localStorage): PrototypeSave {
@@ -106,16 +133,42 @@ export function loadSave(storage: Pick<Storage, 'getItem'> = localStorage): Prot
   try {
     const parsed = JSON.parse(raw) as Partial<PrototypeSave>;
     const merged = { ...defaultSave, ...parsed };
+    const economy = sanitizeEconomy(parsed.economy);
+    const progression = sanitizeProgression(parsed.progression);
+    const backgroundIds = backgroundThemes.map((theme) => theme.id);
+    const fallbackBackgroundId = sanitizeId(
+      parsed.selectedBackgroundId,
+      backgroundIds,
+      defaultSave.selectedBackgroundId
+    );
+    const fallbackPlacedDecor = sanitizePlacedDecor(
+      parsed.placedDecor,
+      clonePlacedDecorList(starterPlacedDecor)
+    );
+    let maps = sanitizeGardenMaps(parsed.maps, fallbackBackgroundId, fallbackPlacedDecor);
+    const candidateActiveMapId = sanitizeGardenMapId(parsed.activeMapId);
+    maps = maps.map((map) =>
+      map.id === candidateActiveMapId
+        ? {
+            ...map,
+            selectedBackgroundId: fallbackBackgroundId,
+            placedDecor: clonePlacedDecorList(fallbackPlacedDecor)
+          }
+        : map
+    );
+    const candidateDefinition =
+      gardenMapCatalog.find((map) => map.id === candidateActiveMapId) ?? gardenMapCatalog[0];
+    const activeMapId =
+      candidateDefinition.unlockLevel <= levelFromXp(progression.xp)
+        ? candidateActiveMapId
+        : gardenMapCatalog[0].id;
+    const activeMap = maps.find((map) => map.id === activeMapId) ?? maps[0];
 
     return {
       ...merged,
-      economy: sanitizeEconomy(parsed.economy),
+      economy,
       screen: sanitizeId(parsed.screen, navOrder, defaultSave.screen),
-      selectedBackgroundId: sanitizeId(
-        parsed.selectedBackgroundId,
-        backgroundThemes.map((theme) => theme.id),
-        defaultSave.selectedBackgroundId
-      ),
+      selectedBackgroundId: activeMap.selectedBackgroundId,
       selectedVariantId: sanitizeId(
         parsed.selectedVariantId,
         deguVariants.map((variant) => variant.id),
@@ -133,15 +186,17 @@ export function loadSave(storage: Pick<Storage, 'getItem'> = localStorage): Prot
         defaultSave.selectedOutfitIds
       ),
       accessoryPlacements: sanitizeAccessoryPlacements(parsed.accessoryPlacements),
-      placedDecor: sanitizePlacedDecor(parsed.placedDecor),
+      placedDecor: clonePlacedDecorList(activeMap.placedDecor),
       ownedRewardIds: sanitizeIdList(parsed.ownedRewardIds, rewardIds, defaultSave.ownedRewardIds),
       gachaHistory: sanitizeIdList(parsed.gachaHistory, rewardIds, defaultSave.gachaHistory),
       pullsSinceRare:
         typeof parsed.pullsSinceRare === 'number' && parsed.pullsSinceRare >= 0
           ? Math.floor(parsed.pullsSinceRare)
           : defaultSave.pullsSinceRare,
-      progression: sanitizeProgression(parsed.progression),
-      layoutPresets: sanitizeLayoutPresets(parsed.layoutPresets)
+      progression,
+      layoutPresets: sanitizeLayoutPresets(parsed.layoutPresets),
+      activeMapId,
+      maps
     };
   } catch {
     return defaultSave;
@@ -279,6 +334,57 @@ function sanitizeLayoutPresets(value: unknown): LayoutPreset[] {
       updatedAt: sanitizeNullableTimestamp(preset.updatedAt)
     };
   });
+}
+
+function sanitizeGardenMapId(value: unknown): GardenMapId {
+  if (typeof value === 'string' && gardenMapCatalog.some((map) => map.id === value)) {
+    return value as GardenMapId;
+  }
+
+  return gardenMapCatalog[0].id;
+}
+
+function sanitizeGardenMaps(
+  value: unknown,
+  firstBackgroundId: string,
+  firstMapDecor: PlacedDecor[]
+): GardenMapState[] {
+  const backgroundIds = backgroundThemes.map((theme) => theme.id);
+  const defaults = createDefaultGardenMaps(firstMapDecor, firstBackgroundId);
+  const sources = Array.isArray(value) ? value : [];
+
+  return gardenMapCatalog.map((definition, index) => {
+    const fallback = defaults[index];
+    const source =
+      sources.find(
+        (item) =>
+          item &&
+          typeof item === 'object' &&
+          (item as Partial<GardenMapState>).id === definition.id
+      ) ?? null;
+
+    if (!source || typeof source !== 'object') return fallback;
+    const map = source as Partial<GardenMapState>;
+
+    return {
+      id: definition.id,
+      label: definition.label,
+      unlockLevel: definition.unlockLevel,
+      selectedBackgroundId: sanitizeId(
+        map.selectedBackgroundId,
+        backgroundIds,
+        fallback.selectedBackgroundId
+      ),
+      placedDecor: sanitizePlacedDecor(map.placedDecor, fallback.placedDecor)
+    };
+  });
+}
+
+function clonePlacedDecorList(items: PlacedDecor[]): PlacedDecor[] {
+  return items.map((item) => ({
+    ...item,
+    footprint: { ...item.footprint }
+  }));
 }
 
 function sanitizeNullableTimestamp(value: unknown): number | null {

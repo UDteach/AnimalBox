@@ -19,25 +19,25 @@ export interface SceneBounds {
 }
 
 export const sceneLayout = {
-  gridOriginX: 25,
-  gridOriginY: 39,
-  gridStepX: 7.2,
-  gridStepY: 5,
-  minDecorWidth: 10.5,
-  decorScale: 0.66,
+  gridOriginX: 17,
+  gridOriginY: 36,
+  gridStepX: 6,
+  gridStepY: 3,
+  minDecorWidth: 8.4,
+  decorScale: 0.54,
   decorHeightRatioMin: 0.72,
   decorHeightRatioMax: 1.1,
   decorSafe: {
-    minX: 11,
-    maxX: 89,
-    minY: 35,
-    maxY: 57
+    minX: 9,
+    maxX: 91,
+    minY: 34,
+    maxY: 51.5
   },
   deguKeepout: {
-    minX: 42,
-    maxX: 58,
+    minX: 37,
+    maxX: 63,
     minY: 38,
-    maxY: 43
+    maxY: 52
   }
 };
 

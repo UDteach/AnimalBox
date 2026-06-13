@@ -77,14 +77,22 @@ const accessoryIds = [
 ];
 
 const densePlacedDecor = [
-  { instanceId: 'dense-grass', itemId: 'grass-tuft-cluster', cellX: 0, cellY: 2, footprint: { w: 1, h: 1 } },
-  { instanceId: 'dense-carrot', itemId: 'carrot-basket', cellX: 1, cellY: 2, footprint: { w: 1, h: 1 } },
-  { instanceId: 'dense-snack', itemId: 'snack-tray', cellX: 0, cellY: 3, footprint: { w: 1, h: 1 } },
-  { instanceId: 'dense-crate', itemId: 'seed-crate', cellX: 1, cellY: 3, footprint: { w: 1, h: 1 } },
-  { instanceId: 'dense-sand', itemId: 'sand-bath-bowl', cellX: 2, cellY: 3, footprint: { w: 1, h: 1 } },
-  { instanceId: 'dense-lamp', itemId: 'cloud-lamp', cellX: 3, cellY: 3, footprint: { w: 1, h: 1 } },
-  { instanceId: 'dense-sprout', itemId: 'seed-sprout-pot', cellX: 4, cellY: 3, footprint: { w: 1, h: 1 } },
-  { instanceId: 'dense-mail', itemId: 'sky-mailbox', cellX: 5, cellY: 3, footprint: { w: 1, h: 1 } }
+  { instanceId: 'dense-grass-a', itemId: 'grass-tuft-cluster', cellX: 0, cellY: 3, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-carrot-a', itemId: 'carrot-basket', cellX: 1, cellY: 3, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-snack-a', itemId: 'snack-tray', cellX: 2, cellY: 3, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-lamp-a', itemId: 'cloud-lamp', cellX: 9, cellY: 3, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-sprout-a', itemId: 'seed-sprout-pot', cellX: 10, cellY: 3, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-mail-a', itemId: 'sky-mailbox', cellX: 11, cellY: 3, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-crate-mid-a', itemId: 'seed-crate', cellX: 0, cellY: 4, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-sand-mid-a', itemId: 'sand-bath-bowl', cellX: 1, cellY: 4, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-crate-mid-b', itemId: 'seed-crate', cellX: 10, cellY: 4, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-sand-mid-b', itemId: 'sand-bath-bowl', cellX: 11, cellY: 4, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-grass-b', itemId: 'grass-tuft-cluster', cellX: 0, cellY: 5, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-carrot-b', itemId: 'carrot-basket', cellX: 1, cellY: 5, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-snack-b', itemId: 'snack-tray', cellX: 2, cellY: 5, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-lamp-b', itemId: 'cloud-lamp', cellX: 9, cellY: 5, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-sprout-b', itemId: 'seed-sprout-pot', cellX: 10, cellY: 5, footprint: { w: 1, h: 1 } },
+  { instanceId: 'dense-mail-b', itemId: 'sky-mailbox', cellX: 11, cellY: 5, footprint: { w: 1, h: 1 } }
 ];
 
 const baseSave = {
