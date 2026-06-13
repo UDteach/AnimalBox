@@ -139,12 +139,12 @@ const baseSave = {
 };
 
 const homePlacedDecor = [
-  { instanceId: 'qa-hideout', itemId: 'ceramic-hideout', cellX: 0, cellY: 3, footprint: { w: 2, h: 2 } },
+  { instanceId: 'qa-hideout', itemId: 'ceramic-hideout', cellX: 0, cellY: 2, footprint: { w: 2, h: 2 } },
   { instanceId: 'qa-hay', itemId: 'timothy-hay-rack', cellX: 0, cellY: 2, footprint: { w: 2, h: 1 } },
   { instanceId: 'qa-sand', itemId: 'sand-bath-bowl', cellX: 1, cellY: 3, footprint: { w: 1, h: 1 } },
   { instanceId: 'qa-sprout', itemId: 'seed-sprout-pot', cellX: 5, cellY: 2, footprint: { w: 1, h: 1 } },
   { instanceId: 'qa-mail', itemId: 'sky-mailbox', cellX: 5, cellY: 3, footprint: { w: 1, h: 1 } },
-  { instanceId: 'qa-bell', itemId: 'bellflower-planter', cellX: 3, cellY: 4, footprint: { w: 2, h: 1 } }
+  { instanceId: 'qa-bell', itemId: 'bellflower-planter', cellX: 3, cellY: 3, footprint: { w: 2, h: 1 } }
 ];
 
 function scenarioName(viewport, backgroundId, screen) {

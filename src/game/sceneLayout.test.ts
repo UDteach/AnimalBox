@@ -54,6 +54,7 @@ describe('scene layout contracts', () => {
   it('rejects bottom row decor that would visually collide with the lower UI band', () => {
     const hayBed = decorItems.find((item) => item.id === 'hay-bed');
     expect(hayBed).toBeDefined();
+    expect(canPlaceDecorInScene(grid, [], 0, 4, hayBed!)).toBe(false);
     expect(canPlaceDecorInScene(grid, [], 0, 5, hayBed!)).toBe(false);
   });
 

@@ -165,9 +165,9 @@ const baseSave = {
 
 const homePlacedDecor = [
   { instanceId: 'qa-hay', itemId: 'timothy-hay-rack', cellX: 0, cellY: 2, footprint: { w: 2, h: 1 } },
-  { instanceId: 'qa-hideout', itemId: 'ceramic-hideout', cellX: 0, cellY: 3, footprint: { w: 2, h: 2 } },
+  { instanceId: 'qa-hideout', itemId: 'ceramic-hideout', cellX: 0, cellY: 2, footprint: { w: 2, h: 2 } },
   { instanceId: 'qa-mail', itemId: 'sky-mailbox', cellX: 5, cellY: 3, footprint: { w: 1, h: 1 } },
-  { instanceId: 'qa-flower', itemId: 'flower-patch', cellX: 3, cellY: 4, footprint: { w: 2, h: 1 } }
+  { instanceId: 'qa-flower', itemId: 'flower-patch', cellX: 3, cellY: 3, footprint: { w: 2, h: 1 } }
 ];
 
 const screenOrder = ['home', 'placement', 'wardrobe', 'gacha', 'storage'];

@@ -30,14 +30,14 @@ export const sceneLayout = {
   decorSafe: {
     minX: 11,
     maxX: 89,
-    minY: 36,
-    maxY: 60
+    minY: 35,
+    maxY: 57
   },
   deguKeepout: {
     minX: 42,
     maxX: 58,
     minY: 38,
-    maxY: 44.5
+    maxY: 43
   }
 };
 

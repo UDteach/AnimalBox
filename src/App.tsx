@@ -66,6 +66,13 @@ interface GachaReveal {
   results: PullResult[];
 }
 
+interface ScreenCueContent {
+  title: string;
+  detail: string;
+  meta: string;
+  action: string;
+}
+
 const screenSet = new Set<ScreenId>(navOrder);
 const grid = { width: 6, height: 6 };
 const firstOpenCell: Cell = { x: 0, y: 2 };
@@ -126,12 +133,33 @@ export function App() {
     : 'agouti';
   const selectedOutfitIds = save.selectedOutfitIds.filter((id) => isRewardOwned(save.ownedRewardIds, id));
   const activeVariant = deguVariants.find((item) => item.id === selectedVariantId) ?? deguVariants[0];
+  const activeAccessory =
+    accessoryItems.find((item) => selectedOutfitIds.includes(item.id) && item.id === selectedAccessoryId) ??
+    accessoryItems.find((item) => selectedOutfitIds.includes(item.id));
   const customDeguFilter = deguToneFilter(save.customDeguTone, activeVariant.filter);
   const selectedDecor = decorItems.find((item) => item.id === selectedDecorId) ?? decorItems[0];
   const placementDecor = useMemo(
     () => withRotatedFootprint(selectedDecor, rotation),
     [selectedDecor, rotation]
   );
+  const placementCanConfirm = canPlaceDecorInScene(
+    grid,
+    save.placedDecor,
+    selectedCell.x,
+    selectedCell.y,
+    placementDecor
+  );
+  const validPlacementCellCount = useMemo(() => {
+    let count = 0;
+
+    for (let y = 0; y < grid.height; y += 1) {
+      for (let x = 0; x < grid.width; x += 1) {
+        if (canPlaceDecorInScene(grid, save.placedDecor, x, y, placementDecor)) count += 1;
+      }
+    }
+
+    return count;
+  }, [placementDecor, save.placedDecor]);
   const activeTheme =
     backgroundThemes.find((theme) => theme.id === selectedBackgroundId) ?? backgroundThemes[0];
 
@@ -676,12 +704,25 @@ export function App() {
           onSettings={() => setScreen('storage')}
         />
 
+        <ScreenCue
+          screen={screen}
+          economy={economy}
+          stats={gameStats}
+          activeTheme={activeTheme}
+          selectedDecor={selectedDecor}
+          selectedCell={selectedCell}
+          selectedAccessory={activeAccessory}
+          selectedOutfitCount={selectedOutfitIds.length}
+          ownedRewardCount={save.ownedRewardIds.length}
+        />
+
         {(screen === 'home' || screen === 'placement' || screen === 'storage') && (
           <IslandScene
             save={save}
             selectedDecor={placementDecor}
             selectedCell={selectedCell}
             placementRotation={rotation}
+            placementIsValid={placementCanConfirm}
             screen={screen}
             selectedDeguShotId={save.selectedDeguShotId}
             selectedVariantId={selectedVariantId}
@@ -698,6 +739,8 @@ export function App() {
             selectedDecorId={selectedDecorId}
             selectedCell={selectedCell}
             rotation={rotation}
+            validCellCount={validPlacementCellCount}
+            canConfirm={placementCanConfirm}
             ownedRewardIds={save.ownedRewardIds}
             onSelectDecor={selectDecor}
             onRotate={rotatePlacement}
@@ -837,6 +880,120 @@ function animalChoiceBadge(shot: PixelDeguShot, owned: boolean): string {
 function compactUnlockCost(cost: number): string {
   if (cost < 1000) return formatNumber(cost);
   return `${(cost / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+}
+
+function getScreenCue({
+  screen,
+  economy,
+  stats,
+  activeTheme,
+  selectedDecor,
+  selectedCell,
+  selectedAccessory,
+  selectedOutfitCount,
+  ownedRewardCount
+}: {
+  screen: ScreenId;
+  economy: EconomyState;
+  stats: GameStats;
+  activeTheme: BackgroundTheme;
+  selectedDecor: DecorItem;
+  selectedCell: Cell;
+  selectedAccessory?: FloatingItem;
+  selectedOutfitCount: number;
+  ownedRewardCount: number;
+}): ScreenCueContent {
+  if (screen === 'placement') {
+    return {
+      title: 'Decor',
+      detail: `Place ${selectedDecor.label}`,
+      meta: `Cell ${selectedCell.x + 1}-${selectedCell.y + 1}`,
+      action: 'place-decor'
+    };
+  }
+
+  if (screen === 'wardrobe') {
+    return {
+      title: 'Animals',
+      detail: selectedAccessory ? 'Tune item' : 'Pick animal',
+      meta: `${selectedOutfitCount} active`,
+      action: 'style-animal'
+    };
+  }
+
+  if (screen === 'gacha') {
+    return {
+      title: 'Gift',
+      detail: 'Use earned tickets',
+      meta: `${formatHudNumber(economy.tickets)} tickets`,
+      action: 'open-gift'
+    };
+  }
+
+  if (screen === 'storage') {
+    return {
+      title: 'Storage',
+      detail: activeTheme.label,
+      meta: `${ownedRewardCount} rewards`,
+      action: 'save-layout'
+    };
+  }
+
+  return {
+    title: 'Island',
+    detail: 'Tap, feed, claim',
+    meta: `Lv ${stats.level} +${formatHudNumber(stats.idleIncomePerSecond)}/s`,
+    action: 'care-loop'
+  };
+}
+
+function ScreenCue({
+  screen,
+  economy,
+  stats,
+  activeTheme,
+  selectedDecor,
+  selectedCell,
+  selectedAccessory,
+  selectedOutfitCount,
+  ownedRewardCount
+}: {
+  screen: ScreenId;
+  economy: EconomyState;
+  stats: GameStats;
+  activeTheme: BackgroundTheme;
+  selectedDecor: DecorItem;
+  selectedCell: Cell;
+  selectedAccessory?: FloatingItem;
+  selectedOutfitCount: number;
+  ownedRewardCount: number;
+}) {
+  const cue = getScreenCue({
+    screen,
+    economy,
+    stats,
+    activeTheme,
+    selectedDecor,
+    selectedCell,
+    selectedAccessory,
+    selectedOutfitCount,
+    ownedRewardCount
+  });
+
+  return (
+    <aside
+      className="screen-cue"
+      data-screen={screen}
+      data-next-action={cue.action}
+      aria-label={`${cue.title}: ${cue.detail}`}
+    >
+      <div>
+        <strong data-cue-title>{cue.title}</strong>
+        <span data-cue-detail>{cue.detail}</span>
+      </div>
+      <small>{cue.meta}</small>
+    </aside>
+  );
 }
 
 function Hud({
@@ -1023,6 +1180,7 @@ function IslandScene({
   selectedDecor,
   selectedCell,
   placementRotation,
+  placementIsValid,
   screen,
   selectedDeguShotId,
   selectedVariantId,
@@ -1036,6 +1194,7 @@ function IslandScene({
   selectedDecor: DecorItem;
   selectedCell: Cell;
   placementRotation: number;
+  placementIsValid: boolean;
   screen: ScreenId;
   selectedDeguShotId: string;
   selectedVariantId: string;
@@ -1103,11 +1262,27 @@ function IslandScene({
               />
             );
           })}
+          {Array.from({ length: selectedDecor.footprint.w * selectedDecor.footprint.h }).map((_, index) => {
+            const x = selectedCell.x + (index % selectedDecor.footprint.w);
+            const y = selectedCell.y + Math.floor(index / selectedDecor.footprint.w);
+            if (x >= grid.width || y >= grid.height) return null;
+
+            const anchor = gridCellAnchor({ x, y });
+            return (
+              <span
+                key={`footprint-${x}:${y}`}
+                className="footprint-cell"
+                data-valid={placementIsValid}
+                style={{ left: `${anchor.x}%`, top: `${anchor.y}%` }}
+              />
+            );
+          })}
           <img
             className="runtime-decor placement-ghost"
             data-decor-id={selectedDecor.id}
             data-cell-x={selectedCell.x}
             data-cell-y={selectedCell.y}
+            data-valid={placementIsValid}
             src={selectedDecor.src}
             alt=""
             draggable={false}
@@ -1139,6 +1314,8 @@ function PlacementPanel({
   selectedDecorId,
   selectedCell,
   rotation,
+  validCellCount,
+  canConfirm,
   ownedRewardIds,
   onSelectDecor,
   onRotate,
@@ -1149,6 +1326,8 @@ function PlacementPanel({
   selectedDecorId: string;
   selectedCell: Cell;
   rotation: number;
+  validCellCount: number;
+  canConfirm: boolean;
   ownedRewardIds: string[];
   onSelectDecor: (id: string) => void;
   onRotate: () => void;
@@ -1162,8 +1341,13 @@ function PlacementPanel({
       <div className="mode-row">
         <strong>Decor</strong>
         <span>
-          cell {selectedCell.x + 1}-{selectedCell.y + 1} / {rotation} deg
+          cell {selectedCell.x + 1}-{selectedCell.y + 1} / {rotation} deg / {validCellCount} spots
         </span>
+      </div>
+      <div className="placement-step-row" aria-label="Placement steps">
+        <span data-active="true">Pick</span>
+        <span data-active={validCellCount > 0}>Spot</span>
+        <span data-active={canConfirm}>Place</span>
       </div>
       <div className="decor-tray">
         {decorItems.map((decor) => {
@@ -1186,16 +1370,22 @@ function PlacementPanel({
       </div>
       <div className="action-row">
         <button className="action danger" type="button" onClick={onCancel} aria-label="Cancel placement">
-          x
+          Cancel
         </button>
         <button className="action undo" type="button" onClick={onUndo} aria-label="Undo last decor">
-          undo
+          Undo
         </button>
         <button className="action rotate" type="button" onClick={onRotate} aria-label="Rotate placement">
-          r
+          Turn
         </button>
-        <button className="action confirm" type="button" onClick={onConfirm} aria-label="Confirm placement">
-          ok
+        <button
+          className="action confirm"
+          type="button"
+          disabled={!canConfirm}
+          onClick={onConfirm}
+          aria-label={canConfirm ? 'Confirm placement' : 'No valid placement spot'}
+        >
+          {canConfirm ? 'Place' : 'No spot'}
         </button>
       </div>
     </section>
@@ -1606,19 +1796,25 @@ function NavBar({
 
   return (
     <nav className="bottom-nav" aria-label="AnimalBox screens">
-      {navOrder.map((screenId) => (
-        <button
-          key={screenId}
-          type="button"
-          className="nav-item"
-          data-active={active === screenId}
-          aria-label={`Open ${screens[screenId].label}`}
-          onClick={() => onNavigate(screenId)}
-        >
-          <img src={icons[screenId]} alt="" draggable={false} />
-          <span>{screens[screenId].label}</span>
-        </button>
-      ))}
+      {navOrder.map((screenId) => {
+        const isActive = active === screenId;
+        const label = screens[screenId].label;
+
+        return (
+          <button
+            key={screenId}
+            type="button"
+            className="nav-item"
+            data-active={isActive}
+            aria-current={isActive ? 'page' : undefined}
+            aria-label={isActive && screenId !== 'home' ? `Close ${label}` : `Open ${label}`}
+            onClick={() => onNavigate(screenId)}
+          >
+            <img src={icons[screenId]} alt="" draggable={false} />
+            <span>{label}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 }

@@ -77,21 +77,21 @@ export const screens: Record<ScreenId, MockupScreen> = {
   },
   wardrobe: {
     id: 'wardrobe',
-    label: 'Dress',
+    label: 'Animals',
     image: '/images/runtime/backgrounds/floating-island.png',
     width: 853,
     height: 1844
   },
   gacha: {
     id: 'gacha',
-    label: 'Sky Gift',
+    label: 'Gift',
     image: '/images/runtime/backgrounds/floating-island.png',
     width: 853,
     height: 1844
   },
   storage: {
     id: 'storage',
-    label: 'Storage',
+    label: 'Store',
     image: '/images/runtime/backgrounds/floating-island.png',
     width: 853,
     height: 1844
