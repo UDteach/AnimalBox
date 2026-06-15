@@ -1925,94 +1925,102 @@ function PlacementPanel({
   const ownedDecorCount = decorItems.filter((decor) => isRewardOwned(ownedRewardIds, decor.id)).length;
 
   return (
-    <section className="bottom-sheet placement-sheet" aria-label={text(locale, 'Decor placement', '家具配置')}>
-      <div className="sheet-handle" />
-      <div className="placement-workbench">
-        <div className="placement-selected-card">
-          <div className="placement-selected-art" aria-hidden="true">
-            <img src={selectedDecor.src} alt="" draggable={false} />
+    <section className="placement-edit-layer" aria-label={text(locale, 'Decor placement', '家具配置')}>
+      <div className="placement-selected-card placement-floating-status">
+        <div className="placement-selected-art" aria-hidden="true">
+          <img src={selectedDecor.src} alt="" draggable={false} />
+        </div>
+        <div className="placement-selected-copy">
+          <span className="placement-eyebrow">{text(locale, 'Now placing', '配置中')}</span>
+          <div className="mode-row">
+            <strong>{localizedName(locale, selectedDecor.id, selectedDecor.label)}</strong>
+            <span>{text(locale, `${selectedDecor.footprint.w}x${selectedDecor.footprint.h}`, `${selectedDecor.footprint.w}x${selectedDecor.footprint.h}`)}</span>
           </div>
-          <div className="placement-selected-copy">
-            <span className="placement-eyebrow">{text(locale, 'Now placing', '配置中')}</span>
-            <div className="mode-row">
-              <strong>{localizedName(locale, selectedDecor.id, selectedDecor.label)}</strong>
-              <span>{text(locale, `${selectedDecor.footprint.w}x${selectedDecor.footprint.h}`, `${selectedDecor.footprint.w}x${selectedDecor.footprint.h}`)}</span>
-            </div>
-            <div className="placement-meta-row">
-              <span>{mapLabel(locale, selectedMapDefinition)}</span>
-              <span>{text(locale, `Cell ${selectedCell.x + 1}-${selectedCell.y + 1}`, `マス ${selectedCell.x + 1}-${selectedCell.y + 1}`)}</span>
-              <span>{text(locale, `${validCellCount} spots`, `空き${validCellCount}`)}</span>
-            </div>
+          <div className="placement-meta-row">
+            <span>{mapLabel(locale, selectedMapDefinition)}</span>
+            <span>{text(locale, `Cell ${selectedCell.x + 1}-${selectedCell.y + 1}`, `マス ${selectedCell.x + 1}-${selectedCell.y + 1}`)}</span>
+            <span>{text(locale, `${validCellCount} spots`, `空き${validCellCount}`)}</span>
           </div>
         </div>
-        <div className="placement-command-stack">
-          <PlacementNudge locale={locale} selectedCell={selectedCell} onMoveCell={onMoveCell} />
-          <button
-            className="action confirm placement-primary-action"
-            type="button"
-            disabled={!canConfirm}
-            onClick={onConfirm}
-            aria-label={canConfirm ? text(locale, 'Confirm placement', '配置を確定') : text(locale, 'No valid placement spot', '置ける場所がありません')}
-          >
-            <span>{canConfirm ? text(locale, 'Place', '置く') : text(locale, 'No spot', '空きなし')}</span>
-            <small>{text(locale, `Cell ${selectedCell.x + 1}-${selectedCell.y + 1}`, `マス ${selectedCell.x + 1}-${selectedCell.y + 1}`)}</small>
-          </button>
-        </div>
       </div>
-      <div className="placement-map-strip">
-        <div className="placement-section-label">
-          <strong>{text(locale, 'Map', 'マップ')}</strong>
-          <span>{mapDetail(locale, selectedMapDefinition)}</span>
-        </div>
-        <MapSwitcher
-          locale={locale}
-          activeMapId={activeMapId}
-          maps={maps}
-          level={level}
-          onSelectMap={onSelectMap}
-        />
+
+      <div className="placement-command-stack">
+        <PlacementNudge locale={locale} selectedCell={selectedCell} onMoveCell={onMoveCell} />
       </div>
-      <div className="placement-section-label">
-        <strong>{text(locale, 'Decor', '家具')}</strong>
-        <span>{text(locale, `${ownedDecorCount}/${decorItems.length} owned`, `${ownedDecorCount}/${decorItems.length}個`)}</span>
-      </div>
-      <div className="decor-tray">
-        {decorItems.map((decor) => {
-          const owned = isRewardOwned(ownedRewardIds, decor.id);
-          return (
+
+      <section className="bottom-sheet placement-sheet" aria-label={text(locale, 'Placement tools', '配置ツール')}>
+        <div className="sheet-handle" />
+        <div className="placement-control-row">
+          <div className="placement-map-strip">
+            <div className="placement-section-label">
+              <strong>{text(locale, 'Map', 'マップ')}</strong>
+              <span>{mapDetail(locale, selectedMapDefinition)}</span>
+            </div>
+            <MapSwitcher
+              locale={locale}
+              activeMapId={activeMapId}
+              maps={maps}
+              level={level}
+              onSelectMap={onSelectMap}
+            />
+          </div>
+          <div className="placement-action-stack">
             <button
-              key={decor.id}
-              className="asset-card"
+              className="action confirm placement-primary-action"
               type="button"
-              data-active={selectedDecorId === decor.id}
-              data-locked={!owned}
-              aria-label={text(locale, `${owned ? 'Select' : 'Locked'} ${decor.label}`, `${owned ? '選択' : '未解放'} ${localizedName(locale, decor.id, decor.label)}`)}
-              onClick={() => onSelectDecor(decor.id)}
+              disabled={!canConfirm}
+              onClick={onConfirm}
+              aria-label={canConfirm ? text(locale, 'Confirm placement', '配置を確定') : text(locale, 'No valid placement spot', '置ける場所がありません')}
             >
-              <img src={decor.src} alt="" draggable={false} />
-              <strong>{localizedName(locale, decor.id, decor.label)}</strong>
-              <span>{owned ? `+${decor.bonusPerSecond}/s` : text(locale, 'Locked', '未解放')}</span>
+              <span>{canConfirm ? text(locale, 'Place', '置く') : text(locale, 'No spot', '空きなし')}</span>
+              <small>{text(locale, `Cell ${selectedCell.x + 1}-${selectedCell.y + 1}`, `マス ${selectedCell.x + 1}-${selectedCell.y + 1}`)}</small>
             </button>
-          );
-        })}
-      </div>
-      <div className="action-row placement-secondary-actions">
-        <button className="action danger" type="button" onClick={onCancel} aria-label={text(locale, 'Cancel placement', '配置をやめる')}>
-          {text(locale, 'Cancel', '閉じる')}
-        </button>
-        <button
-          className="action undo"
-          type="button"
-          disabled={!canUndo}
-          onClick={onUndo}
-          aria-label={canUndo ? text(locale, 'Undo last decor', '最後の家具を戻す') : text(locale, 'No decor to undo', '戻せる家具がありません')}
-        >
-          {text(locale, 'Undo', '戻す')}
-        </button>
-        <button className="action rotate" type="button" onClick={onRotate} aria-label={text(locale, 'Rotate placement', '家具を回転')}>
-          {text(locale, 'Turn', '回転')}
-        </button>
-      </div>
+            <div className="action-row placement-secondary-actions">
+              <button className="action danger" type="button" onClick={onCancel} aria-label={text(locale, 'Cancel placement', '配置をやめる')}>
+                {text(locale, 'Cancel', '閉じる')}
+              </button>
+              <button
+                className="action undo"
+                type="button"
+                disabled={!canUndo}
+                onClick={onUndo}
+                aria-label={canUndo ? text(locale, 'Undo last decor', '最後の家具を戻す') : text(locale, 'No decor to undo', '戻せる家具がありません')}
+              >
+                {text(locale, 'Undo', '戻す')}
+              </button>
+              <button className="action rotate" type="button" onClick={onRotate} aria-label={text(locale, 'Rotate placement', '家具を回転')}>
+                {text(locale, 'Turn', '回転')}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="placement-decor-row">
+          <div className="placement-section-label">
+            <strong>{text(locale, 'Decor', '家具')}</strong>
+            <span>{text(locale, `${ownedDecorCount}/${decorItems.length} owned`, `${ownedDecorCount}/${decorItems.length}個`)}</span>
+          </div>
+          <div className="decor-tray">
+            {decorItems.map((decor) => {
+              const owned = isRewardOwned(ownedRewardIds, decor.id);
+              return (
+                <button
+                  key={decor.id}
+                  className="asset-card"
+                  type="button"
+                  data-active={selectedDecorId === decor.id}
+                  data-locked={!owned}
+                  aria-label={text(locale, `${owned ? 'Select' : 'Locked'} ${decor.label}`, `${owned ? '選択' : '未解放'} ${localizedName(locale, decor.id, decor.label)}`)}
+                  onClick={() => onSelectDecor(decor.id)}
+                >
+                  <img src={decor.src} alt="" draggable={false} />
+                  <strong>{localizedName(locale, decor.id, decor.label)}</strong>
+                  <span>{owned ? `+${decor.bonusPerSecond}/s` : text(locale, 'Locked', '未解放')}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
     </section>
   );
 }

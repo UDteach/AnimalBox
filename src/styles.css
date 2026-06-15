@@ -85,6 +85,11 @@ button {
   transform: translateZ(0);
 }
 
+.app[data-view="placement"] .scene-background {
+  transform: translateY(-5%) scale(1.04);
+  transform-origin: 50% 50%;
+}
+
 .sky-vignette {
   z-index: 1;
   background:
@@ -658,6 +663,10 @@ button {
   z-index: 2;
 }
 
+.app[data-view="placement"] .island-layer {
+  transform: translateY(-5%);
+}
+
 .fixed-island-floor {
   position: absolute;
   z-index: 3;
@@ -1222,24 +1231,24 @@ button {
 }
 
 .placement-sheet .map-switcher {
-  grid-auto-columns: minmax(5.25rem, 1fr);
-  gap: 0.24rem;
-  padding: 0.02rem 0.04rem 0.04rem;
+  grid-auto-columns: minmax(4.25rem, 1fr);
+  gap: 0.18rem;
+  padding: 0.02rem 0.04rem 0.02rem;
 }
 
 .placement-sheet .map-chip {
-  min-height: 2.18rem;
-  padding: 0.22rem 0.34rem;
+  min-height: 1.82rem;
+  padding: 0.16rem 0.28rem;
   border-radius: 0.64rem;
   background: rgba(255, 255, 255, 0.48);
 }
 
 .placement-sheet .map-chip strong {
-  font-size: 0.56rem;
+  font-size: 0.52rem;
 }
 
 .placement-sheet .map-chip span {
-  font-size: 0.48rem;
+  font-size: 0.44rem;
 }
 
 .decor-tray,
@@ -1254,13 +1263,33 @@ button {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.placement-edit-layer {
+  position: absolute;
+  z-index: 96;
+  inset: 0;
+  pointer-events: none;
+}
+
+.placement-edit-layer button,
+.placement-edit-layer .asset-card,
+.placement-edit-layer .map-chip {
+  pointer-events: auto;
+}
+
 .placement-sheet {
-  gap: 0.28rem;
-  padding: 0.36rem 0.5rem 0.44rem;
+  z-index: 3;
+  gap: 0.18rem;
+  padding: 0.26rem 0.42rem 0.34rem;
   border-radius: 1.05rem;
   background:
-    linear-gradient(180deg, rgba(255, 251, 228, 0.96), rgba(255, 242, 198, 0.94)),
+    linear-gradient(180deg, rgba(255, 251, 228, 0.94), rgba(255, 242, 198, 0.92)),
     var(--panel-cream);
+  backdrop-filter: blur(10px);
+}
+
+.placement-sheet .sheet-handle {
+  width: 3.5rem;
+  height: 0.28rem;
 }
 
 .placement-workbench {
@@ -1286,6 +1315,17 @@ button {
   box-shadow:
     inset 0 0 0 1px rgba(144, 94, 30, 0.14),
     0 0.22rem 0.58rem rgba(70, 50, 24, 0.08);
+}
+
+.placement-floating-status {
+  position: absolute;
+  top: calc(6.25rem + env(safe-area-inset-top));
+  left: 0.74rem;
+  z-index: 5;
+  width: min(14rem, 54%);
+  min-height: 3.12rem;
+  padding: 0.32rem 0.38rem;
+  pointer-events: auto;
 }
 
 .placement-selected-art {
@@ -1336,6 +1376,7 @@ button {
 .placement-selected-copy .mode-row strong {
   min-width: 0;
   overflow: hidden;
+  color: #4b331a;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1373,22 +1414,23 @@ button {
 .placement-command-stack {
   position: absolute;
   z-index: 116;
-  right: 0.58rem;
-  bottom: calc(100% + 0.52rem);
+  top: calc(6.55rem + env(safe-area-inset-top));
+  right: 0.72rem;
+  bottom: auto;
   display: grid;
   width: max-content;
   align-content: stretch;
-  gap: 0.22rem;
+  gap: 0.18rem;
   pointer-events: auto;
 }
 
 .placement-primary-action {
   display: grid;
-  min-height: 2.44rem;
+  min-height: 2.2rem;
   place-items: center;
   gap: 0.04rem;
-  padding: 0.18rem 0.54rem;
-  border-radius: 0.82rem;
+  padding: 0.16rem 0.44rem;
+  border-radius: 0.78rem;
 }
 
 .placement-primary-action span {
@@ -1403,7 +1445,22 @@ button {
 
 .placement-map-strip {
   display: grid;
-  gap: 0.2rem;
+  gap: 0.12rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.placement-control-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(5.6rem, 6.9rem);
+  gap: 0.24rem;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.placement-decor-row {
+  display: grid;
+  gap: 0.12rem;
   min-width: 0;
 }
 
@@ -1412,7 +1469,7 @@ button {
   min-width: 0;
   align-items: center;
   justify-content: space-between;
-  gap: 0.42rem;
+  gap: 0.28rem;
 }
 
 .placement-section-label strong {
@@ -1424,11 +1481,11 @@ button {
 
 .placement-sheet .decor-tray {
   display: grid;
-  grid-auto-columns: 4.05rem;
+  grid-auto-columns: 3.78rem;
   grid-auto-flow: column;
   grid-template-columns: none;
   overflow-x: auto;
-  padding: 0.02rem 0.8rem 0.18rem 0.02rem;
+  padding: 0.02rem 0.8rem 0.12rem 0.02rem;
   overscroll-behavior-x: contain;
   scroll-padding: 0.04rem;
   scroll-snap-type: x proximity;
@@ -1442,15 +1499,15 @@ button {
 }
 
 .placement-sheet .asset-card {
-  min-height: 3.72rem;
+  min-height: 2.8rem;
   border-radius: 0.72rem;
   scroll-snap-align: start;
-  gap: 0.08rem;
-  padding: 0.24rem 0.22rem 0.22rem;
+  gap: 0.06rem;
+  padding: 0.18rem 0.2rem 0.18rem;
 }
 
 .placement-sheet .asset-card img {
-  height: 1.82rem;
+  height: 1.26rem;
 }
 
 .placement-sheet .asset-card strong {
@@ -1475,13 +1532,23 @@ button {
 .placement-sheet .action-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.28rem;
+  gap: 0.14rem;
+  align-self: stretch;
+}
+
+.placement-action-stack {
+  display: grid;
+  gap: 0.14rem;
+  min-width: 0;
+  align-self: stretch;
 }
 
 .placement-sheet .action {
-  min-height: 2.22rem;
-  border-radius: 0.78rem;
-  font-size: 0.62rem;
+  min-height: 2.16rem;
+  border-radius: 0.68rem;
+  padding: 0.24rem 0.12rem;
+  font-size: 0.54rem;
+  line-height: 1;
 }
 
 .placement-sheet .action.confirm {
@@ -1494,6 +1561,21 @@ button {
     inset 0 0 0 2px rgba(143, 91, 29, 0.18),
     0 0.38rem 0.72rem rgba(128, 94, 19, 0.16);
   font-size: 0.76rem;
+}
+
+.placement-sheet .placement-primary-action {
+  min-height: 2.28rem;
+  padding: 0.16rem 0.22rem;
+}
+
+.placement-sheet .placement-primary-action span {
+  font-size: 0.76rem;
+}
+
+.placement-sheet .placement-primary-action small {
+  color: #6a4515;
+  font-size: 0.48rem;
+  opacity: 0.72;
 }
 
 .placement-sheet .action.rotate {
@@ -3559,6 +3641,206 @@ button {
   .placement-nudge {
     grid-template-columns: repeat(3, 2.14rem);
     grid-template-rows: repeat(3, 2.14rem);
+  }
+}
+
+@media (max-height: 760px) {
+  .app[data-view="placement"] .scene-background {
+    transform: translateY(-6%) scale(1.05);
+  }
+
+  .app[data-view="placement"] .island-layer {
+    transform: translateY(-6%);
+  }
+
+  .placement-floating-status {
+    top: calc(5.72rem + env(safe-area-inset-top));
+    width: min(13rem, 52%);
+    min-height: 2.92rem;
+    padding: 0.26rem 0.32rem;
+  }
+
+  .placement-command-stack {
+    top: calc(5.82rem + env(safe-area-inset-top));
+    right: 0.62rem;
+  }
+
+  .placement-sheet {
+    bottom: calc(4.72rem + env(safe-area-inset-bottom));
+    gap: 0.14rem;
+    padding: 0.22rem 0.34rem 0.3rem;
+  }
+
+  .placement-control-row {
+    grid-template-columns: minmax(0, 1fr) minmax(5rem, 6rem);
+    gap: 0.18rem;
+  }
+
+  .placement-sheet .map-switcher {
+    grid-auto-columns: minmax(3.9rem, 1fr);
+    gap: 0.14rem;
+  }
+
+  .placement-sheet .map-chip {
+    min-height: 1.7rem;
+    padding: 0.14rem 0.22rem;
+  }
+
+  .placement-sheet .asset-card {
+    min-height: 2.42rem;
+  }
+
+  .placement-sheet .asset-card img {
+    height: 1.04rem;
+  }
+
+  .placement-sheet .action {
+    min-height: 2.16rem;
+    padding: 0.16rem 0.08rem;
+  }
+
+  .placement-sheet .placement-primary-action {
+    min-height: 2.24rem;
+  }
+}
+
+@media (max-height: 640px), (max-width: 340px) {
+  .app[data-view="placement"] .scene-background {
+    transform: translateY(-7.5%) scale(1.06);
+  }
+
+  .app[data-view="placement"] .island-layer {
+    transform: translateY(-7.5%);
+  }
+
+  .placement-floating-status {
+    top: calc(4.62rem + env(safe-area-inset-top));
+    left: 0.58rem;
+    width: min(11.8rem, 50%);
+    min-height: 2.42rem;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 0.22rem;
+    padding: 0.22rem 0.26rem;
+  }
+
+  .placement-floating-status .placement-selected-art {
+    width: 2rem;
+  }
+
+  .placement-floating-status .placement-meta-row {
+    display: none;
+  }
+
+  .placement-command-stack {
+    top: calc(2.52rem + env(safe-area-inset-top));
+    right: 0.52rem;
+    gap: 0.14rem;
+  }
+
+  .placement-nudge {
+    grid-template-columns: repeat(3, 2.14rem);
+    grid-template-rows: repeat(3, 2.14rem);
+  }
+
+  .nudge-button,
+  .nudge-readout {
+    font-size: 0.82rem;
+  }
+
+  .nudge-readout {
+    font-size: 0.5rem;
+  }
+
+  .placement-sheet {
+    bottom: calc(4.48rem + env(safe-area-inset-bottom));
+    gap: 0.1rem;
+    padding: 0.16rem 0.28rem 0.24rem;
+  }
+
+  .placement-sheet .sheet-handle {
+    height: 0.22rem;
+  }
+
+  .placement-control-row {
+    grid-template-columns: minmax(0, 1fr) minmax(6.82rem, 7rem);
+    gap: 0.14rem;
+  }
+
+  .placement-sheet .placement-section-label {
+    display: none;
+  }
+
+  .placement-decor-row {
+    gap: 0.06rem;
+  }
+
+  .placement-sheet .map-switcher {
+    grid-auto-columns: minmax(3.45rem, 1fr);
+    gap: 0.12rem;
+  }
+
+  .placement-sheet .map-chip {
+    min-height: 1.52rem;
+    padding: 0.12rem 0.18rem;
+  }
+
+  .placement-sheet .map-chip strong {
+    font-size: 0.46rem;
+  }
+
+  .placement-sheet .decor-tray {
+    grid-auto-columns: 3.22rem;
+    padding-bottom: 0.08rem;
+  }
+
+  .placement-sheet .asset-card {
+    min-height: 2.2rem;
+    padding: 0.14rem 0.16rem;
+  }
+
+  .placement-sheet .asset-card img {
+    height: 0.94rem;
+  }
+
+  .placement-sheet .asset-card strong {
+    display: none;
+  }
+
+  .placement-sheet .action-row {
+    gap: 0.1rem;
+  }
+
+  .placement-sheet .action {
+    min-height: 2.16rem;
+    font-size: 0.5rem;
+  }
+
+  .placement-sheet .placement-primary-action {
+    min-height: 2.16rem;
+  }
+
+  .placement-sheet .placement-primary-action span {
+    font-size: 0.66rem;
+  }
+
+  .placement-sheet .placement-primary-action small {
+    display: none;
+  }
+}
+
+@media (min-height: 641px) and (max-width: 340px) {
+  .placement-nudge {
+    grid-template-columns: repeat(3, 2.14rem);
+    grid-template-rows: repeat(3, 2.14rem);
+  }
+
+  .nudge-button,
+  .nudge-readout {
+    font-size: 0.96rem;
+  }
+
+  .nudge-readout {
+    font-size: 0.56rem;
   }
 }
 

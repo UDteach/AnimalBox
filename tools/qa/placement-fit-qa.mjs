@@ -427,21 +427,30 @@ async function verifyPlacementScenario(page, viewport, backgroundId) {
       }
       await page.waitForTimeout(20);
       const state = await page.evaluate(() => {
+        const phone = document.querySelector('.phone')?.getBoundingClientRect();
+        const floor = document.querySelector('.fixed-island-floor')?.getBoundingClientRect();
         const ghost = document.querySelector('.placement-ghost')?.getBoundingClientRect();
         const sheet = document.querySelector('.placement-sheet')?.getBoundingClientRect();
         const nav = document.querySelector('.bottom-nav')?.getBoundingClientRect();
         const degu = document.querySelector('.degu-button')?.getBoundingClientRect();
+        const nudge = document.querySelector('.placement-nudge')?.getBoundingClientRect();
         const selected = document.querySelector('.cell-button[data-selected="true"]');
-        if (!ghost || !sheet || !nav || !degu || !selected) return null;
+        if (!phone || !floor || !ghost || !sheet || !nav || !degu || !nudge || !selected) return null;
         const ghostArea = ghost.width * ghost.height;
         const ix = Math.max(0, Math.min(ghost.right, degu.right) - Math.max(ghost.left, degu.left));
         const iy = Math.max(0, Math.min(ghost.bottom, degu.bottom) - Math.max(ghost.top, degu.top));
+        const nx = Math.max(0, Math.min(nudge.right, degu.right) - Math.max(nudge.left, degu.left));
+        const ny = Math.max(0, Math.min(nudge.bottom, degu.bottom) - Math.max(nudge.top, degu.top));
+        const floorVisiblePx = Math.max(0, Math.min(floor.bottom, sheet.top) - floor.top);
         return {
           decorId: document.querySelector('.placement-ghost')?.dataset.decorId,
           cell: `${selected.dataset.cellX}:${selected.dataset.cellY}`,
           sheetClearance: sheet.top - ghost.bottom,
+          sheetTopRatio: (sheet.top - phone.top) / phone.height,
+          floorVisibleRatio: floorVisiblePx / floor.height,
           navClearance: nav.top - ghost.bottom,
           deguOverlapRatio: ghostArea > 0 ? (ix * iy) / ghostArea : 0,
+          nudgeDeguOverlapRatio: nudge.width * nudge.height > 0 ? (nx * ny) / (nudge.width * nudge.height) : 0,
           ghost: { left: ghost.left, top: ghost.top, right: ghost.right, bottom: ghost.bottom, width: ghost.width, height: ghost.height }
         };
       });
@@ -450,8 +459,11 @@ async function verifyPlacementScenario(page, viewport, backgroundId) {
         continue;
       }
       if (state.sheetClearance < 8) failures.push({ label, issue: 'sheet collision', state });
+      if (state.sheetTopRatio < 0.68 && state.floorVisibleRatio < 0.98) failures.push({ label, issue: 'placement sheet hides too much of the island', state });
+      if (state.floorVisibleRatio < 0.88) failures.push({ label, issue: 'island floor is obscured during placement', state });
       if (state.navClearance < 8) failures.push({ label, issue: 'nav collision', state });
       if (state.deguOverlapRatio > 0.38) failures.push({ label, issue: 'excessive degu overlap', state });
+      if (state.nudgeDeguOverlapRatio > 0.02) failures.push({ label, issue: 'nudge controls overlap degu', state });
     }
   }
 

@@ -352,6 +352,7 @@ async function collectMetrics(page, screen) {
       placementSheet: rectOf('.placement-sheet'),
       placementNudge: rectOf('.placement-nudge'),
       placementGhost: rectOf('.placement-ghost'),
+      placementFloor: rectOf('.fixed-island-floor'),
       actionRow: rectOf('.placement-sheet .action-row'),
       wardrobeGrid: rectOf('.wardrobe-grid'),
       shotRow: rectOf('.shot-row'),
@@ -386,6 +387,7 @@ function auditCommon(metrics, scenario) {
     'placementSheet',
     'placementNudge',
     'placementGhost',
+    'placementFloor',
     'wardrobeGrid',
     'shotRow',
     'variantRow',
@@ -440,6 +442,7 @@ function auditPlacement(metrics, scenario) {
   if (!metrics.placementSheet) issues.push(fail('placement sheet missing', scenario));
   if (!metrics.placementNudge) issues.push(fail('placement nudge controls missing', scenario));
   if (!metrics.placementGhost) issues.push(fail('placement ghost missing', scenario));
+  if (!metrics.placementFloor) issues.push(fail('placement island floor missing', scenario));
   if (metrics.validCells <= 0) issues.push(fail('placement has no valid cells', scenario));
   if (metrics.lockedDecor > 0) issues.push(warn('placement inventory includes locked goal decor', { ...scenario, lockedDecor: metrics.lockedDecor }));
   if (metrics.mapChips.length !== 3) issues.push(fail('placement map chips missing', { ...scenario, count: metrics.mapChips.length }));
@@ -460,6 +463,19 @@ function auditPlacement(metrics, scenario) {
   if (metrics.placementGhost && metrics.placementSheet) {
     const gap = verticalClearance(metrics.placementGhost, metrics.placementSheet);
     if (gap < 8) issues.push(fail('placement ghost collides with placement sheet', { ...scenario, gap, ghost: metrics.placementGhost, sheet: metrics.placementSheet }));
+  }
+  if (metrics.phone && metrics.placementSheet && metrics.placementFloor) {
+    const sheetTopRatio = (metrics.placementSheet.top - metrics.phone.top) / metrics.phone.height;
+    const floorVisibleRatio =
+      Math.max(0, Math.min(metrics.placementFloor.bottom, metrics.placementSheet.top) - metrics.placementFloor.top) /
+      metrics.placementFloor.height;
+    const minSheetTopRatio = metrics.phone.height < 620 ? 0.63 : 0.68;
+    if (sheetTopRatio < minSheetTopRatio && floorVisibleRatio < 0.98) {
+      issues.push(fail('placement sheet hides too much of the island', { ...scenario, sheetTopRatio, minSheetTopRatio, sheet: metrics.placementSheet }));
+    }
+    if (floorVisibleRatio < 0.88) {
+      issues.push(fail('placement island floor is obscured', { ...scenario, floorVisibleRatio, floor: metrics.placementFloor, sheet: metrics.placementSheet }));
+    }
   }
   return issues;
 }
