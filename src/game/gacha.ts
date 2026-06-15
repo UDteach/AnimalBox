@@ -1,3 +1,15 @@
+import { apexPremiumSkyGiftEntries, apexSkyGiftEntries } from './catalogApexExpansion';
+import { expandedBulkPremiumSkyGiftEntries, expandedBulkSkyGiftEntries } from './catalogBulkExpansion';
+import { expandedPremiumSkyGiftEntries, expandedSkyGiftEntries } from './catalogExpansion';
+import { finalePremiumSkyGiftEntries, finaleSkyGiftEntries } from './catalogFinalExpansion';
+import { hyperPremiumSkyGiftEntries, hyperSkyGiftEntries } from './catalogHyperExpansion';
+import { lumenPremiumSkyGiftEntries, lumenSkyGiftEntries } from './catalogLumenExpansion';
+import { massPremiumSkyGiftEntries, massSkyGiftEntries } from './catalogMassExpansion';
+import { megaPremiumSkyGiftEntries, megaSkyGiftEntries } from './catalogMegaExpansion';
+import { primePremiumSkyGiftEntries, primeSkyGiftEntries } from './catalogPrimeExpansion';
+import { radiantPremiumSkyGiftEntries, radiantSkyGiftEntries } from './catalogRadiantExpansion';
+import { ultraPremiumSkyGiftEntries, ultraSkyGiftEntries } from './catalogUltraExpansion';
+import { zenithPremiumSkyGiftEntries, zenithSkyGiftEntries } from './catalogZenithExpansion';
 import { spendCurrency, type EconomyState } from './economy';
 
 export type RewardType = 'decor' | 'outfit' | 'degu_variant' | 'animal' | 'background' | 'currency';
@@ -96,7 +108,19 @@ export const skyGiftBanner: GachaBanner = {
     { rewardId: 'teacup-cloud', rewardType: 'outfit', rarity: 'special', weight: 3, duplicateShardValue: 20 },
     { rewardId: 'lavender-puff', rewardType: 'outfit', rarity: 'special', weight: 3, duplicateShardValue: 20 },
     { rewardId: 'moonlit-hay-field', rewardType: 'background', rarity: 'special', weight: 3, duplicateShardValue: 20 },
-    { rewardId: 'hay-bed', rewardType: 'decor', rarity: 'common', weight: 18, duplicateShardValue: 2 }
+    { rewardId: 'hay-bed', rewardType: 'decor', rarity: 'common', weight: 18, duplicateShardValue: 2 },
+    ...expandedSkyGiftEntries,
+    ...expandedBulkSkyGiftEntries,
+    ...massSkyGiftEntries,
+    ...megaSkyGiftEntries,
+    ...ultraSkyGiftEntries,
+    ...hyperSkyGiftEntries,
+    ...primeSkyGiftEntries,
+    ...apexSkyGiftEntries,
+    ...zenithSkyGiftEntries,
+    ...lumenSkyGiftEntries,
+    ...radiantSkyGiftEntries,
+    ...finaleSkyGiftEntries
   ]
 };
 
@@ -124,7 +148,19 @@ export const premiumSkyGiftBanner: GachaBanner = {
     { rewardId: 'round-glasses', rewardType: 'outfit', rarity: 'special', weight: 4, duplicateShardValue: 24 },
     { rewardId: 'angel-halo-wings', rewardType: 'outfit', rarity: 'special', weight: 4, duplicateShardValue: 24 },
     { rewardId: 'cozy-poncho', rewardType: 'outfit', rarity: 'special', weight: 4, duplicateShardValue: 24 },
-    { rewardId: 'moonlit-hay-field', rewardType: 'background', rarity: 'special', weight: 4, duplicateShardValue: 24 }
+    { rewardId: 'moonlit-hay-field', rewardType: 'background', rarity: 'special', weight: 4, duplicateShardValue: 24 },
+    ...expandedPremiumSkyGiftEntries,
+    ...expandedBulkPremiumSkyGiftEntries,
+    ...massPremiumSkyGiftEntries,
+    ...megaPremiumSkyGiftEntries,
+    ...ultraPremiumSkyGiftEntries,
+    ...hyperPremiumSkyGiftEntries,
+    ...primePremiumSkyGiftEntries,
+    ...apexPremiumSkyGiftEntries,
+    ...zenithPremiumSkyGiftEntries,
+    ...lumenPremiumSkyGiftEntries,
+    ...radiantPremiumSkyGiftEntries,
+    ...finalePremiumSkyGiftEntries
   ]
 };
 

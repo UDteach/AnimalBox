@@ -1,4 +1,6 @@
 import type { CSSProperties } from 'react';
+
+import { accessoryItems } from '../content';
 import type { AccessoryPlacement } from '../storage';
 
 export interface FloatingItemAnchor {
@@ -11,6 +13,10 @@ export interface FloatingItemAnchor {
 }
 
 const slotAnchors: Record<string, FloatingItemAnchor> = {
+  head: { top: 22, left: 18, width: 31, rotate: -12, zIndex: 4 },
+  neck: { top: 52, left: 27, width: 26, rotate: -5, zIndex: 4 },
+  back: { top: 44, left: 38, width: 41, rotate: 6, zIndex: 1 },
+  face: { top: 38, left: 23, width: 26, rotate: -5, zIndex: 4 },
   top: { top: 14, left: 50, width: 19, rotate: 0, zIndex: 4 },
   'left-high': { top: 33, left: 11, width: 18, rotate: -6, zIndex: 4 },
   'left-low': { top: 61, left: 16, width: 18, rotate: 5, zIndex: 4 },
@@ -18,7 +24,7 @@ const slotAnchors: Record<string, FloatingItemAnchor> = {
   'right-low': { top: 63, left: 83, width: 18, rotate: -5, zIndex: 4 }
 };
 
-export const floatingItemAnchors: Record<string, FloatingItemAnchor> = {
+const specificFloatingItemAnchors: Record<string, FloatingItemAnchor> = {
   'straw-hat': { top: 21, left: 18, width: 31, rotate: -15, delay: 0 },
   'flower-crown': { top: 30, left: 21, width: 31, rotate: -9, delay: 0 },
   'round-glasses': { top: 38, left: 23, width: 25, rotate: -5, delay: 0 },
@@ -70,6 +76,16 @@ export const floatingItemAnchors: Record<string, FloatingItemAnchor> = {
   'leaf-boat': { ...slotAnchors['left-low'], rotate: 8, delay: 0.5 },
   'lavender-puff': { ...slotAnchors['left-high'], rotate: 4, delay: 0.2 }
 };
+
+export const floatingItemAnchors: Record<string, FloatingItemAnchor> = Object.fromEntries(
+  accessoryItems.map((item, index) => [
+    item.id,
+    specificFloatingItemAnchors[item.id] ?? {
+      ...(slotAnchors[item.slot] ?? slotAnchors.top),
+      delay: (index % 7) * 0.12
+    }
+  ])
+);
 
 export function floatingItemAnchorStyle(itemId: string, placement?: AccessoryPlacement): CSSProperties {
   const anchor = floatingItemAnchors[itemId];

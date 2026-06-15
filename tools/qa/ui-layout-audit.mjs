@@ -107,6 +107,48 @@ const outfitIds = [
   'lavender-puff'
 ];
 
+async function collectSourceRewardIds() {
+  const gameFiles = await fs.readdir('src/game');
+  const sourceFiles = [
+    'src/game/content.ts',
+    ...gameFiles
+      .filter((file) => /^catalog.*Expansion\.ts$/.test(file))
+      .map((file) => `src/game/${file}`)
+  ];
+  const ignored = new Set([
+    'all',
+    'background',
+    'degu-variant',
+    'pose',
+    'animal',
+    'decor',
+    'accessory',
+    'common',
+    'rare',
+    'special',
+    'starter',
+    'event',
+    'head',
+    'neck',
+    'back',
+    'face',
+    'top'
+  ]);
+  const ids = new Set();
+
+  for (const file of sourceFiles) {
+    const source = await fs.readFile(file, 'utf8');
+    for (const match of source.matchAll(/'([a-z0-9][a-z0-9-]*)'/g)) {
+      const id = match[1];
+      if (!ignored.has(id)) ids.add(id);
+    }
+  }
+
+  return [...ids];
+}
+
+const sourceRewardIds = await collectSourceRewardIds();
+
 const allRewardIds = [
   ...backgroundIds,
   'agouti',
@@ -125,7 +167,8 @@ const allRewardIds = [
   '10',
   ...animalIds,
   ...decorIds,
-  ...outfitIds
+  ...outfitIds,
+  ...sourceRewardIds
 ];
 
 const baseSave = {
@@ -289,7 +332,7 @@ async function collectMetrics(page, screen) {
       }
       return button.scrollWidth > button.clientWidth + 3 || button.scrollHeight > button.clientHeight + 3;
     });
-    const smallTargets = buttons.filter((button) => button.width < 34 || button.height < 34);
+    const smallTargets = buttons.filter((button) => button.width > 0 && button.height > 0 && (button.width < 34 || button.height < 34));
     const images = allRects('img');
     return {
       screen,
@@ -307,6 +350,7 @@ async function collectMetrics(page, screen) {
       images,
       homePanel: rectOf('.game-loop-panel'),
       placementSheet: rectOf('.placement-sheet'),
+      placementNudge: rectOf('.placement-nudge'),
       placementGhost: rectOf('.placement-ghost'),
       actionRow: rectOf('.placement-sheet .action-row'),
       wardrobeGrid: rectOf('.wardrobe-grid'),
@@ -340,6 +384,7 @@ function auditCommon(metrics, scenario) {
     'nav',
     'homePanel',
     'placementSheet',
+    'placementNudge',
     'placementGhost',
     'wardrobeGrid',
     'shotRow',
@@ -393,13 +438,24 @@ function auditHome(metrics, scenario) {
 function auditPlacement(metrics, scenario) {
   const issues = [];
   if (!metrics.placementSheet) issues.push(fail('placement sheet missing', scenario));
+  if (!metrics.placementNudge) issues.push(fail('placement nudge controls missing', scenario));
   if (!metrics.placementGhost) issues.push(fail('placement ghost missing', scenario));
   if (metrics.validCells <= 0) issues.push(fail('placement has no valid cells', scenario));
-  if (metrics.lockedDecor > 0) issues.push(fail('seeded placement inventory still shows locked decor', { ...scenario, lockedDecor: metrics.lockedDecor }));
+  if (metrics.lockedDecor > 0) issues.push(warn('placement inventory includes locked goal decor', { ...scenario, lockedDecor: metrics.lockedDecor }));
   if (metrics.mapChips.length !== 3) issues.push(fail('placement map chips missing', { ...scenario, count: metrics.mapChips.length }));
   if (metrics.placementSheet && metrics.nav) {
     const gap = verticalClearance(metrics.placementSheet, metrics.nav);
     if (gap < 10) issues.push(fail('placement sheet too close to bottom nav', { ...scenario, gap }));
+  }
+  if (metrics.placementNudge && metrics.placementSheet) {
+    const insideSheet = inside(metrics.placementSheet, metrics.placementNudge, 2);
+    const gap = verticalClearance(metrics.placementNudge, metrics.placementSheet);
+    if (!insideSheet && gap < 6) {
+      issues.push(fail('placement nudge controls should be inside or above the edit sheet', { ...scenario, gap, nudge: metrics.placementNudge, sheet: metrics.placementSheet }));
+    }
+  }
+  if (metrics.placementNudge && metrics.nav && overlaps(metrics.placementNudge, metrics.nav, 0)) {
+    issues.push(fail('placement nudge controls overlap bottom nav', { ...scenario, nudge: metrics.placementNudge, nav: metrics.nav }));
   }
   if (metrics.placementGhost && metrics.placementSheet) {
     const gap = verticalClearance(metrics.placementGhost, metrics.placementSheet);

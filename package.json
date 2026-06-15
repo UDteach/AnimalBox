@@ -12,6 +12,7 @@
     "assets:promote-floating-items": "node tools/assets/promote-floating-items.mjs",
     "qa:assets": "node tools/qa/runtime-assets-qa.mjs",
     "qa:customization": "node tools/qa/customization-flow-qa.mjs",
+    "qa:ui:smoke": "node tools/qa/ui-smoke-audit.mjs",
     "qa:ui": "node tools/qa/ui-layout-audit.mjs",
     "qa:flow": "node tools/qa/flow-affordance-qa.mjs",
     "qa:motion": "node tools/qa/interaction-motion-qa.mjs",

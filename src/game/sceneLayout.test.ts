@@ -6,6 +6,7 @@ import { withRotatedFootprint } from './placement';
 import { canPlaceDecorInScene, decorSceneBounds, gridToScene, sceneLayout } from './sceneLayout';
 
 const grid = placementGrid;
+const exhaustiveLayoutTimeoutMs = 20_000;
 
 describe('scene layout contracts', () => {
   it('keeps at least one scene-safe placement for every decor item', () => {
@@ -19,7 +20,7 @@ describe('scene layout contracts', () => {
 
       expect(validCells, decor.id).toBeGreaterThan(0);
     }
-  });
+  }, exhaustiveLayoutTimeoutMs);
 
   it('keeps at least one scene-safe placement for every rotated decor footprint', () => {
     for (const decor of decorItems) {
@@ -35,7 +36,7 @@ describe('scene layout contracts', () => {
         expect(validCells, `${decor.id} ${rotation}deg`).toBeGreaterThan(0);
       }
     }
-  });
+  }, exhaustiveLayoutTimeoutMs);
 
   it('keeps every accepted decor placement inside the playable island scene band', () => {
     for (const decor of decorItems) {
@@ -50,7 +51,7 @@ describe('scene layout contracts', () => {
         }
       }
     }
-  });
+  }, exhaustiveLayoutTimeoutMs);
 
   it('rejects decor below the dense playable grid', () => {
     const windmill = decorItems.find((item) => item.id === 'windmill');

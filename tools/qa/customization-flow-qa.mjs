@@ -242,6 +242,8 @@ try {
           const apply = document.querySelector('.apply-button')?.getBoundingClientRect();
           const ghost = document.querySelector('.placement-ghost');
           const cardImages = [...document.querySelectorAll('img')].map((image) => image.getAttribute('src') ?? '');
+          const rewardMoreText = document.querySelector('.reward-more-card strong')?.textContent ?? '';
+          const rewardMoreCount = Number.parseInt(rewardMoreText.replace(/\D/g, ''), 10);
           return {
             screen,
             hasAssetWarning: Boolean(document.querySelector('.asset-warning')),
@@ -265,6 +267,9 @@ try {
             nudgeButtons: document.querySelectorAll('.nudge-button').length,
             lockedMapChips: document.querySelectorAll('.map-chip[data-locked="true"]').length,
             collectionCards: document.querySelectorAll('.collection-card').length,
+            rewardPreviewCards: document.querySelectorAll('.reward-strip .reward-card').length,
+            rewardMoreCount: Number.isFinite(rewardMoreCount) ? rewardMoreCount : 0,
+            hasRewardMoreCard: Boolean(document.querySelector('.reward-more-card')),
             marketOfferButtons: document.querySelectorAll('.market-offer-card').length,
             affordableMarketOffers: document.querySelectorAll('.market-offer-card[data-affordable="true"]').length,
             gamePanelBottomToNav: gamePanel && nav ? nav.top - gamePanel.bottom : null,
@@ -362,9 +367,12 @@ try {
   assert(placement.incomePerSecond < baseSave.economy.incomePerSecond, 'placement undo did not reduce decor income', placement);
 
   const gacha = results.find((item) => item.screen === 'gacha');
-  assert(gacha?.newDecorCards === newDecorIds.length, 'new decor rewards missing from gacha preview', gacha);
-  assert(gacha?.newOutfitCards === newOutfitIds.length, 'new outfit rewards missing from gacha preview', gacha);
-  assert(gacha?.newAnimalCards === newAnimalIds.length, 'new animal rewards missing from gacha preview', gacha);
+  assert(gacha?.rewardPreviewCards > 0, 'gacha reward preview missing', gacha);
+  assert(gacha.rewardPreviewCards <= 54, 'gacha reward preview should stay capped for large catalogs', gacha);
+  assert(gacha.hasRewardMoreCard && gacha.rewardMoreCount > 0, 'gacha hidden reward count missing', gacha);
+  assert(gacha.newDecorCards > 0, 'gacha preview has no decor representative', gacha);
+  assert(gacha.newOutfitCards > 0, 'gacha preview has no outfit representative', gacha);
+  assert(gacha.newAnimalCards > 0, 'gacha preview has no animal representative', gacha);
   assert(!gacha.hasAssetWarning, 'gacha asset warning', gacha);
   assert(/^(Last:|最近:)/.test(gacha.gachaHistoryText ?? ''), 'gacha did not show pull history', gacha);
   assert(gacha.gachaRevealCards >= 1, 'gacha reveal cards did not render', gacha);

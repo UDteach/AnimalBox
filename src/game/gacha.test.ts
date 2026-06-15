@@ -36,7 +36,7 @@ describe('free gacha', () => {
     const result = runPulls(skyGiftBanner, 1, initialEconomy, {
       ownedRewardIds: new Set(['hay-bed', 'cloud-lamp', 'moon-bell', 'blue-gray', 'angel-fountain', 'cloud-sheep']),
       pullsSinceRare: 0,
-      random: () => 0.99
+      random: () => 0
     });
 
     expect(result?.results[0]?.duplicate).toBe(true);

@@ -1,4 +1,110 @@
+import {
+  apexDecorItems,
+  apexFloatingItems,
+  apexPixelDeguShots,
+  apexWearableItems
+} from './catalogApexExpansion';
+import {
+  expandedDecorItems,
+  expandedFloatingItems,
+  expandedPixelDeguShots,
+  expandedWearableItems
+} from './catalogExpansion';
+import {
+  finaleDecorItems,
+  finaleFloatingItems,
+  finalePixelDeguShots,
+  finaleWearableItems
+} from './catalogFinalExpansion';
+import {
+  expandedBulkDecorItems,
+  expandedBulkFloatingItems,
+  expandedBulkPixelDeguShots,
+  expandedBulkWearableItems
+} from './catalogBulkExpansion';
+import {
+  hyperDecorItems,
+  hyperFloatingItems,
+  hyperPixelDeguShots,
+  hyperWearableItems
+} from './catalogHyperExpansion';
+import {
+  massDecorItems,
+  massFloatingItems,
+  massPixelDeguShots,
+  massWearableItems
+} from './catalogMassExpansion';
+import {
+  lumenDecorItems,
+  lumenFloatingItems,
+  lumenPixelDeguShots,
+  lumenWearableItems
+} from './catalogLumenExpansion';
+import {
+  megaDecorItems,
+  megaFloatingItems,
+  megaPixelDeguShots,
+  megaWearableItems
+} from './catalogMegaExpansion';
+import {
+  primeDecorItems,
+  primeFloatingItems,
+  primePixelDeguShots,
+  primeWearableItems
+} from './catalogPrimeExpansion';
+import {
+  radiantDecorItems,
+  radiantFloatingItems,
+  radiantPixelDeguShots,
+  radiantWearableItems
+} from './catalogRadiantExpansion';
+import {
+  ultraDecorItems,
+  ultraFloatingItems,
+  ultraPixelDeguShots,
+  ultraWearableItems
+} from './catalogUltraExpansion';
+import {
+  zenithDecorItems,
+  zenithFloatingItems,
+  zenithPixelDeguShots,
+  zenithWearableItems
+} from './catalogZenithExpansion';
+
 export type ScreenId = 'home' | 'placement' | 'wardrobe' | 'gacha' | 'storage';
+
+export type CatalogKind = 'background' | 'degu_variant' | 'pose' | 'animal' | 'decor' | 'accessory';
+export type CatalogRarity = 'common' | 'rare' | 'special';
+export type UnlockSource = 'starter' | 'free_gift' | 'event' | 'coin_shop';
+export type CatalogOwnershipFilter = 'all' | 'owned' | 'locked';
+
+export interface CatalogFilterState {
+  query: string;
+  kind: CatalogKind | 'all';
+  rarity: CatalogRarity | 'all';
+  ownership: CatalogOwnershipFilter;
+}
+
+export interface CollectionGroup {
+  id: string;
+  label: string;
+  owned: number;
+  total: number;
+  nextLabel: string;
+}
+
+export interface CatalogItem {
+  id: string;
+  label: string;
+  kind: CatalogKind;
+  rarity: CatalogRarity;
+  unlockSource: UnlockSource;
+  src: string;
+  source?: string;
+  swatch?: string;
+  slot?: FloatingItemSlot;
+  bonusPerSecond?: number;
+}
 
 export type FloatingItemSlot =
   | 'head'
@@ -25,7 +131,7 @@ export interface BackgroundTheme {
   src: string;
   swatch: string;
   mood: 'day' | 'morning' | 'sunset' | 'rain' | 'night';
-  unlockSource: 'starter' | 'free_gift' | 'event';
+  unlockSource: UnlockSource;
 }
 
 export interface DeguVariant {
@@ -33,6 +139,10 @@ export interface DeguVariant {
   label: string;
   swatch: string;
   filter: string;
+  src?: string;
+  source?: string;
+  rarity?: CatalogRarity;
+  unlockSource?: UnlockSource;
 }
 
 export interface PixelDeguShot {
@@ -40,6 +150,8 @@ export interface PixelDeguShot {
   label: string;
   src: string;
   source: string;
+  rarity?: CatalogRarity;
+  unlockSource?: UnlockSource;
 }
 
 export interface FloatingItem {
@@ -47,7 +159,7 @@ export interface FloatingItem {
   label: string;
   slot: FloatingItemSlot;
   kind?: 'wearable' | 'float';
-  rarity: 'common' | 'rare' | 'special';
+  rarity: CatalogRarity;
   src: string;
 }
 
@@ -58,6 +170,8 @@ export interface DecorItem {
   src: string;
   scene: { x: number; y: number; w: number };
   bonusPerSecond: number;
+  rarity?: CatalogRarity;
+  unlockSource?: UnlockSource;
 }
 
 export const screens: Record<ScreenId, MockupScreen> = {
@@ -171,24 +285,37 @@ export const starterRewardIds = [
 ];
 
 export const deguVariants: DeguVariant[] = [
-  { id: 'agouti', label: 'Agouti', swatch: '#8a6139', filter: 'brightness(1)' },
+  {
+    id: 'agouti',
+    label: 'Agouti',
+    swatch: '#8a6139',
+    filter: 'brightness(1)',
+    src: '/images/runtime/characters/degu-variants/agouti.png',
+    source: 'assets/source/imagegen/degu-variants/degu-variant-pack-001__source.png'
+  },
   {
     id: 'blue-gray',
     label: 'Blue gray',
     swatch: '#7f8c96',
-    filter: 'hue-rotate(185deg) saturate(0.58) brightness(0.93)'
+    filter: 'hue-rotate(185deg) saturate(0.58) brightness(0.93)',
+    src: '/images/runtime/characters/degu-variants/blue-gray.png',
+    source: 'assets/source/imagegen/degu-variants/degu-variant-pack-001__source.png'
   },
   {
     id: 'sandy',
     label: 'Sandy',
     swatch: '#c99b55',
-    filter: 'sepia(0.22) saturate(1.18) brightness(1.08)'
+    filter: 'sepia(0.22) saturate(1.18) brightness(1.08)',
+    src: '/images/runtime/characters/degu-variants/sandy.png',
+    source: 'assets/source/imagegen/degu-variants/degu-variant-pack-001__source.png'
   },
   {
     id: 'cream-patch',
     label: 'Cream patch',
     swatch: '#f0dbc0',
-    filter: 'sepia(0.18) saturate(0.62) brightness(1.18)'
+    filter: 'sepia(0.18) saturate(0.62) brightness(1.18)',
+    src: '/images/runtime/characters/degu-variants/cream-patch.png',
+    source: 'assets/source/imagegen/degu-variants/degu-variant-pack-001__source.png'
   }
 ];
 
@@ -232,7 +359,19 @@ export const pixelDeguShots: PixelDeguShot[] = [
     label: 'Rabbit',
     src: '/images/runtime/characters/animals/rabbit.png',
     source: 'assets/source/imagegen/animal-unlocks/animal-unlocks-pack-001__source.png'
-  }
+  },
+  ...expandedPixelDeguShots,
+  ...expandedBulkPixelDeguShots,
+  ...massPixelDeguShots,
+  ...megaPixelDeguShots,
+  ...ultraPixelDeguShots,
+  ...hyperPixelDeguShots,
+  ...primePixelDeguShots,
+  ...apexPixelDeguShots,
+  ...zenithPixelDeguShots,
+  ...lumenPixelDeguShots,
+  ...radiantPixelDeguShots,
+  ...finalePixelDeguShots
 ];
 
 export const wearableItems: FloatingItem[] = [
@@ -253,7 +392,19 @@ export const wearableItems: FloatingItem[] = [
   { id: 'cloud-cap', label: 'Cloud cap', slot: 'head', kind: 'wearable', rarity: 'rare', src: '/images/runtime/wardrobe/cloud-cap.png' },
   { id: 'clover-necklace', label: 'Clover necklace', slot: 'neck', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/clover-necklace.png' },
   { id: 'picnic-blanket-cape', label: 'Picnic cape', slot: 'back', kind: 'wearable', rarity: 'rare', src: '/images/runtime/wardrobe/picnic-blanket-cape.png' },
-  { id: 'tiny-cheek-sticker', label: 'Cheek sticker', slot: 'face', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/tiny-cheek-sticker.png' }
+  { id: 'tiny-cheek-sticker', label: 'Cheek sticker', slot: 'face', kind: 'wearable', rarity: 'common', src: '/images/runtime/wardrobe/tiny-cheek-sticker.png' },
+  ...expandedWearableItems,
+  ...expandedBulkWearableItems,
+  ...massWearableItems,
+  ...megaWearableItems,
+  ...ultraWearableItems,
+  ...hyperWearableItems,
+  ...primeWearableItems,
+  ...apexWearableItems,
+  ...zenithWearableItems,
+  ...lumenWearableItems,
+  ...radiantWearableItems,
+  ...finaleWearableItems
 ];
 
 export const floatingItems: FloatingItem[] = [
@@ -288,7 +439,19 @@ export const floatingItems: FloatingItem[] = [
   { id: 'cloud-starfish', label: 'Cloud starfish', slot: 'top', rarity: 'rare', src: '/images/runtime/floating-items/cloud-starfish.png' },
   { id: 'pebble-friend', label: 'Pebble friend', slot: 'right-low', rarity: 'common', src: '/images/runtime/floating-items/pebble-friend.png' },
   { id: 'leaf-boat', label: 'Leaf boat', slot: 'left-low', rarity: 'rare', src: '/images/runtime/floating-items/leaf-boat.png' },
-  { id: 'lavender-puff', label: 'Lavender puff', slot: 'left-high', rarity: 'special', src: '/images/runtime/floating-items/lavender-puff.png' }
+  { id: 'lavender-puff', label: 'Lavender puff', slot: 'left-high', rarity: 'special', src: '/images/runtime/floating-items/lavender-puff.png' },
+  ...expandedFloatingItems,
+  ...expandedBulkFloatingItems,
+  ...massFloatingItems,
+  ...megaFloatingItems,
+  ...ultraFloatingItems,
+  ...hyperFloatingItems,
+  ...primeFloatingItems,
+  ...apexFloatingItems,
+  ...zenithFloatingItems,
+  ...lumenFloatingItems,
+  ...radiantFloatingItems,
+  ...finaleFloatingItems
 ];
 
 export const accessoryItems: FloatingItem[] = [...wearableItems, ...floatingItems];
@@ -503,7 +666,179 @@ export const decorItems: DecorItem[] = [
     src: '/images/runtime/decor/tiny-burrow-mound.png',
     scene: { x: 77, y: 61, w: 15 },
     bonusPerSecond: 8
-  }
+  },
+  {
+    id: 'moss-arch',
+    label: 'Moss arch',
+    footprint: { w: 2, h: 2 },
+    src: '/images/runtime/decor/batch-005/moss-arch.png',
+    scene: { x: 17, y: 48, w: 22 },
+    bonusPerSecond: 12,
+    rarity: 'rare',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'cloud-fountain',
+    label: 'Cloud fountain',
+    footprint: { w: 2, h: 2 },
+    src: '/images/runtime/decor/batch-005/cloud-fountain.png',
+    scene: { x: 58, y: 42, w: 23 },
+    bonusPerSecond: 14,
+    rarity: 'rare',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'clover-rug',
+    label: 'Clover rug',
+    footprint: { w: 2, h: 1 },
+    src: '/images/runtime/decor/batch-005/clover-rug.png',
+    scene: { x: 39, y: 65, w: 23 },
+    bonusPerSecond: 7,
+    rarity: 'common',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'tiny-seed-shop-sign',
+    label: 'Seed shop sign',
+    footprint: { w: 1, h: 2 },
+    src: '/images/runtime/decor/batch-005/tiny-seed-shop-sign.png',
+    scene: { x: 80, y: 51, w: 17 },
+    bonusPerSecond: 10,
+    rarity: 'rare',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'moon-birdbath',
+    label: 'Moon birdbath',
+    footprint: { w: 2, h: 2 },
+    src: '/images/runtime/decor/batch-005/moon-birdbath.png',
+    scene: { x: 27, y: 45, w: 21 },
+    bonusPerSecond: 15,
+    rarity: 'special',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'star-wind-chime-stand',
+    label: 'Star chime',
+    footprint: { w: 1, h: 2 },
+    src: '/images/runtime/decor/batch-005/star-wind-chime-stand.png',
+    scene: { x: 72, y: 46, w: 16 },
+    bonusPerSecond: 11,
+    rarity: 'rare',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'hay-hammock',
+    label: 'Hay hammock',
+    footprint: { w: 2, h: 1 },
+    src: '/images/runtime/decor/batch-005/hay-hammock.png',
+    scene: { x: 56, y: 59, w: 22 },
+    bonusPerSecond: 9,
+    rarity: 'common',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'mushroom-stool',
+    label: 'Mushroom stool',
+    footprint: { w: 1, h: 1 },
+    src: '/images/runtime/decor/batch-005/mushroom-stool.png',
+    scene: { x: 32, y: 62, w: 16 },
+    bonusPerSecond: 6,
+    rarity: 'common',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'crystal-planter',
+    label: 'Crystal planter',
+    footprint: { w: 2, h: 1 },
+    src: '/images/runtime/decor/batch-005/crystal-planter.png',
+    scene: { x: 12, y: 56, w: 21 },
+    bonusPerSecond: 13,
+    rarity: 'rare',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'rain-jar',
+    label: 'Rain jar',
+    footprint: { w: 1, h: 1 },
+    src: '/images/runtime/decor/batch-005/rain-jar.png',
+    scene: { x: 47, y: 58, w: 15 },
+    bonusPerSecond: 8,
+    rarity: 'common',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'picnic-basket',
+    label: 'Picnic basket',
+    footprint: { w: 1, h: 1 },
+    src: '/images/runtime/decor/batch-005/picnic-basket.png',
+    scene: { x: 64, y: 63, w: 17 },
+    bonusPerSecond: 7,
+    rarity: 'common',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'carrot-mailbox',
+    label: 'Carrot mailbox',
+    footprint: { w: 1, h: 1 },
+    src: '/images/runtime/decor/batch-005/carrot-mailbox.png',
+    scene: { x: 84, y: 61, w: 14 },
+    bonusPerSecond: 8,
+    rarity: 'common',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'flower-pergola',
+    label: 'Flower pergola',
+    footprint: { w: 2, h: 2 },
+    src: '/images/runtime/decor/batch-005/flower-pergola.png',
+    scene: { x: 20, y: 51, w: 24 },
+    bonusPerSecond: 15,
+    rarity: 'special',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'wooden-toy-wheel',
+    label: 'Toy wheel',
+    footprint: { w: 2, h: 2 },
+    src: '/images/runtime/decor/batch-005/wooden-toy-wheel.png',
+    scene: { x: 68, y: 55, w: 22 },
+    bonusPerSecond: 13,
+    rarity: 'rare',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'pebble-path-curve',
+    label: 'Pebble curve',
+    footprint: { w: 2, h: 1 },
+    src: '/images/runtime/decor/batch-005/pebble-path-curve.png',
+    scene: { x: 42, y: 66, w: 22 },
+    bonusPerSecond: 6,
+    rarity: 'common',
+    unlockSource: 'free_gift'
+  },
+  {
+    id: 'floating-lantern-stand',
+    label: 'Lantern stand',
+    footprint: { w: 1, h: 2 },
+    src: '/images/runtime/decor/batch-005/floating-lantern-stand.png',
+    scene: { x: 76, y: 49, w: 16 },
+    bonusPerSecond: 12,
+    rarity: 'rare',
+    unlockSource: 'free_gift'
+  },
+  ...expandedDecorItems,
+  ...expandedBulkDecorItems,
+  ...massDecorItems,
+  ...megaDecorItems,
+  ...ultraDecorItems,
+  ...hyperDecorItems,
+  ...primeDecorItems,
+  ...apexDecorItems,
+  ...zenithDecorItems,
+  ...lumenDecorItems,
+  ...radiantDecorItems,
+  ...finaleDecorItems
 ];
 
 export const runtimeAssets = {
@@ -517,6 +852,131 @@ export const runtimeAssets = {
   pixelDeguReview: '/images/runtime/characters/pixel-degu/v5/rounded-side-pixel-degu-cutouts-review.png',
   skyGiftMachine: '/images/runtime/machines/sky-gift-machine.png'
 };
+
+export const catalogKindOrder: CatalogKind[] = [
+  'background',
+  'degu_variant',
+  'pose',
+  'animal',
+  'decor',
+  'accessory'
+];
+
+export type CatalogGroupLabels = Record<string, string>;
+
+const catalogKindLabelKey: Record<CatalogKind, keyof CatalogGroupLabels> = {
+  background: 'themes',
+  degu_variant: 'colors',
+  pose: 'poses',
+  animal: 'animals',
+  decor: 'decor',
+  accessory: 'items'
+};
+
+function defaultUnlockSource(id: string, fallback: UnlockSource = 'free_gift'): UnlockSource {
+  return starterRewardIds.includes(id) ? 'starter' : fallback;
+}
+
+function backgroundRarity(theme: BackgroundTheme): CatalogRarity {
+  if (theme.unlockSource === 'starter') return 'common';
+  return theme.unlockSource === 'event' ? 'special' : 'rare';
+}
+
+function decorRarity(item: DecorItem): CatalogRarity {
+  if (item.rarity) return item.rarity;
+  if (starterRewardIds.includes(item.id)) return 'common';
+  if (item.id === 'angel-fountain') return 'special';
+  return item.bonusPerSecond >= 10 ? 'rare' : 'common';
+}
+
+function deguVariantRarity(variant: DeguVariant): CatalogRarity {
+  if (variant.rarity) return variant.rarity;
+  return starterRewardIds.includes(variant.id) ? 'common' : 'rare';
+}
+
+function pixelShotKind(shot: PixelDeguShot): CatalogKind {
+  return /^\d+$/.test(shot.id) || shot.id.startsWith('pose-') ? 'pose' : 'animal';
+}
+
+function pixelShotRarity(shot: PixelDeguShot): CatalogRarity {
+  if (shot.rarity) return shot.rarity;
+  if (starterRewardIds.includes(shot.id) || ['macaroni-mouse', 'gerbil', 'hamster'].includes(shot.id)) return 'common';
+  return 'rare';
+}
+
+export const catalogItems: CatalogItem[] = [
+  ...backgroundThemes.map((theme) => ({
+    id: theme.id,
+    label: theme.label,
+    kind: 'background' as const,
+    rarity: backgroundRarity(theme),
+    unlockSource: theme.unlockSource,
+    src: theme.src,
+    swatch: theme.swatch
+  })),
+  ...deguVariants.map((variant) => ({
+    id: variant.id,
+    label: variant.label,
+    kind: 'degu_variant' as const,
+    rarity: deguVariantRarity(variant),
+    unlockSource: variant.unlockSource ?? defaultUnlockSource(variant.id),
+    src: variant.src ?? pixelDeguShots[3]?.src ?? runtimeAssets.pixelDeguReview,
+    source: variant.source,
+    swatch: variant.swatch
+  })),
+  ...pixelDeguShots.map((shot) => ({
+    id: shot.id,
+    label: shot.label,
+    kind: pixelShotKind(shot),
+    rarity: pixelShotRarity(shot),
+    unlockSource: shot.unlockSource ?? defaultUnlockSource(shot.id),
+    src: shot.src,
+    source: shot.source
+  })),
+  ...decorItems.map((item) => ({
+    id: item.id,
+    label: item.label,
+    kind: 'decor' as const,
+    rarity: decorRarity(item),
+    unlockSource: item.unlockSource ?? defaultUnlockSource(item.id),
+    src: item.src,
+    bonusPerSecond: item.bonusPerSecond
+  })),
+  ...accessoryItems.map((item) => ({
+    id: item.id,
+    label: item.label,
+    kind: 'accessory' as const,
+    rarity: item.rarity,
+    unlockSource: defaultUnlockSource(item.id),
+    src: item.src,
+    slot: item.slot
+  }))
+];
+
+const catalogItemById = new Map(catalogItems.map((item) => [item.id, item]));
+
+export function getCatalogItem(id: string): CatalogItem | undefined {
+  return catalogItemById.get(id);
+}
+
+export function buildCatalogCollectionGroups(
+  ownedRewardIds: string[],
+  labels: CatalogGroupLabels
+): CollectionGroup[] {
+  return catalogKindOrder.map((kind) => {
+    const items = catalogItems.filter((item) => item.kind === kind);
+    const owned = items.filter((item) => isRewardOwned(ownedRewardIds, item.id)).length;
+    const nextLocked = items.find((item) => !isRewardOwned(ownedRewardIds, item.id));
+
+    return {
+      id: kind,
+      label: labels[catalogKindLabelKey[kind]],
+      owned,
+      total: items.length,
+      nextLabel: nextLocked?.id ?? 'Complete'
+    };
+  });
+}
 
 export function isRewardOwned(ownedRewardIds: string[], rewardId: string): boolean {
   return starterRewardIds.includes(rewardId) || ownedRewardIds.includes(rewardId);

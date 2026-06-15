@@ -2,14 +2,24 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   backgroundThemes,
   accessoryItems,
+  buildCatalogCollectionGroups,
+  catalogItems,
+  catalogKindOrder,
   decorItems,
   deguVariants,
+  getCatalogItem,
   navOrder,
   pixelDeguShots,
   runtimeAssets,
   screens,
   isRewardOwned,
+  starterRewardIds,
   type BackgroundTheme,
+  type CatalogFilterState,
+  type CatalogItem,
+  type CatalogKind,
+  type CatalogRarity,
+  type CollectionGroup,
   type DecorItem,
   type FloatingItem,
   type PixelDeguShot,
@@ -104,14 +114,6 @@ interface GuideTask {
   ready: boolean;
 }
 
-interface CollectionGroup {
-  id: string;
-  label: string;
-  owned: number;
-  total: number;
-  nextLabel: string;
-}
-
 interface MarketOffer {
   id: string;
   label: string;
@@ -123,7 +125,7 @@ interface MarketOffer {
 const screenSet = new Set<ScreenId>(navOrder);
 const grid = placementGrid;
 const meshLines = gridMeshLines(grid);
-const firstOpenCell: Cell = { x: 0, y: 2 };
+const firstOpenCell: Cell = { x: 0, y: 0 };
 
 function buildMarketOffers(locale: Locale): MarketOffer[] {
   return [
@@ -203,32 +205,6 @@ function buildGuideTasks(save: PrototypeSave, stats: GameStats, locale: Locale):
       ready: availableTickets > 0
     }
   ];
-}
-
-function buildCollectionGroups(ownedRewardIds: string[], locale: Locale): CollectionGroup[] {
-  const owned = new Set(ownedRewardIds);
-  const poses = pixelDeguShots.filter((shot) => /^\d+$/.test(shot.id));
-  const animals = pixelDeguShots.filter((shot) => !/^\d+$/.test(shot.id));
-  const groups = [
-    { id: 'themes', label: collectionLabels[locale].themes, items: backgroundThemes },
-    { id: 'colors', label: collectionLabels[locale].colors, items: deguVariants },
-    { id: 'poses', label: collectionLabels[locale].poses, items: poses },
-    { id: 'animals', label: collectionLabels[locale].animals, items: animals },
-    { id: 'decor', label: collectionLabels[locale].decor, items: decorItems },
-    { id: 'items', label: collectionLabels[locale].items, items: accessoryItems }
-  ];
-
-  return groups.map((group) => {
-    const ownedCount = group.items.filter((item) => owned.has(item.id)).length;
-    const nextLocked = group.items.find((item) => !owned.has(item.id));
-    return {
-      id: group.id,
-      label: group.label,
-      owned: ownedCount,
-      total: group.items.length,
-      nextLabel: nextLocked ? localizedName(locale, nextLocked.id, nextLocked.label) : text(locale, 'Complete', 'コンプリート')
-    };
-  });
 }
 
 function coerceScreen(value: string): ScreenId {
@@ -330,7 +306,14 @@ export function App() {
   const nextUpgrade = getNextUpgrade(save.progression);
   const guideTasks = useMemo(() => buildGuideTasks(save, gameStats, locale), [gameStats, locale, save]);
   const collectionGroups = useMemo(
-    () => buildCollectionGroups(save.ownedRewardIds, locale),
+    () =>
+      buildCatalogCollectionGroups(save.ownedRewardIds, collectionLabels[locale]).map((group) => ({
+        ...group,
+        nextLabel:
+          group.nextLabel === 'Complete'
+            ? text(locale, 'Complete', 'コンプリート')
+            : localizedName(locale, group.nextLabel, getCatalogItem(group.nextLabel)?.label ?? group.nextLabel)
+      })),
     [locale, save.ownedRewardIds]
   );
   const marketOffers = useMemo(() => buildMarketOffers(locale), [locale]);
@@ -378,14 +361,11 @@ export function App() {
 
   const allAssetPaths = useMemo(
     () => [
-      ...backgroundThemes.map((theme) => theme.src),
+      activeTheme.src,
       ...Object.values(screens).map((item) => item.image),
-      ...decorItems.map((item) => item.src),
-      ...accessoryItems.map((item) => item.src),
-      ...pixelDeguShots.map((item) => item.src),
       ...Object.values(runtimeAssets)
     ],
-    []
+    [activeTheme.src]
   );
 
   useEffect(() => {
@@ -1107,7 +1087,6 @@ export function App() {
             customDeguFilter={customDeguFilter}
             onTapDegu={tapDegu}
             onSelectCell={setSelectedCell}
-            onMoveCell={movePlacementCell}
           />
         )}
 
@@ -1126,6 +1105,7 @@ export function App() {
             onSelectMap={selectMap}
             onSelectDecor={selectDecor}
             onRotate={rotatePlacement}
+            onMoveCell={movePlacementCell}
             onConfirm={placeSelectedDecor}
             onCancel={() => setStatus(text(locale, 'Placement cancelled', '配置をキャンセルしました'))}
             onUndo={undoLastPlacedDecor}
@@ -1274,25 +1254,13 @@ function clonePlacedDecor(items: PlacedDecor[]): PlacedDecor[] {
 }
 
 function rewardLabel(locale: Locale, rewardId: string): string {
-  const fallback =
-    backgroundThemes.find((item) => item.id === rewardId)?.label ??
-    decorItems.find((item) => item.id === rewardId)?.label ??
-    accessoryItems.find((item) => item.id === rewardId)?.label ??
-    deguVariants.find((item) => item.id === rewardId)?.label ??
-    pixelDeguShots.find((item) => item.id === rewardId)?.label ??
-    rewardId;
+  const fallback = getCatalogItem(rewardId)?.label ?? rewardId;
 
   return localizedName(locale, rewardId, fallback);
 }
 
 function rewardImage(rewardId: string): string {
-  return (
-    backgroundThemes.find((item) => item.id === rewardId)?.src ??
-    decorItems.find((item) => item.id === rewardId)?.src ??
-    accessoryItems.find((item) => item.id === rewardId)?.src ??
-    pixelDeguShots.find((item) => item.id === rewardId)?.src ??
-    runtimeAssets.ticket
-  );
+  return getCatalogItem(rewardId)?.src ?? runtimeAssets.ticket;
 }
 
 function animalChoiceBadge(locale: Locale, shot: PixelDeguShot, owned: boolean): string {
@@ -1307,6 +1275,62 @@ function animalChoiceBadge(locale: Locale, shot: PixelDeguShot, owned: boolean):
 function compactUnlockCost(cost: number): string {
   if (cost < 1000) return formatNumber(cost);
   return `${(cost / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+}
+
+function catalogKindLabel(locale: Locale, kind: CatalogKind): string {
+  const keyByKind: Record<CatalogKind, keyof typeof collectionLabels.en> = {
+    background: 'themes',
+    degu_variant: 'colors',
+    pose: 'poses',
+    animal: 'animals',
+    decor: 'decor',
+    accessory: 'items'
+  };
+  return collectionLabels[locale][keyByKind[kind]];
+}
+
+function rarityLabel(locale: Locale, rarity: CatalogRarity | 'all'): string {
+  if (rarity === 'all') return text(locale, 'All', 'すべて');
+  if (rarity === 'special') return text(locale, 'Special', '特別');
+  if (rarity === 'rare') return text(locale, 'Rare', 'レア');
+  return text(locale, 'Common', '通常');
+}
+
+function ownershipLabel(locale: Locale, ownership: CatalogFilterState['ownership']): string {
+  if (ownership === 'owned') return text(locale, 'Owned', '所持');
+  if (ownership === 'locked') return text(locale, 'Locked', '未所持');
+  return text(locale, 'All', 'すべて');
+}
+
+function unlockSourceLabel(locale: Locale, item: CatalogItem): string {
+  if (item.unlockSource === 'starter') return text(locale, 'Starter', '最初から');
+  if (item.unlockSource === 'event') return text(locale, 'Event', 'イベント');
+  if (item.unlockSource === 'coin_shop') return text(locale, 'Coin shop', 'コイン交換');
+  return text(locale, 'Sky gift', '空ギフト');
+}
+
+function catalogDisplayName(locale: Locale, item: CatalogItem): string {
+  return localizedName(locale, item.id, item.label);
+}
+
+function filterCatalogForUi(
+  items: CatalogItem[],
+  filter: CatalogFilterState,
+  ownedRewardIds: string[],
+  locale: Locale
+): CatalogItem[] {
+  const query = filter.query.trim().toLowerCase();
+
+  return items.filter((item) => {
+    if (filter.kind !== 'all' && item.kind !== filter.kind) return false;
+    if (filter.rarity !== 'all' && item.rarity !== filter.rarity) return false;
+    const owned = isRewardOwned(ownedRewardIds, item.id);
+    if (filter.ownership === 'owned' && !owned) return false;
+    if (filter.ownership === 'locked' && owned) return false;
+    if (!query) return true;
+
+    return `${item.id} ${item.label} ${catalogDisplayName(locale, item)}`.toLowerCase().includes(query);
+  });
 }
 
 function getScreenCue({
@@ -1479,7 +1503,6 @@ function Hud({
       <div className="sr-only" role="status">
         {status}. {missingAssets.length > 0 ? text(locale, `${missingAssets.length} assets failed to load.`, `${missingAssets.length}個の素材が読み込めません。`) : text(locale, 'All runtime assets loaded.', 'すべての素材を読み込みました。')}
       </div>
-      {missingAssets.length > 0 && <div className="asset-warning">{text(locale, 'Asset load issue', '素材エラー')}</div>}
     </header>
   );
 }
@@ -1533,14 +1556,24 @@ function GameLoopPanel({
 
   return (
     <section className="game-loop-panel" aria-label={text(locale, 'Progression', '進行')}>
-      <div className="loop-head">
-        <div>
-          <strong>Lv {stats.level}</strong>
-          <span>{stats.xpIntoLevel}/{stats.xpForNextLevel}</span>
+      <div className="dock-summary">
+        <div className="loop-head">
+          <div>
+            <strong>Lv {stats.level}</strong>
+            <span>{stats.xpIntoLevel}/{stats.xpForNextLevel}</span>
+          </div>
+          <div>
+            <strong>{text(locale, `Tap +${stats.tapPower}`, `タップ +${stats.tapPower}`)}</strong>
+            <span>{text(locale, `${upgradeCatalog.length - progression.ownedUpgradeIds.length} upgrades`, `強化あと${upgradeCatalog.length - progression.ownedUpgradeIds.length}`)}</span>
+          </div>
         </div>
-        <div>
-          <strong>{text(locale, `Tap +${stats.tapPower}`, `タップ +${stats.tapPower}`)}</strong>
-          <span>{text(locale, `${upgradeCatalog.length - progression.ownedUpgradeIds.length} upgrades`, `強化あと${upgradeCatalog.length - progression.ownedUpgradeIds.length}`)}</span>
+        <div className="meter-row">
+          <span className="meter-track" aria-label={text(locale, 'XP progress', '経験値')}>
+            <span style={{ width: `${xpPct}%` }} />
+          </span>
+          <span className="meter-track ticket-meter" aria-label={text(locale, 'Ticket progress', 'チケット進行')}>
+            <span style={{ width: `${ticketPct}%` }} />
+          </span>
         </div>
       </div>
       <div className="guide-rail" aria-label={text(locale, 'Next action guide', '次の行動')}>
@@ -1561,86 +1594,59 @@ function GameLoopPanel({
           </button>
         ))}
       </div>
-      <div className="meter-row">
-        <span className="meter-track" aria-label={text(locale, 'XP progress', '経験値')}>
-          <span style={{ width: `${xpPct}%` }} />
-        </span>
-        <span className="meter-track ticket-meter" aria-label={text(locale, 'Ticket progress', 'チケット進行')}>
-          <span style={{ width: `${ticketPct}%` }} />
-        </span>
-      </div>
-      <div className="care-row" aria-label={text(locale, 'Care actions', 'お世話')}>
-        <div className="care-meter">
-          <span>{text(locale, `Bond ${stats.affectionLevel}`, `なかよし ${stats.affectionLevel}`)}</span>
-          <span className="meter-track affection-meter" aria-label={text(locale, 'Bond progress', 'なかよし進行')}>
-            <span style={{ width: `${affectionPct}%` }} />
-          </span>
-        </div>
-        {careActions.map((action) => (
-          <button
-            key={action.id}
-            className="care-button"
-            type="button"
-            onClick={() => onCareAction(action.id)}
-            aria-label={text(locale, `${action.label} degu`, `デグーに${action.label}`)}
-          >
-            <img src={careIcons[action.id]} alt="" />
-            <span>{action.label}</span>
-          </button>
-        ))}
-      </div>
-      <div className="loop-actions">
-        <button
-          className="claim-button"
-          type="button"
-          data-ready={stats.claimableTickets > 0}
-          disabled={stats.claimableTickets <= 0}
-          onClick={onClaimTickets}
-          aria-label={text(locale, 'Claim earned tickets', 'チケットを受け取る')}
-        >
-          <img src={runtimeAssets.ticket} alt="" />
-          {claimLabel}
-        </button>
-        {nextUpgrade ? (
-          <button
-            className="next-upgrade-button"
-            type="button"
-            data-affordable={economy[nextUpgrade.cost.currency] >= nextUpgrade.cost.amount}
-            onClick={() => onBuyUpgrade(nextUpgrade.id)}
-            aria-label={text(locale, `Buy ${nextUpgrade.label}`, `${nextUpgrade.label}を買う`)}
-          >
-            <span>{nextUpgrade.label}</span>
-            <strong>
-              {text(locale, nextUpgrade.cost.currency === 'shards' ? 'Shards' : 'Coins', nextUpgrade.cost.currency === 'shards' ? 'かけら' : 'コイン')} {formatNumber(nextUpgrade.cost.amount)}
-            </strong>
-          </button>
-        ) : (
-          <button className="next-upgrade-button" type="button" disabled>
-            <span>{text(locale, 'Upgrades', '強化')}</span>
-            <strong>{text(locale, 'Complete', '完了')}</strong>
-          </button>
-        )}
-      </div>
-      <div className="upgrade-strip" aria-label={text(locale, 'Upgrade list', '強化リスト')}>
-        {upgradeCatalog.map((upgrade) => {
-          const owned = progression.ownedUpgradeIds.includes(upgrade.id);
-          const affordable = economy[upgrade.cost.currency] >= upgrade.cost.amount;
-          return (
+      <div className="dock-action-grid">
+        <div className="care-row" aria-label={text(locale, 'Care actions', 'お世話')}>
+          <div className="care-meter">
+            <span>{text(locale, `Bond ${stats.affectionLevel}`, `なかよし ${stats.affectionLevel}`)}</span>
+            <span className="meter-track affection-meter" aria-label={text(locale, 'Bond progress', 'なかよし進行')}>
+              <span style={{ width: `${affectionPct}%` }} />
+            </span>
+          </div>
+          {careActions.map((action) => (
             <button
-              key={upgrade.id}
-              className="upgrade-chip"
+              key={action.id}
+              className="care-button"
               type="button"
-              data-owned={owned}
-              data-affordable={affordable}
-              disabled={owned}
-              onClick={() => onBuyUpgrade(upgrade.id)}
-              aria-label={text(locale, `${owned ? 'Owned' : 'Buy'} ${upgrade.label}`, `${owned ? '所持中' : '購入'} ${upgrade.label}`)}
+              onClick={() => onCareAction(action.id)}
+              aria-label={text(locale, `${action.label} degu`, `デグーに${action.label}`)}
             >
-              <span>{upgrade.label}</span>
-              <strong>{owned ? text(locale, 'Owned', '所持') : formatNumber(upgrade.cost.amount)}</strong>
+              <img src={careIcons[action.id]} alt="" />
+              <span>{action.label}</span>
             </button>
-          );
-        })}
+          ))}
+        </div>
+        <div className="loop-actions">
+          <button
+            className="claim-button"
+            type="button"
+            data-ready={stats.claimableTickets > 0}
+            disabled={stats.claimableTickets <= 0}
+            onClick={onClaimTickets}
+            aria-label={text(locale, 'Claim earned tickets', 'チケットを受け取る')}
+          >
+            <img src={runtimeAssets.ticket} alt="" />
+            {claimLabel}
+          </button>
+          {nextUpgrade ? (
+            <button
+              className="next-upgrade-button"
+              type="button"
+              data-affordable={economy[nextUpgrade.cost.currency] >= nextUpgrade.cost.amount}
+              onClick={() => onBuyUpgrade(nextUpgrade.id)}
+              aria-label={text(locale, `Buy ${nextUpgrade.label}`, `${nextUpgrade.label}を買う`)}
+            >
+              <span>{nextUpgrade.label}</span>
+              <strong>
+                {text(locale, nextUpgrade.cost.currency === 'shards' ? 'Shards' : 'Coins', nextUpgrade.cost.currency === 'shards' ? 'かけら' : 'コイン')} {formatNumber(nextUpgrade.cost.amount)}
+              </strong>
+            </button>
+          ) : (
+            <button className="next-upgrade-button" type="button" disabled>
+              <span>{text(locale, 'Upgrades', '強化')}</span>
+              <strong>{text(locale, 'Complete', '完了')}</strong>
+            </button>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -1660,8 +1666,7 @@ function IslandScene({
   accessoryPlacements,
   customDeguFilter,
   onTapDegu,
-  onSelectCell,
-  onMoveCell
+  onSelectCell
 }: {
   locale: Locale;
   save: PrototypeSave;
@@ -1677,7 +1682,6 @@ function IslandScene({
   customDeguFilter: string;
   onTapDegu: () => void;
   onSelectCell: (cell: Cell) => void;
-  onMoveCell: (dx: number, dy: number) => void;
 }) {
   const ghost = gridToScene(selectedCell, selectedDecor);
 
@@ -1785,7 +1789,6 @@ function IslandScene({
               } as React.CSSProperties
             }
           />
-          <PlacementNudge locale={locale} selectedCell={selectedCell} onMoveCell={onMoveCell} />
         </div>
       )}
 
@@ -1893,6 +1896,7 @@ function PlacementPanel({
   onSelectMap,
   onSelectDecor,
   onRotate,
+  onMoveCell,
   onConfirm,
   onCancel,
   onUndo
@@ -1911,32 +1915,66 @@ function PlacementPanel({
   onSelectMap: (id: GardenMapId) => void;
   onSelectDecor: (id: string) => void;
   onRotate: () => void;
+  onMoveCell: (dx: number, dy: number) => void;
   onConfirm: () => void;
   onCancel: () => void;
   onUndo: () => void;
 }) {
   const selectedDecor = decorItems.find((decor) => decor.id === selectedDecorId) ?? decorItems[0];
+  const selectedMapDefinition = gardenMapCatalog.find((map) => map.id === activeMapId) ?? gardenMapCatalog[0];
+  const ownedDecorCount = decorItems.filter((decor) => isRewardOwned(ownedRewardIds, decor.id)).length;
 
   return (
     <section className="bottom-sheet placement-sheet" aria-label={text(locale, 'Decor placement', '家具配置')}>
       <div className="sheet-handle" />
-      <MapSwitcher
-        locale={locale}
-        activeMapId={activeMapId}
-        maps={maps}
-        level={level}
-        onSelectMap={onSelectMap}
-      />
-      <div className="mode-row">
-        <strong>{localizedName(locale, selectedDecor.id, selectedDecor.label)}</strong>
-        <span>
-          {text(locale, `${selectedDecor.footprint.w}x${selectedDecor.footprint.h} / cell ${selectedCell.x + 1}-${selectedCell.y + 1} / ${validCellCount} spots`, `${selectedDecor.footprint.w}x${selectedDecor.footprint.h} / マス ${selectedCell.x + 1}-${selectedCell.y + 1} / 空き${validCellCount}`)}
-        </span>
+      <div className="placement-workbench">
+        <div className="placement-selected-card">
+          <div className="placement-selected-art" aria-hidden="true">
+            <img src={selectedDecor.src} alt="" draggable={false} />
+          </div>
+          <div className="placement-selected-copy">
+            <span className="placement-eyebrow">{text(locale, 'Now placing', '配置中')}</span>
+            <div className="mode-row">
+              <strong>{localizedName(locale, selectedDecor.id, selectedDecor.label)}</strong>
+              <span>{text(locale, `${selectedDecor.footprint.w}x${selectedDecor.footprint.h}`, `${selectedDecor.footprint.w}x${selectedDecor.footprint.h}`)}</span>
+            </div>
+            <div className="placement-meta-row">
+              <span>{mapLabel(locale, selectedMapDefinition)}</span>
+              <span>{text(locale, `Cell ${selectedCell.x + 1}-${selectedCell.y + 1}`, `マス ${selectedCell.x + 1}-${selectedCell.y + 1}`)}</span>
+              <span>{text(locale, `${validCellCount} spots`, `空き${validCellCount}`)}</span>
+            </div>
+          </div>
+        </div>
+        <div className="placement-command-stack">
+          <PlacementNudge locale={locale} selectedCell={selectedCell} onMoveCell={onMoveCell} />
+          <button
+            className="action confirm placement-primary-action"
+            type="button"
+            disabled={!canConfirm}
+            onClick={onConfirm}
+            aria-label={canConfirm ? text(locale, 'Confirm placement', '配置を確定') : text(locale, 'No valid placement spot', '置ける場所がありません')}
+          >
+            <span>{canConfirm ? text(locale, 'Place', '置く') : text(locale, 'No spot', '空きなし')}</span>
+            <small>{text(locale, `Cell ${selectedCell.x + 1}-${selectedCell.y + 1}`, `マス ${selectedCell.x + 1}-${selectedCell.y + 1}`)}</small>
+          </button>
+        </div>
       </div>
-      <div className="placement-step-row" aria-label={text(locale, 'Placement steps', '配置ステップ')}>
-        <span data-active="true">{text(locale, 'Pick', '選ぶ')}</span>
-        <span data-active={validCellCount > 0}>{text(locale, 'Spot', '場所')}</span>
-        <span data-active={canConfirm}>{text(locale, 'Place', '置く')}</span>
+      <div className="placement-map-strip">
+        <div className="placement-section-label">
+          <strong>{text(locale, 'Map', 'マップ')}</strong>
+          <span>{mapDetail(locale, selectedMapDefinition)}</span>
+        </div>
+        <MapSwitcher
+          locale={locale}
+          activeMapId={activeMapId}
+          maps={maps}
+          level={level}
+          onSelectMap={onSelectMap}
+        />
+      </div>
+      <div className="placement-section-label">
+        <strong>{text(locale, 'Decor', '家具')}</strong>
+        <span>{text(locale, `${ownedDecorCount}/${decorItems.length} owned`, `${ownedDecorCount}/${decorItems.length}個`)}</span>
       </div>
       <div className="decor-tray">
         {decorItems.map((decor) => {
@@ -1952,12 +1990,13 @@ function PlacementPanel({
               onClick={() => onSelectDecor(decor.id)}
             >
               <img src={decor.src} alt="" draggable={false} />
+              <strong>{localizedName(locale, decor.id, decor.label)}</strong>
               <span>{owned ? `+${decor.bonusPerSecond}/s` : text(locale, 'Locked', '未解放')}</span>
             </button>
           );
         })}
       </div>
-      <div className="action-row">
+      <div className="action-row placement-secondary-actions">
         <button className="action danger" type="button" onClick={onCancel} aria-label={text(locale, 'Cancel placement', '配置をやめる')}>
           {text(locale, 'Cancel', '閉じる')}
         </button>
@@ -1972,15 +2011,6 @@ function PlacementPanel({
         </button>
         <button className="action rotate" type="button" onClick={onRotate} aria-label={text(locale, 'Rotate placement', '家具を回転')}>
           {text(locale, 'Turn', '回転')}
-        </button>
-        <button
-          className="action confirm"
-          type="button"
-          disabled={!canConfirm}
-          onClick={onConfirm}
-          aria-label={canConfirm ? text(locale, 'Confirm placement', '配置を確定') : text(locale, 'No valid placement spot', '置ける場所がありません')}
-        >
-          {canConfirm ? text(locale, 'Place', '置く') : text(locale, 'No spot', '空きなし')}
         </button>
       </div>
     </section>
@@ -2022,12 +2052,25 @@ function WardrobeScreen({
   onChangeDeguTone: (tone: Partial<DeguTone>) => void;
   onApply: () => void;
 }) {
+  const [wardrobeQuery, setWardrobeQuery] = useState('');
+  const [wardrobeRarity, setWardrobeRarity] = useState<CatalogRarity | 'all'>('all');
+  const [wardrobeOwnership, setWardrobeOwnership] = useState<CatalogFilterState['ownership']>('all');
   const selectedAccessory =
     accessoryItems.find((item) => selectedOutfitIds.includes(item.id) && item.id === selectedAccessoryId) ??
     accessoryItems.find((item) => selectedOutfitIds.includes(item.id));
   const customFilter = deguToneFilter(
     customDeguTone,
     deguVariants.find((item) => item.id === selectedVariantId)?.filter ?? deguVariants[0].filter
+  );
+  const visibleWardrobeItems = useMemo(
+    () =>
+      filterCatalogForUi(
+        catalogItems,
+        { query: wardrobeQuery, kind: 'accessory', rarity: wardrobeRarity, ownership: wardrobeOwnership },
+        ownedRewardIds,
+        locale
+      ),
+    [locale, ownedRewardIds, wardrobeOwnership, wardrobeQuery, wardrobeRarity]
   );
 
   return (
@@ -2124,8 +2167,39 @@ function WardrobeScreen({
           {text(locale, 'reset', 'リセット')}
         </button>
       </div>
+      <div className="wardrobe-filter-panel" aria-label={text(locale, 'Wardrobe filters', 'おとも検索')}>
+        <input
+          type="search"
+          value={wardrobeQuery}
+          onChange={(event) => setWardrobeQuery(event.currentTarget.value)}
+          placeholder={text(locale, 'Search', '検索')}
+          aria-label={text(locale, 'Search wardrobe items', 'おとも検索')}
+        />
+        <div className="wardrobe-chip-row">
+          {(['all', 'rare', 'special'] as Array<CatalogRarity | 'all'>).map((rarity) => (
+            <button
+              key={rarity}
+              type="button"
+              data-active={wardrobeRarity === rarity}
+              onClick={() => setWardrobeRarity(rarity)}
+            >
+              {rarityLabel(locale, rarity)}
+            </button>
+          ))}
+          {(['all', 'owned', 'locked'] as CatalogFilterState['ownership'][]).map((ownership) => (
+            <button
+              key={ownership}
+              type="button"
+              data-active={wardrobeOwnership === ownership}
+              onClick={() => setWardrobeOwnership(ownership)}
+            >
+              {ownershipLabel(locale, ownership)}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="wardrobe-grid">
-        {accessoryItems.map((item) => {
+        {visibleWardrobeItems.map((item) => {
           const owned = isRewardOwned(ownedRewardIds, item.id);
           return (
             <button
@@ -2141,11 +2215,13 @@ function WardrobeScreen({
               }}
               aria-label={text(locale, `${owned ? 'Toggle' : 'Locked'} ${item.label}`, `${owned ? '切替' : '未解放'} ${localizedName(locale, item.id, item.label)}`)}
             >
-              <img src={item.src} alt="" draggable={false} />
+              <img src={item.src} alt="" draggable={false} loading="lazy" />
+              <small>{rarityLabel(locale, item.rarity)}</small>
               {!owned && <span>{text(locale, 'Locked', '未解放')}</span>}
             </button>
           );
         })}
+        {visibleWardrobeItems.length === 0 && <span className="wardrobe-empty">{text(locale, 'No matches', '一致なし')}</span>}
       </div>
       <button className="apply-button" type="button" onClick={onApply} aria-label={text(locale, 'Apply accessories', 'おともを反映')}>
         {text(locale, 'Apply', '決定')}
@@ -2173,49 +2249,19 @@ function GachaScreen({
   onTen: () => void;
   onPremium: () => void;
 }) {
-  const rewards = [
-    decorItems.find((item) => item.id === 'cloud-lamp'),
-    backgroundThemes.find((item) => item.id === 'morning-pasture'),
-    backgroundThemes.find((item) => item.id === 'sunset-clover-isle'),
-    backgroundThemes.find((item) => item.id === 'flower-cloud-terrace'),
-    accessoryItems.find((item) => item.id === 'straw-hat'),
-    accessoryItems.find((item) => item.id === 'flower-crown'),
-    accessoryItems.find((item) => item.id === 'cloud-puff'),
-    accessoryItems.find((item) => item.id === 'clover-charm'),
-    accessoryItems.find((item) => item.id === 'acorn-charm'),
-    accessoryItems.find((item) => item.id === 'seed-pouch-charm'),
-    accessoryItems.find((item) => item.id === 'star-lantern-float'),
-    accessoryItems.find((item) => item.id === 'moon-bell'),
-    accessoryItems.find((item) => item.id === 'mushroom-friend'),
-    accessoryItems.find((item) => item.id === 'sprout-buddy'),
-    decorItems.find((item) => item.id === 'timothy-hay-rack'),
-    decorItems.find((item) => item.id === 'sand-bath-bowl'),
-    decorItems.find((item) => item.id === 'wood-tunnel'),
-    decorItems.find((item) => item.id === 'ceramic-hideout'),
-    decorItems.find((item) => item.id === 'short-wooden-fence'),
-    decorItems.find((item) => item.id === 'flower-patch'),
-    decorItems.find((item) => item.id === 'snack-tray'),
-    decorItems.find((item) => item.id === 'star-lantern'),
-    decorItems.find((item) => item.id === 'mossy-log-hideout'),
-    decorItems.find((item) => item.id === 'seed-crate'),
-    decorItems.find((item) => item.id === 'grass-tuft-cluster'),
-    decorItems.find((item) => item.id === 'pebble-stepping-stones'),
-    decorItems.find((item) => item.id === 'flower-arch'),
-    decorItems.find((item) => item.id === 'carrot-basket'),
-    decorItems.find((item) => item.id === 'cloud-cushion-bench'),
-    decorItems.find((item) => item.id === 'tiny-burrow-mound'),
-    pixelDeguShots.find((item) => item.id === 'macaroni-mouse'),
-    pixelDeguShots.find((item) => item.id === 'chinchilla'),
-    pixelDeguShots.find((item) => item.id === 'gerbil'),
-    pixelDeguShots.find((item) => item.id === 'hamster'),
-    pixelDeguShots.find((item) => item.id === 'rabbit'),
-    decorItems.find((item) => item.id === 'angel-fountain'),
-    accessoryItems.find((item) => item.id === 'cloud-sheep'),
-    accessoryItems.find((item) => item.id === 'sun-bell'),
-    accessoryItems.find((item) => item.id === 'water-drop-buddy'),
-    accessoryItems.find((item) => item.id === 'teacup-cloud'),
-    accessoryItems.find((item) => item.id === 'lavender-puff')
-  ].filter(Boolean) as Array<DecorItem | FloatingItem | BackgroundTheme | PixelDeguShot>;
+  const rewards = Array.from(
+    new Set([
+      ...starterRewardIds,
+      ...skyGiftBanner.entries.map((entry) => entry.rewardId),
+      ...premiumSkyGiftBanner.entries.map((entry) => entry.rewardId)
+    ])
+  )
+    .map((id) => getCatalogItem(id))
+    .filter((item): item is CatalogItem => Boolean(item));
+  const rewardPreview = (['special', 'rare', 'common'] as CatalogRarity[]).flatMap((rarity) =>
+    rewards.filter((reward) => reward.rarity === rarity).slice(0, 18)
+  );
+  const hiddenRewardCount = Math.max(0, rewards.length - rewardPreview.length);
   const historySummary = history.slice(0, 3).map((id) => rewardLabel(locale, id)).join(', ');
 
   return (
@@ -2273,11 +2319,29 @@ function GachaScreen({
         </div>
       )}
       <div className="reward-strip">
-        {rewards.map((reward) => (
-          <div key={reward.id} className="reward-card" data-owned={ownedRewardIds.includes(reward.id)}>
-            <img src={reward.src} alt="" draggable={false} />
+        {rewardPreview.map((reward) => {
+          const owned = isRewardOwned(ownedRewardIds, reward.id);
+
+          return (
+            <div
+              key={reward.id}
+              className="reward-card"
+              role="img"
+              data-owned={owned}
+              data-rarity={reward.rarity}
+              aria-label={text(locale, `${owned ? 'Owned' : 'Locked'} ${reward.label}`, `${owned ? '所持' : '未所持'} ${catalogDisplayName(locale, reward)}`)}
+            >
+              <img src={reward.src} alt="" draggable={false} loading="lazy" />
+              <span>{rarityLabel(locale, reward.rarity)}</span>
+            </div>
+          );
+        })}
+        {hiddenRewardCount > 0 && (
+          <div className="reward-more-card" aria-label={text(locale, `${hiddenRewardCount} more rewards`, `ほか${hiddenRewardCount}件`)}>
+            <strong>+{hiddenRewardCount}</strong>
+            <span>{text(locale, 'more', 'ほか')}</span>
           </div>
-        ))}
+        )}
       </div>
       <div className="history-chip">{history.length > 0 ? text(locale, `Last: ${historySummary}`, `最近: ${historySummary}`) : text(locale, 'No gifts opened yet', 'まだ開けていません')}</div>
     </section>
@@ -2321,6 +2385,25 @@ function StorageOverlay({
   onClearLayoutPreset: (slot: number) => void;
   onMarketTrade: (offerId: string) => void;
 }) {
+  const [catalogFilter, setCatalogFilter] = useState<CatalogFilterState>({
+    query: '',
+    kind: 'decor',
+    rarity: 'all',
+    ownership: 'all'
+  });
+  const [selectedCatalogId, setSelectedCatalogId] = useState('hay-bed');
+  const visibleCatalogItems = useMemo(
+    () => filterCatalogForUi(catalogItems, catalogFilter, ownedRewardIds, locale),
+    [catalogFilter, locale, ownedRewardIds]
+  );
+  const selectedCatalogItem =
+    visibleCatalogItems.find((item) => item.id === selectedCatalogId) ??
+    getCatalogItem(selectedCatalogId) ??
+    visibleCatalogItems[0] ??
+    catalogItems[0];
+  const selectedCatalogOwned = isRewardOwned(ownedRewardIds, selectedCatalogItem.id);
+  const totalOwned = catalogItems.filter((item) => isRewardOwned(ownedRewardIds, item.id)).length;
+
   return (
     <section className="storage-sheet" aria-label={text(locale, 'Storage and customization', '倉庫とカスタム')}>
       <div className="storage-head">
@@ -2388,6 +2471,91 @@ function StorageOverlay({
               </div>
             );
           })}
+        </div>
+      </div>
+      <div className="catalog-panel" aria-label={text(locale, 'Catalog browser', 'カタログ')}>
+        <div className="catalog-preview" data-owned={selectedCatalogOwned} data-rarity={selectedCatalogItem.rarity}>
+          <img src={selectedCatalogItem.src} alt="" draggable={false} loading="lazy" />
+          <div>
+            <strong>{catalogDisplayName(locale, selectedCatalogItem)}</strong>
+            <span>
+              {catalogKindLabel(locale, selectedCatalogItem.kind)} / {rarityLabel(locale, selectedCatalogItem.rarity)}
+            </span>
+            <small>
+              {totalOwned}/{catalogItems.length} / {unlockSourceLabel(locale, selectedCatalogItem)}
+            </small>
+          </div>
+        </div>
+        <div className="catalog-toolbar">
+          <input
+            type="search"
+            value={catalogFilter.query}
+            onChange={(event) => setCatalogFilter((current) => ({ ...current, query: event.currentTarget.value }))}
+            placeholder={text(locale, 'Search', '検索')}
+            aria-label={text(locale, 'Search catalog', 'カタログ検索')}
+          />
+          <div className="catalog-tab-row" role="tablist" aria-label={text(locale, 'Catalog category', 'カタログカテゴリ')}>
+            {catalogKindOrder.map((kind) => (
+              <button
+                key={kind}
+                type="button"
+                role="tab"
+                data-active={catalogFilter.kind === kind}
+                aria-selected={catalogFilter.kind === kind}
+                onClick={() => setCatalogFilter((current) => ({ ...current, kind }))}
+              >
+                {catalogKindLabel(locale, kind)}
+                <span>{catalogItems.filter((item) => item.kind === kind).length}</span>
+              </button>
+            ))}
+          </div>
+          <div className="catalog-chip-row">
+            {(['all', 'common', 'rare', 'special'] as Array<CatalogRarity | 'all'>).map((rarity) => (
+              <button
+                key={rarity}
+                type="button"
+                data-active={catalogFilter.rarity === rarity}
+                onClick={() => setCatalogFilter((current) => ({ ...current, rarity }))}
+              >
+                {rarityLabel(locale, rarity)}
+              </button>
+            ))}
+          </div>
+          <div className="catalog-chip-row">
+            {(['all', 'owned', 'locked'] as CatalogFilterState['ownership'][]).map((ownership) => (
+              <button
+                key={ownership}
+                type="button"
+                data-active={catalogFilter.ownership === ownership}
+                onClick={() => setCatalogFilter((current) => ({ ...current, ownership }))}
+              >
+                {ownershipLabel(locale, ownership)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="catalog-grid" data-empty={visibleCatalogItems.length === 0}>
+          {visibleCatalogItems.map((item) => {
+            const owned = isRewardOwned(ownedRewardIds, item.id);
+
+            return (
+              <button
+                key={item.id}
+                className="catalog-item-card"
+                type="button"
+                data-active={selectedCatalogItem.id === item.id}
+                data-owned={owned}
+                data-rarity={item.rarity}
+                onClick={() => setSelectedCatalogId(item.id)}
+                aria-label={text(locale, `${owned ? 'Open' : 'Locked'} ${item.label}`, `${owned ? '表示' : '未所持'} ${catalogDisplayName(locale, item)}`)}
+              >
+                <img src={item.src} alt="" draggable={false} loading="lazy" />
+                <span>{catalogDisplayName(locale, item)}</span>
+                <small>{rarityLabel(locale, item.rarity)}</small>
+              </button>
+            );
+          })}
+          {visibleCatalogItems.length === 0 && <span className="catalog-empty">{text(locale, 'No matches', '一致なし')}</span>}
         </div>
       </div>
       <div className="layout-preset-panel">

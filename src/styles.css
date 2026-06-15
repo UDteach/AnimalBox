@@ -10,6 +10,10 @@
   --ink: #30241c;
   --gold: #f8c84d;
   --cream: #fff5cf;
+  --panel-cream: rgba(255, 250, 230, 0.93);
+  --panel-cream-strong: rgba(255, 247, 216, 0.97);
+  --wood: #8b5724;
+  --leaf: #4b8d4b;
 }
 
 * {
@@ -103,13 +107,13 @@ button {
 
 .hud {
   position: absolute;
-  z-index: 7;
-  top: calc(0.75rem + env(safe-area-inset-top));
-  left: 0.75rem;
-  right: 0.75rem;
+  z-index: 86;
+  top: calc(0.62rem + env(safe-area-inset-top));
+  left: 0.62rem;
+  right: 0.62rem;
   display: flex;
   align-items: center;
-  gap: 0.44rem;
+  gap: 0.3rem;
 }
 
 .resource {
@@ -117,21 +121,21 @@ button {
   align-items: center;
   flex-shrink: 0;
   min-width: 0;
-  height: 2.28rem;
-  gap: 0.26rem;
-  padding: 0.24rem 0.56rem 0.24rem 0.32rem;
+  height: 2.12rem;
+  gap: 0.2rem;
+  padding: 0.18rem 0.44rem 0.18rem 0.22rem;
   border-radius: 999px;
-  color: #fff;
-  background: rgba(31, 26, 29, 0.76);
+  color: #523719;
+  background: var(--panel-cream-strong);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 231, 154, 0.26),
-    0 0.42rem 1rem rgba(37, 28, 24, 0.16);
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.36);
+    inset 0 0 0 1px rgba(139, 87, 36, 0.16),
+    inset 0 -0.12rem 0 rgba(139, 87, 36, 0.08),
+    0 0.45rem 1rem rgba(58, 75, 45, 0.14);
 }
 
 .resource img {
-  width: 1.7rem;
-  height: 1.7rem;
+  width: 1.56rem;
+  height: 1.56rem;
   object-fit: contain;
 }
 
@@ -139,7 +143,7 @@ button {
   flex: 0 0 auto;
   max-width: none;
   overflow: hidden;
-  font-size: 0.98rem;
+  font-size: 0.9rem;
   font-weight: 950;
   line-height: 1;
   text-overflow: ellipsis;
@@ -151,27 +155,38 @@ button {
   opacity: 0.82;
 }
 
+.coin-resource {
+  flex: 1 1 auto;
+  max-width: 42%;
+  min-width: 7.2rem;
+}
+
+.coin-resource strong {
+  font-size: 1rem;
+}
+
 .ticket-resource {
-  min-width: 4.2rem;
+  min-width: 3.4rem;
 }
 
 .shard-resource {
-  min-width: 3.9rem;
+  min-width: 3.25rem;
 }
 
 .theme-chip,
 .round-button {
   display: inline-grid;
   flex: 0 0 auto;
-  width: 2.28rem;
-  height: 2.28rem;
+  width: 2.14rem;
+  height: 2.14rem;
   place-items: center;
   border-radius: 50%;
   color: #4f351c;
-  background: rgba(255, 247, 219, 0.9);
+  background: var(--panel-cream-strong);
   box-shadow:
     inset 0 0 0 2px rgba(143, 91, 29, 0.18),
-    0 0.5rem 1rem rgba(43, 31, 25, 0.14);
+    inset 0 -0.12rem 0 rgba(139, 87, 36, 0.08),
+    0 0.45rem 1rem rgba(43, 31, 25, 0.12);
 }
 
 .theme-chip {
@@ -197,18 +212,6 @@ button {
   font-size: 0.78rem;
   font-weight: 1000;
   letter-spacing: 0;
-}
-
-.asset-warning {
-  position: absolute;
-  top: 2.7rem;
-  right: 0;
-  padding: 0.28rem 0.48rem;
-  border-radius: 999px;
-  color: #713019;
-  background: rgba(255, 235, 205, 0.95);
-  font-size: 0.68rem;
-  font-weight: 900;
 }
 
 .screen-cue {
@@ -281,38 +284,91 @@ button {
   right: 24%;
 }
 
+.app[data-view="home"] .screen-cue,
+.app[data-view="placement"] .screen-cue {
+  z-index: 82;
+  top: calc(3.16rem + env(safe-area-inset-top));
+  right: auto;
+  left: 0.82rem;
+  width: auto;
+  max-width: min(62%, 13.2rem);
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.34rem;
+  padding: 0.26rem 0.42rem 0.28rem;
+  border-radius: 999px;
+  color: #543719;
+  background: rgba(255, 250, 230, 0.86);
+  box-shadow:
+    inset 0 0 0 1px rgba(139, 87, 36, 0.13),
+    0 0.5rem 1rem rgba(45, 56, 38, 0.12);
+  text-shadow: none;
+}
+
+.app[data-view="home"] .screen-cue span,
+.app[data-view="placement"] .screen-cue span {
+  display: none;
+}
+
+.app[data-view="home"] .screen-cue strong,
+.app[data-view="placement"] .screen-cue strong {
+  font-size: 0.62rem;
+}
+
+.app[data-view="home"] .screen-cue small,
+.app[data-view="placement"] .screen-cue small {
+  max-width: 5.5rem;
+  padding: 0.14rem 0.34rem;
+  color: #5c3b18;
+  background: rgba(255, 226, 122, 0.92);
+  font-size: 0.52rem;
+}
+
 .game-loop-panel {
   position: absolute;
   z-index: 78;
-  left: 5.2%;
-  right: 5.2%;
-  bottom: calc(7.4rem + env(safe-area-inset-bottom));
+  left: 4.4%;
+  right: 4.4%;
+  bottom: calc(5.35rem + env(safe-area-inset-bottom));
   display: grid;
-  gap: 0.46rem;
-  padding: 0.58rem;
-  border-radius: 1.1rem;
+  gap: 0.32rem;
+  padding: 0.42rem 0.48rem 0.48rem;
+  border-radius: 1rem;
   color: #4b331a;
-  background: rgba(255, 247, 221, 0.92);
+  background: var(--panel-cream);
   box-shadow:
     inset 0 0 0 1px rgba(143, 91, 29, 0.16),
-    0 0.8rem 1.35rem rgba(45, 31, 20, 0.16);
+    inset 0 -0.16rem 0 rgba(143, 91, 29, 0.08),
+    0 0.75rem 1.25rem rgba(45, 31, 20, 0.14);
+  backdrop-filter: blur(8px);
+}
+
+.dock-summary {
+  display: grid;
+  grid-template-columns: minmax(7.2rem, 0.95fr) minmax(0, 1.05fr);
+  gap: 0.38rem;
+  align-items: center;
 }
 
 .loop-head {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.46rem;
+  gap: 0.28rem;
 }
 
 .loop-head div {
   display: grid;
   min-width: 0;
-  gap: 0.12rem;
+  gap: 0.08rem;
+  padding: 0.28rem 0.34rem;
+  border-radius: 0.64rem;
+  background: rgba(255, 255, 255, 0.48);
+  box-shadow: inset 0 0 0 1px rgba(143, 91, 29, 0.1);
 }
 
 .loop-head strong {
   overflow: hidden;
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 1000;
   line-height: 1;
   text-overflow: ellipsis;
@@ -321,7 +377,7 @@ button {
 
 .loop-head span {
   overflow: hidden;
-  font-size: 0.58rem;
+  font-size: 0.5rem;
   font-weight: 900;
   line-height: 1;
   text-overflow: ellipsis;
@@ -332,7 +388,7 @@ button {
 .guide-rail {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.32rem;
+  gap: 0.24rem;
 }
 
 .guide-task {
@@ -340,9 +396,9 @@ button {
   min-width: 0;
   min-height: 2.14rem;
   align-content: center;
-  gap: 0.06rem;
-  padding: 0.2rem 0.18rem;
-  border-radius: 0.72rem;
+  gap: 0.04rem;
+  padding: 0.16rem 0.18rem;
+  border-radius: 0.62rem;
   color: #4b331a;
   background: rgba(255, 255, 255, 0.56);
   text-align: left;
@@ -377,31 +433,31 @@ button {
 }
 
 .guide-task span {
-  font-size: 0.54rem;
+  font-size: 0.5rem;
   font-weight: 1000;
   opacity: 0.82;
 }
 
 .guide-task strong {
-  font-size: 0.52rem;
+  font-size: 0.49rem;
   font-weight: 1000;
 }
 
 .guide-task small {
-  font-size: 0.48rem;
+  font-size: 0.45rem;
   font-weight: 1000;
   opacity: 0.64;
 }
 
 .meter-row {
   display: grid;
-  grid-template-columns: 1fr 0.72fr;
-  gap: 0.42rem;
+  gap: 0.24rem;
+  align-content: center;
 }
 
 .meter-track {
   display: block;
-  height: 0.44rem;
+  height: 0.38rem;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(84, 61, 35, 0.16);
@@ -422,9 +478,16 @@ button {
 
 .care-row {
   display: grid;
-  grid-template-columns: 1fr 4.75rem 4.75rem;
-  gap: 0.38rem;
+  grid-template-columns: minmax(0, 1fr) minmax(3.5rem, 0.5fr) minmax(3.5rem, 0.5fr);
+  gap: 0.28rem;
   align-items: center;
+}
+
+.dock-action-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.28rem;
+  align-items: stretch;
 }
 
 .care-meter {
@@ -452,10 +515,10 @@ button {
   align-items: center;
   justify-content: center;
   min-width: 0;
-  min-height: 2.38rem;
-  gap: 0.2rem;
-  padding: 0.22rem 0.32rem;
-  border-radius: 0.72rem;
+  min-height: 2.16rem;
+  gap: 0.16rem;
+  padding: 0.18rem 0.26rem;
+  border-radius: 0.66rem;
   color: #4b331a;
   background: rgba(255, 255, 255, 0.58);
   font-size: 0.58rem;
@@ -467,8 +530,8 @@ button {
 
 .care-button img {
   flex: 0 0 auto;
-  width: 1.28rem;
-  height: 1.28rem;
+  width: 1.12rem;
+  height: 1.12rem;
   object-fit: contain;
 }
 
@@ -482,7 +545,7 @@ button {
 .loop-actions {
   display: grid;
   grid-template-columns: 0.82fr 1.18fr;
-  gap: 0.42rem;
+  gap: 0.28rem;
 }
 
 .claim-button,
@@ -502,9 +565,9 @@ button {
   align-items: center;
   justify-content: center;
   gap: 0.22rem;
-  min-height: 2.48rem;
-  padding: 0.25rem 0.44rem;
-  font-size: 0.66rem;
+  min-height: 2.16rem;
+  padding: 0.2rem 0.34rem;
+  font-size: 0.58rem;
   font-weight: 1000;
 }
 
@@ -520,9 +583,9 @@ button {
 
 .next-upgrade-button {
   display: grid;
-  min-height: 2.48rem;
+  min-height: 2.16rem;
   gap: 0.08rem;
-  padding: 0.28rem 0.48rem;
+  padding: 0.22rem 0.38rem;
   text-align: left;
 }
 
@@ -540,18 +603,18 @@ button {
 }
 
 .next-upgrade-button span {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 1000;
 }
 
 .next-upgrade-button strong {
-  font-size: 0.57rem;
+  font-size: 0.52rem;
   font-weight: 900;
   opacity: 0.76;
 }
 
 .upgrade-strip {
-  display: grid;
+  display: none;
   grid-auto-columns: 5.1rem;
   grid-auto-flow: column;
   gap: 0.34rem;
@@ -841,8 +904,8 @@ button {
 .map-switcher {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(5.8rem, 1fr);
-  gap: 0.36rem;
+  grid-auto-columns: minmax(5.15rem, 1fr);
+  gap: 0.28rem;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-padding: 0.2rem;
@@ -859,11 +922,11 @@ button {
 .map-chip {
   display: grid;
   scroll-snap-align: start;
-  min-height: 2.72rem;
-  gap: 0.1rem;
-  padding: 0.3rem 0.44rem;
+  min-height: 2.18rem;
+  gap: 0.06rem;
+  padding: 0.24rem 0.36rem;
   align-content: center;
-  border-radius: 0.82rem;
+  border-radius: 0.68rem;
   color: #543719;
   background: rgba(255, 255, 255, 0.5);
   box-shadow: inset 0 0 0 1px rgba(133, 87, 28, 0.16);
@@ -891,18 +954,19 @@ button {
 }
 
 .map-chip strong {
-  font-size: 0.58rem;
+  font-size: 0.54rem;
   font-weight: 1000;
 }
 
 .map-chip span {
-  font-size: 0.5rem;
+  font-size: 0.46rem;
   font-weight: 900;
   opacity: 0.72;
 }
 
 .map-chip small {
-  font-size: 0.46rem;
+  display: none;
+  font-size: 0.44rem;
   font-weight: 850;
   opacity: 0.6;
 }
@@ -915,10 +979,8 @@ button {
 }
 
 .placement-nudge {
-  position: absolute;
-  z-index: 90;
-  right: 5.4%;
-  top: 42.6%;
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-areas:
     ". up ."
@@ -926,13 +988,16 @@ button {
     ". down .";
   grid-template-columns: repeat(3, 2.18rem);
   grid-template-rows: repeat(3, 2.18rem);
-  gap: 0.18rem;
-  padding: 0.28rem;
-  border-radius: 1rem;
-  background: rgba(47, 39, 31, 0.52);
+  gap: 0.12rem;
+  width: max-content;
+  padding: 0.12rem;
+  border-radius: 0.82rem;
+  background:
+    linear-gradient(145deg, rgba(255, 250, 223, 0.82), rgba(231, 244, 186, 0.76)),
+    rgba(255, 250, 230, 0.76);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 239, 187, 0.22),
-    0 0.62rem 1.1rem rgba(42, 35, 28, 0.16);
+    inset 0 0 0 1px rgba(143, 91, 29, 0.12),
+    0 0.24rem 0.56rem rgba(54, 44, 28, 0.08);
   pointer-events: auto;
 }
 
@@ -941,11 +1006,14 @@ button {
   display: grid;
   min-width: 0;
   place-items: center;
-  border-radius: 0.68rem;
+  border-radius: 0.64rem;
   color: #4a3219;
-  background: rgba(255, 247, 218, 0.95);
-  box-shadow: inset 0 0 0 1px rgba(140, 92, 30, 0.18);
-  font-size: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 238, 0.98), rgba(255, 237, 192, 0.95));
+  box-shadow:
+    inset 0 0 0 1px rgba(140, 92, 30, 0.18),
+    0 0.12rem 0 rgba(129, 83, 33, 0.1);
+  font-size: 0.96rem;
   font-weight: 1000;
   line-height: 1;
 }
@@ -969,9 +1037,10 @@ button {
 .nudge-readout {
   grid-area: readout;
   color: #fff4cb;
-  background: rgba(31, 26, 29, 0.72);
-  font-size: 0.58rem;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.32);
+  background:
+    linear-gradient(180deg, rgba(98, 77, 45, 0.94), rgba(72, 55, 35, 0.92));
+  font-size: 0.56rem;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
 }
 
 .placement-grid-mesh {
@@ -986,12 +1055,12 @@ button {
   height: 1px;
   transform: rotate(var(--mesh-angle));
   transform-origin: left center;
-  background: rgba(40, 100, 60, 0.32);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.32);
+  background: rgba(40, 100, 60, 0.13);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .grid-mesh-line[data-kind="column"] {
-  background: rgba(31, 86, 64, 0.26);
+  background: rgba(31, 86, 64, 0.1);
 }
 
 .cell-button {
@@ -1013,10 +1082,10 @@ button {
   transform: translate(-50%, -50%) rotate(45deg);
   background:
     radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.62) 0 12%, transparent 13%),
-    rgba(255, 225, 96, 0.44);
+    rgba(255, 225, 96, 0.36);
   box-shadow:
-    inset 0 0 0 2px rgba(255, 255, 255, 0.62),
-    0 0 0.72rem rgba(248, 200, 77, 0.32);
+    inset 0 0 0 2px rgba(255, 255, 255, 0.54),
+    0 0 0.62rem rgba(248, 200, 77, 0.24);
   pointer-events: none;
 }
 
@@ -1029,19 +1098,19 @@ button {
 
 .cell-button::before {
   position: absolute;
-  inset: 30%;
+  inset: 39%;
   border-radius: 46% 54% 45% 55%;
   background:
-    radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.58) 0 18%, transparent 19%),
-    rgba(234, 255, 191, 0.42);
+    radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.48) 0 18%, transparent 19%),
+    rgba(234, 255, 191, 0.22);
   box-shadow:
-    inset 0 0 0 1px rgba(54, 120, 66, 0.26),
-    0 0.16rem 0.24rem rgba(67, 94, 51, 0.12);
+    inset 0 0 0 1px rgba(54, 120, 66, 0.18),
+    0 0.14rem 0.22rem rgba(67, 94, 51, 0.08);
   content: "";
 }
 
 .cell-button[data-selected="true"]::before {
-  background: rgba(248, 200, 77, 0.48);
+  background: rgba(248, 200, 77, 0.58);
   box-shadow:
     inset 0 0 0 2px rgba(255, 255, 255, 0.74),
     0 0 0.8rem rgba(248, 200, 77, 0.5);
@@ -1059,7 +1128,7 @@ button {
 
 .placement-ghost {
   z-index: 61;
-  opacity: 0.72;
+  opacity: 0.82;
   filter:
     drop-shadow(0 0.5rem 0.5rem rgba(40, 42, 37, 0.2))
     saturate(1.08);
@@ -1076,18 +1145,20 @@ button {
 .bottom-sheet {
   position: absolute;
   z-index: 96;
-  left: 4.6%;
-  right: 4.6%;
-  bottom: calc(7.95rem + env(safe-area-inset-bottom));
+  left: 4.4%;
+  right: 4.4%;
+  bottom: calc(5.18rem + env(safe-area-inset-bottom));
   display: grid;
-  gap: 0.55rem;
-  padding: 0.54rem 0.62rem 0.64rem;
-  border-radius: 1.25rem;
+  gap: 0.38rem;
+  padding: 0.42rem 0.5rem 0.5rem;
+  border-radius: 1rem;
   color: #4b331a;
-  background: rgba(255, 247, 221, 0.94);
+  background: var(--panel-cream);
   box-shadow:
     inset 0 0 0 2px rgba(138, 89, 27, 0.16),
-    0 1rem 1.8rem rgba(45, 31, 21, 0.2);
+    inset 0 -0.16rem 0 rgba(143, 91, 29, 0.08),
+    0 0.8rem 1.35rem rgba(45, 31, 21, 0.16);
+  backdrop-filter: blur(8px);
 }
 
 .sheet-handle {
@@ -1102,17 +1173,17 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .mode-row strong {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 1000;
 }
 
 .mode-row span {
   overflow: hidden;
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   font-weight: 900;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1126,17 +1197,17 @@ button {
 .placement-step-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.22rem;
+  gap: 0.18rem;
 }
 
 .placement-step-row span {
   min-width: 0;
   overflow: hidden;
-  padding: 0.18rem 0.28rem;
+  padding: 0.14rem 0.24rem;
   border-radius: 999px;
   color: #6b4a25;
   background: rgba(255, 255, 255, 0.5);
-  font-size: 0.56rem;
+  font-size: 0.5rem;
   font-weight: 1000;
   line-height: 1;
   text-align: center;
@@ -1148,6 +1219,27 @@ button {
   color: #4b331a;
   background: rgba(255, 226, 122, 0.9);
   box-shadow: inset 0 0 0 1px rgba(143, 91, 29, 0.13);
+}
+
+.placement-sheet .map-switcher {
+  grid-auto-columns: minmax(5.25rem, 1fr);
+  gap: 0.24rem;
+  padding: 0.02rem 0.04rem 0.04rem;
+}
+
+.placement-sheet .map-chip {
+  min-height: 2.18rem;
+  padding: 0.22rem 0.34rem;
+  border-radius: 0.64rem;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.placement-sheet .map-chip strong {
+  font-size: 0.56rem;
+}
+
+.placement-sheet .map-chip span {
+  font-size: 0.48rem;
 }
 
 .decor-tray,
@@ -1163,17 +1255,180 @@ button {
 }
 
 .placement-sheet {
+  gap: 0.28rem;
+  padding: 0.36rem 0.5rem 0.44rem;
+  border-radius: 1.05rem;
+  background:
+    linear-gradient(180deg, rgba(255, 251, 228, 0.96), rgba(255, 242, 198, 0.94)),
+    var(--panel-cream);
+}
+
+.placement-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.placement-selected-card {
+  display: grid;
+  grid-template-columns: 3.06rem minmax(0, 1fr);
+  gap: 0.38rem;
+  min-width: 0;
+  min-height: 3.78rem;
+  align-items: center;
+  padding: 0.38rem 0.44rem;
+  border-radius: 0.94rem;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 246, 0.98), rgba(255, 242, 196, 0.86)),
+    rgba(255, 255, 255, 0.62);
+  box-shadow:
+    inset 0 0 0 1px rgba(144, 94, 30, 0.14),
+    0 0.22rem 0.58rem rgba(70, 50, 24, 0.08);
+}
+
+.placement-selected-art {
+  display: grid;
+  width: 3rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 0.82rem;
+  background:
+    radial-gradient(circle at 50% 78%, rgba(98, 142, 55, 0.2) 0 28%, transparent 29%),
+    rgba(255, 255, 255, 0.52);
+  box-shadow: inset 0 0 0 1px rgba(149, 98, 36, 0.12);
+}
+
+.placement-selected-art img {
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  filter: drop-shadow(0 0.28rem 0.24rem rgba(67, 49, 24, 0.2));
+}
+
+.placement-selected-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.placement-eyebrow,
+.placement-section-label span,
+.placement-primary-action small {
+  min-width: 0;
+  overflow: hidden;
+  color: #7a5528;
+  font-size: 0.52rem;
+  font-weight: 1000;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.74;
+}
+
+.placement-selected-copy .mode-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.3rem;
+}
+
+.placement-selected-copy .mode-row strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placement-selected-copy .mode-row span {
+  padding: 0.14rem 0.32rem;
+  border-radius: 999px;
+  color: #6a451d;
+  background: rgba(255, 226, 122, 0.76);
+  box-shadow: inset 0 0 0 1px rgba(143, 91, 29, 0.12);
+  font-size: 0.54rem;
+  opacity: 1;
+}
+
+.placement-meta-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.16rem;
+}
+
+.placement-meta-row span {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.2rem 0.28rem;
+  border-radius: 0.52rem;
+  color: #6b4a25;
+  background: rgba(255, 255, 255, 0.58);
+  font-size: 0.5rem;
+  font-weight: 950;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placement-command-stack {
+  position: absolute;
+  z-index: 116;
+  right: 0.58rem;
+  bottom: calc(100% + 0.52rem);
+  display: grid;
+  width: max-content;
+  align-content: stretch;
+  gap: 0.22rem;
+  pointer-events: auto;
+}
+
+.placement-primary-action {
+  display: grid;
+  min-height: 2.44rem;
+  place-items: center;
+  gap: 0.04rem;
+  padding: 0.18rem 0.54rem;
+  border-radius: 0.82rem;
+}
+
+.placement-primary-action span {
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.placement-primary-action small {
+  color: #6a4515;
+  opacity: 0.72;
+}
+
+.placement-map-strip {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.placement-section-label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.42rem;
-  padding: 0.46rem 0.52rem 0.56rem;
+}
+
+.placement-section-label strong {
+  color: #4b331a;
+  font-size: 0.62rem;
+  font-weight: 1000;
+  line-height: 1;
 }
 
 .placement-sheet .decor-tray {
   display: grid;
-  grid-auto-columns: 3.9rem;
+  grid-auto-columns: 4.05rem;
   grid-auto-flow: column;
   grid-template-columns: none;
   overflow-x: auto;
-  padding: 0.04rem 0.8rem 0.24rem 0.04rem;
+  padding: 0.02rem 0.8rem 0.18rem 0.02rem;
   overscroll-behavior-x: contain;
   scroll-padding: 0.04rem;
   scroll-snap-type: x proximity;
@@ -1187,22 +1442,81 @@ button {
 }
 
 .placement-sheet .asset-card {
-  min-height: 3.34rem;
-  border-radius: 0.66rem;
+  min-height: 3.72rem;
+  border-radius: 0.72rem;
   scroll-snap-align: start;
+  gap: 0.08rem;
+  padding: 0.24rem 0.22rem 0.22rem;
 }
 
 .placement-sheet .asset-card img {
-  height: 2.1rem;
+  height: 1.82rem;
+}
+
+.placement-sheet .asset-card strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: #4b331a;
+  font-size: 0.46rem;
+  font-weight: 1000;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placement-sheet .asset-card span {
+  padding: 0.1rem 0.28rem;
+  border-radius: 999px;
+  background: rgba(255, 247, 221, 0.72);
+  font-size: 0.46rem;
+  line-height: 1;
 }
 
 .placement-sheet .action-row {
-  gap: 0.42rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.28rem;
 }
 
 .placement-sheet .action {
-  min-height: 2.46rem;
-  font-size: 0.66rem;
+  min-height: 2.22rem;
+  border-radius: 0.78rem;
+  font-size: 0.62rem;
+}
+
+.placement-sheet .action.confirm {
+  min-width: 0;
+  color: #53360f;
+  background:
+    linear-gradient(180deg, #ffe477, #ffd657),
+    #ffda61;
+  box-shadow:
+    inset 0 0 0 2px rgba(143, 91, 29, 0.18),
+    0 0.38rem 0.72rem rgba(128, 94, 19, 0.16);
+  font-size: 0.76rem;
+}
+
+.placement-sheet .action.rotate {
+  color: #344251;
+  background:
+    linear-gradient(180deg, rgba(229, 248, 255, 0.96), rgba(202, 233, 247, 0.94));
+}
+
+.placement-sheet .action.undo {
+  color: #5c4724;
+  background:
+    linear-gradient(180deg, rgba(255, 249, 219, 0.96), rgba(255, 236, 169, 0.9));
+}
+
+.placement-sheet .action.danger {
+  color: #62392b;
+  background:
+    linear-gradient(180deg, rgba(255, 237, 224, 0.97), rgba(255, 210, 194, 0.92));
+}
+
+.placement-sheet .action:disabled {
+  opacity: 0.52;
+  filter: saturate(0.72);
 }
 
 .asset-card {
@@ -1256,17 +1570,17 @@ button {
 
 .action-row {
   display: grid;
-  grid-template-columns: 0.9fr 1.15fr 0.9fr 1.35fr;
-  gap: 0.46rem;
+  grid-template-columns: 0.74fr 0.8fr 0.76fr 1.18fr;
+  gap: 0.3rem;
 }
 
 .action,
 .apply-button,
 .pull-button {
-  min-height: 2.35rem;
+  min-height: 2.18rem;
   border-radius: 999px;
   color: #4a3017;
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 1000;
   letter-spacing: 0;
   background: #ffe69a;
@@ -1533,6 +1847,97 @@ button {
   height: clamp(2.36rem, 6.6dvh, 3.12rem);
 }
 
+.outfit-card-ui small {
+  align-self: end;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0.08rem 0.24rem;
+  border-radius: 999px;
+  color: #5a3919;
+  background: rgba(255, 247, 221, 0.78);
+  font-size: 0.46rem;
+  font-weight: 1000;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wardrobe-filter-panel {
+  position: absolute;
+  z-index: 10;
+  top: 35.7%;
+  left: 35%;
+  right: 6%;
+  display: grid;
+  grid-template-columns: minmax(4.4rem, 0.82fr) minmax(0, 1.38fr);
+  gap: 0.34rem;
+  align-items: center;
+}
+
+.wardrobe-filter-panel input,
+.catalog-toolbar input {
+  min-width: 0;
+  min-height: 2.48rem;
+  padding: 0 0.72rem;
+  border: 0;
+  border-radius: 0.62rem;
+  color: #4b331a;
+  background: rgba(255, 247, 221, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(143, 91, 29, 0.16);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.wardrobe-chip-row {
+  display: grid;
+  grid-auto-columns: minmax(3.55rem, max-content);
+  grid-auto-flow: column;
+  gap: 0.24rem;
+  overflow-x: auto;
+  padding-bottom: 0.08rem;
+  scrollbar-width: none;
+}
+
+.wardrobe-chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+.wardrobe-chip-row button,
+.catalog-chip-row button,
+.catalog-tab-row button {
+  min-height: 2.48rem;
+  min-width: 3.55rem;
+  padding: 0 0.56rem;
+  border-radius: 0.62rem;
+  color: #5a3919;
+  background: rgba(255, 247, 221, 0.74);
+  box-shadow: inset 0 0 0 1px rgba(143, 91, 29, 0.13);
+  font-size: 0.58rem;
+  font-weight: 1000;
+}
+
+.wardrobe-chip-row button[data-active="true"],
+.catalog-chip-row button[data-active="true"],
+.catalog-tab-row button[data-active="true"] {
+  color: #4b331a;
+  background: rgba(255, 226, 122, 0.9);
+  box-shadow:
+    inset 0 0 0 2px rgba(128, 83, 20, 0.2),
+    0 0.28rem 0.52rem rgba(77, 49, 19, 0.1);
+}
+
+.wardrobe-empty {
+  display: grid;
+  min-width: 8rem;
+  min-height: clamp(3.22rem, 8.8dvh, 4.15rem);
+  place-items: center;
+  color: #6f4a24;
+  font-size: 0.66rem;
+  font-weight: 1000;
+}
+
 .apply-button {
   position: absolute;
   top: 35.8%;
@@ -1747,6 +2152,7 @@ button {
 
 .reward-card {
   --reward-card-size: clamp(4.15rem, 18vw, 5rem);
+  position: relative;
   display: grid;
   flex: 0 0 var(--reward-card-size);
   width: var(--reward-card-size);
@@ -1766,10 +2172,68 @@ button {
   background: rgba(255, 226, 122, 0.84);
 }
 
+.reward-card[data-rarity="rare"] {
+  background: rgba(221, 242, 255, 0.86);
+}
+
+.reward-card[data-rarity="special"] {
+  background: rgba(111, 78, 182, 0.86);
+}
+
+.reward-card[data-owned="false"] img {
+  filter: grayscale(0.86) saturate(0.5);
+  opacity: 0.62;
+}
+
 .reward-card img {
   width: 88%;
   height: 88%;
   object-fit: contain;
+}
+
+.reward-card span {
+  position: absolute;
+  right: 0.28rem;
+  bottom: 0.28rem;
+  max-width: calc(100% - 0.56rem);
+  overflow: hidden;
+  padding: 0.08rem 0.24rem;
+  border-radius: 999px;
+  color: #4b331a;
+  background: rgba(255, 247, 221, 0.86);
+  font-size: 0.46rem;
+  font-weight: 1000;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reward-more-card {
+  display: grid;
+  flex: 0 0 clamp(4.15rem, 18vw, 5rem);
+  width: clamp(4.15rem, 18vw, 5rem);
+  height: clamp(4.15rem, 18vw, 5rem);
+  scroll-snap-align: start;
+  place-items: center;
+  align-content: center;
+  gap: 0.12rem;
+  border-radius: 0.8rem;
+  color: #4b331a;
+  background: rgba(255, 247, 221, 0.78);
+  box-shadow:
+    inset 0 0 0 1px rgba(143, 91, 29, 0.14),
+    0 0.45rem 0.86rem rgba(41, 31, 24, 0.14);
+}
+
+.reward-more-card strong {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.reward-more-card span {
+  font-size: 0.56rem;
+  font-weight: 1000;
+  line-height: 1;
 }
 
 .history-chip {
@@ -1852,12 +2316,203 @@ button {
 }
 
 .collection-panel,
+.catalog-panel,
 .map-panel,
 .market-panel,
 .layout-preset-panel {
   display: grid;
   min-width: 0;
   gap: 0.32rem;
+}
+
+.catalog-panel {
+  gap: 0.46rem;
+}
+
+.catalog-preview {
+  display: grid;
+  grid-template-columns: 5.2rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.58rem;
+  min-width: 0;
+  padding: 0.54rem;
+  border-radius: 0.72rem;
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow:
+    inset 0 0 0 1px rgba(143, 91, 29, 0.14),
+    0 0.34rem 0.68rem rgba(54, 35, 20, 0.1);
+}
+
+.catalog-preview[data-rarity="rare"] {
+  background: rgba(221, 242, 255, 0.7);
+}
+
+.catalog-preview[data-rarity="special"] {
+  color: #fff7ff;
+  background: rgba(111, 78, 182, 0.78);
+}
+
+.catalog-preview[data-owned="false"] img {
+  filter: grayscale(0.86) saturate(0.5);
+  opacity: 0.62;
+}
+
+.catalog-preview img {
+  width: 5.2rem;
+  height: 5.2rem;
+  object-fit: contain;
+}
+
+.catalog-preview div {
+  display: grid;
+  min-width: 0;
+  gap: 0.28rem;
+}
+
+.catalog-preview strong,
+.catalog-preview span,
+.catalog-preview small {
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalog-preview strong {
+  font-size: 0.82rem;
+  font-weight: 1000;
+}
+
+.catalog-preview span,
+.catalog-preview small {
+  font-size: 0.58rem;
+  font-weight: 900;
+  opacity: 0.76;
+}
+
+.catalog-toolbar {
+  display: grid;
+  gap: 0.34rem;
+  min-width: 0;
+}
+
+.catalog-tab-row,
+.catalog-chip-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(4.2rem, max-content);
+  gap: 0.28rem;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 0.08rem;
+  scrollbar-width: none;
+}
+
+.catalog-tab-row::-webkit-scrollbar,
+.catalog-chip-row::-webkit-scrollbar,
+.catalog-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.catalog-tab-row button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+}
+
+.catalog-tab-row button span {
+  min-width: 1.18rem;
+  padding: 0.08rem 0.2rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 0.48rem;
+  line-height: 1;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.36rem;
+  max-height: 18rem;
+  min-height: 5.8rem;
+  overflow-y: auto;
+  padding-right: 0.12rem;
+  scrollbar-width: none;
+}
+
+.catalog-item-card {
+  display: grid;
+  min-width: 0;
+  min-height: 6.2rem;
+  place-items: center;
+  gap: 0.16rem;
+  padding: 0.32rem;
+  border-radius: 0.66rem;
+  color: #4b331a;
+  background: rgba(255, 255, 255, 0.54);
+  box-shadow:
+    inset 0 0 0 1px rgba(143, 91, 29, 0.13),
+    0 0.28rem 0.56rem rgba(54, 35, 20, 0.09);
+}
+
+.catalog-item-card[data-active="true"] {
+  background: rgba(255, 226, 122, 0.88);
+  box-shadow:
+    inset 0 0 0 2px rgba(128, 83, 20, 0.2),
+    0 0.34rem 0.68rem rgba(77, 49, 19, 0.12);
+}
+
+.catalog-item-card[data-rarity="rare"] {
+  background: rgba(221, 242, 255, 0.72);
+}
+
+.catalog-item-card[data-rarity="special"] {
+  color: #fff7ff;
+  background: rgba(111, 78, 182, 0.76);
+}
+
+.catalog-item-card[data-owned="false"] img {
+  filter: grayscale(0.86) saturate(0.5);
+  opacity: 0.62;
+}
+
+.catalog-item-card img {
+  width: 100%;
+  height: 3.15rem;
+  object-fit: contain;
+}
+
+.catalog-item-card span,
+.catalog-item-card small,
+.catalog-empty {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 1000;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalog-item-card span {
+  font-size: 0.54rem;
+}
+
+.catalog-item-card small {
+  padding: 0.08rem 0.22rem;
+  border-radius: 999px;
+  background: rgba(255, 247, 221, 0.58);
+  font-size: 0.45rem;
+}
+
+.catalog-empty {
+  grid-column: 1 / -1;
+  display: grid;
+  min-height: 5.8rem;
+  place-items: center;
+  color: #6f4a24;
+  font-size: 0.66rem;
 }
 
 .collection-grid,
@@ -2134,15 +2789,15 @@ button {
 .bottom-nav {
   position: absolute;
   z-index: 90;
-  left: 3.4%;
-  right: 3.4%;
-  bottom: calc(0.72rem + env(safe-area-inset-bottom));
+  left: 3.6%;
+  right: 3.6%;
+  bottom: calc(0.62rem + env(safe-area-inset-bottom));
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.18rem;
-  padding: 0.24rem;
-  border-radius: 1.15rem;
-  background: rgba(255, 247, 221, 0.92);
+  gap: 0.14rem;
+  padding: 0.2rem;
+  border-radius: 1.05rem;
+  background: rgba(255, 250, 230, 0.92);
   box-shadow:
     inset 0 0 0 1px rgba(143, 91, 29, 0.16),
     0 0.8rem 1.55rem rgba(37, 27, 19, 0.2);
@@ -2152,11 +2807,11 @@ button {
   position: relative;
   display: grid;
   grid-template-rows: 1fr auto;
-  min-height: 3.28rem;
+  min-height: 3.02rem;
   place-items: center;
   gap: 0.05rem;
-  padding: 0.18rem 0.14rem 0.2rem;
-  border-radius: 1rem;
+  padding: 0.16rem 0.12rem 0.18rem;
+  border-radius: 0.86rem;
   background: rgba(255, 255, 255, 0.44);
 }
 
@@ -2181,7 +2836,7 @@ button {
 
 .nav-item img {
   width: 72%;
-  height: 1.78rem;
+  height: 1.58rem;
   object-fit: contain;
 }
 
@@ -2355,7 +3010,13 @@ button {
   }
 
   .bottom-sheet {
-    bottom: calc(6.25rem + env(safe-area-inset-bottom));
+    bottom: calc(5.1rem + env(safe-area-inset-bottom));
+  }
+
+  .placement-sheet {
+    bottom: calc(4.95rem + env(safe-area-inset-bottom));
+    gap: 0.3rem;
+    padding: 0.36rem 0.42rem 0.42rem;
   }
 
   .storage-sheet {
@@ -2369,11 +3030,11 @@ button {
   }
 
   .nav-item {
-    min-height: 3rem;
+    min-height: 2.78rem;
   }
 
   .nav-item img {
-    height: 1.5rem;
+    height: 1.38rem;
   }
 
   .nav-item span {
@@ -2489,6 +3150,12 @@ button {
     --reward-card-size: 3.08rem;
   }
 
+  .reward-more-card {
+    flex-basis: 3.08rem;
+    width: 3.08rem;
+    height: 3.08rem;
+  }
+
   .gacha-reveal {
     top: 61.4%;
     gap: 0.24rem;
@@ -2534,11 +3201,11 @@ button {
     top: calc(0.5rem + env(safe-area-inset-top));
     left: 0.5rem;
     right: 0.5rem;
-    gap: 0.28rem;
+    gap: 0.18rem;
   }
 
   .resource {
-    height: 1.88rem;
+    height: 1.82rem;
     gap: 0.16rem;
     padding: 0.2rem 0.42rem 0.2rem 0.24rem;
   }
@@ -2552,21 +3219,31 @@ button {
     font-size: 0.76rem;
   }
 
+  .coin-resource {
+    min-width: 5.36rem;
+    max-width: none;
+  }
+
   .coin-resource span {
     display: none;
   }
 
   .ticket-resource {
-    min-width: 3.28rem;
+    min-width: 2.54rem;
   }
 
   .shard-resource {
-    min-width: 3rem;
+    min-width: 2.36rem;
   }
 
   .round-button {
-    width: 2.24rem;
-    height: 2.24rem;
+    width: 2.14rem;
+    height: 2.14rem;
+    font-size: 0.62rem;
+  }
+
+  .locale-button {
+    display: none;
   }
 
   .theme-chip {
@@ -2578,9 +3255,15 @@ button {
   }
 
   .game-loop-panel {
-    bottom: calc(7rem + env(safe-area-inset-bottom));
-    gap: 0.34rem;
-    padding: 0.42rem;
+    bottom: calc(4.7rem + env(safe-area-inset-bottom));
+    gap: 0.22rem;
+    padding: 0.32rem 0.38rem 0.38rem;
+  }
+
+  .dock-summary,
+  .dock-action-grid {
+    grid-template-columns: 1fr;
+    gap: 0.22rem;
   }
 
   .game-loop-panel .upgrade-strip {
@@ -2588,40 +3271,93 @@ button {
   }
 
   .placement-sheet {
-    bottom: calc(4.85rem + env(safe-area-inset-bottom));
-    gap: 0.2rem;
-    padding: 0.3rem 0.42rem 0.34rem;
+    bottom: calc(4.55rem + env(safe-area-inset-bottom));
+    gap: 0.16rem;
+    padding: 0.2rem 0.32rem 0.24rem;
   }
 
-  .placement-sheet .asset-card {
-    min-height: 2.48rem;
+  .placement-workbench {
+    gap: 0.28rem;
   }
 
-  .placement-sheet .asset-card img {
-    height: 1.5rem;
+  .placement-selected-card {
+    grid-template-columns: 2.52rem minmax(0, 1fr);
+    min-height: 3.24rem;
+    gap: 0.24rem;
+    padding: 0.28rem 0.32rem;
   }
 
-  .placement-sheet .action-row {
-    gap: 0.26rem;
+  .placement-selected-art {
+    width: 2.52rem;
   }
 
-  .placement-step-row span {
-    padding: 0.13rem 0.22rem;
-    font-size: 0.5rem;
+  .placement-eyebrow {
+    display: none;
   }
 
-  .placement-sheet .action {
-    min-height: 2.28rem;
-    font-size: 0.6rem;
+  .placement-meta-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.14rem;
+  }
+
+  .placement-meta-row span:first-child {
+    display: none;
+  }
+
+  .placement-meta-row span {
+    padding: 0.18rem 0.24rem;
+    font-size: 0.48rem;
+  }
+
+  .placement-command-stack {
+    gap: 0.18rem;
   }
 
   .placement-nudge {
-    right: 4.4%;
-    top: 38.8%;
-    grid-template-columns: repeat(3, 2.16rem);
-    grid-template-rows: repeat(3, 2.16rem);
-    gap: 0.14rem;
-    padding: 0.22rem;
+    grid-template-columns: repeat(3, 2.14rem);
+    grid-template-rows: repeat(3, 2.14rem);
+    gap: 0.1rem;
+    padding: 0.1rem;
+  }
+
+  .placement-primary-action {
+    min-height: 2.2rem;
+    padding: 0.14rem 0.34rem;
+  }
+
+  .placement-primary-action span {
+    font-size: 0.7rem;
+  }
+
+  .placement-section-label {
+    gap: 0.3rem;
+  }
+
+  .placement-sheet .map-switcher {
+    grid-auto-columns: minmax(4.75rem, 1fr);
+    gap: 0.18rem;
+  }
+
+  .placement-sheet .map-chip {
+    min-height: 2.16rem;
+    padding: 0.18rem 0.28rem;
+  }
+
+  .placement-sheet .asset-card {
+    min-height: 2.92rem;
+  }
+
+  .placement-sheet .asset-card img {
+    height: 1.4rem;
+  }
+
+  .placement-sheet .action-row {
+    gap: 0.2rem;
+  }
+
+  .placement-sheet .action {
+    min-height: 2.2rem;
+    font-size: 0.58rem;
   }
 
   .reward-strip {
@@ -2630,6 +3366,12 @@ button {
 
   .reward-card {
     --reward-card-size: 2.85rem;
+  }
+
+  .reward-more-card {
+    flex-basis: 2.85rem;
+    width: 2.85rem;
+    height: 2.85rem;
   }
 
   .gacha-result-card {
@@ -2706,27 +3448,117 @@ button {
 
 @media (max-height: 640px) {
   .game-loop-panel {
-    bottom: calc(4.9rem + env(safe-area-inset-bottom));
+    bottom: calc(4.52rem + env(safe-area-inset-bottom));
+  }
+
+  .placement-sheet {
+    gap: 0.16rem;
+    padding: 0.22rem 0.32rem 0.28rem;
+  }
+
+  .placement-workbench {
+    gap: 0.18rem;
+  }
+
+  .placement-selected-card {
+    grid-template-columns: 2.18rem minmax(0, 1fr);
+    min-height: 3.18rem;
+    padding: 0.22rem 0.28rem;
+  }
+
+  .placement-selected-art {
+    width: 2.18rem;
+  }
+
+  .placement-selected-copy .mode-row strong {
+    font-size: 0.68rem;
+  }
+
+  .placement-selected-copy .mode-row span {
+    display: none;
+  }
+
+  .placement-sheet .map-chip {
+    min-height: 2.16rem;
+    padding: 0.18rem 0.3rem;
+  }
+
+  .placement-sheet .asset-card {
+    min-height: 2.86rem;
+  }
+
+  .placement-sheet .asset-card img {
+    height: 1.22rem;
+  }
+
+  .placement-sheet .asset-card strong {
+    display: none;
+  }
+
+  .placement-sheet .action {
+    min-height: 2.14rem;
+  }
+
+  .placement-nudge {
+    grid-template-columns: repeat(3, 2.14rem);
+    grid-template-rows: repeat(3, 2.14rem);
+  }
+
+  .nudge-button,
+  .nudge-readout {
+    border-radius: 0.56rem;
   }
 }
 
 @media (min-height: 641px) and (max-width: 340px) {
   .placement-sheet {
-    bottom: calc(4.85rem + env(safe-area-inset-bottom));
+    bottom: calc(4.45rem + env(safe-area-inset-bottom));
+    gap: 0.18rem;
+    padding: 0.24rem 0.34rem 0.3rem;
+  }
+
+  .placement-workbench {
+    gap: 0.2rem;
+  }
+
+  .placement-selected-card {
+    grid-template-columns: 2.24rem minmax(0, 1fr);
+    min-height: 3.28rem;
     gap: 0.22rem;
-    padding: 0.32rem 0.44rem 0.36rem;
+    padding: 0.28rem;
+  }
+
+  .placement-selected-art {
+    width: 2.24rem;
+  }
+
+  .placement-selected-copy .mode-row {
+    gap: 0.18rem;
+  }
+
+  .placement-selected-copy .mode-row strong {
+    font-size: 0.72rem;
+  }
+
+  .placement-selected-copy .mode-row span {
+    display: none;
   }
 
   .placement-sheet .asset-card {
-    min-height: 2.52rem;
+    min-height: 2.94rem;
   }
 
   .placement-sheet .asset-card img {
-    height: 1.56rem;
+    height: 1.3rem;
   }
 
   .placement-sheet .action-row {
-    gap: 0.28rem;
+    gap: 0.22rem;
+  }
+
+  .placement-nudge {
+    grid-template-columns: repeat(3, 2.14rem);
+    grid-template-rows: repeat(3, 2.14rem);
   }
 }
 
